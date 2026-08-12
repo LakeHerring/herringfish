@@ -1,4 +1,4 @@
-use herringfish::attack::{differential::DifferentialAttack, linear::LinearAttack, algebraic::AlgebraicAttack};
+use herringfish::attack::hash::{differential::DifferentialAttack, linear::LinearAttack, algebraic::AlgebraicAttack};
 use herringfish::attack::Attack;
 
 fn print_help() {

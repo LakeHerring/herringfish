@@ -1,4 +1,4 @@
-use super::Attack;
+use crate::attack::Attack;
 
 pub struct AlgebraicAttack {
     pub family: String,

@@ -1,4 +1,4 @@
-use super::Attack;
+use crate::attack::Attack;
 use crate::primitives::hash::keccak::KeccakF;
 use crate::primitives::hash::sha256::Sha256Compressor;
 
