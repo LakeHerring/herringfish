@@ -42,7 +42,6 @@ fn main() {
         println!(" - SHA3 family: SHA3-512");
     }
 
-    // Side-channel considerations
     println!("\nSide-channel considerations:");
     match bytes {
         32 => {
@@ -66,6 +65,37 @@ fn main() {
             println!(" - Length does not match common fixed-output hashes.");
             println!("   SHAKE/XOF outputs are variable length; implementations must handle streaming safely.");
             println!("   Recommendation: ensure output length is enforced at API boundary to avoid oracle leakage.");
+        }
+    }
+
+    println!("\nCryptanalytic difficulty summary [from HASH_DIFFICULTY.md]:");
+    match bytes {
+        32 => {
+            println!(" SHA-256:");
+            println!("  Best public collision: 39-step SFS, 31-step free-start");
+            println!("  Full rounds: 64");
+            println!("  Preimage ≈ 2^256, Collision resistance ≈ 2^128");
+            println!(" SHA3-256:");
+            println!("  Best public collision: 5-round reduced Keccak-f");
+            println!("  Full rounds: 24");
+            println!("  Preimage ≈ 2^256, Collision resistance ≈ 2^128");
+            println!(" SHAKE128/256 truncated to 256 bits:");
+            println!("  Best public collision: 6-round, complexity ≈ 2^123.5");
+            println!("  Full rounds: 24");
+            println!("  Preimage ≈ 2^128 for 256-bit output");
+        }
+        64 => {
+            println!(" SHA-512:");
+            println!("  Best public collision: 28-step practical, 31-step theoretic");
+            println!("  Full rounds: 80");
+            println!("  Preimage ≈ 2^512, Collision resistance ≈ 2^256");
+            println!(" SHA3-512:");
+            println!("  Best public collision: 4-round");
+            println!("  Full rounds: 24");
+            println!("  Preimage ≈ 2^512, Collision resistance ≈ 2^256");
+        }
+        _ => {
+            println!("  No specific difficulty data for this length.");
         }
     }
 }
