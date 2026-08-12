@@ -304,3 +304,28 @@ See [COMPLIANCE.md](COMPLIANCE.md). Research use only.
 ## Side-channel considerations
 
 See [SIDE_CHANNEL.md](SIDE_CHANNEL.md).
+
+## Attack Families & Principles
+
+See [docs/ATTACK_FAMILIES.md](docs/ATTACK_FAMILIES.md) for the full list of supported attack families and design principles.
+
+Herringfish distinguishes between:
+- Generic security
+- Best published attack
+- Herringfish reproduction
+- Herringfish experimental result
+
+## How to use Herringfish for a digest
+
+Given a digest such as `02208b9403a87df9f4ed6b2ee2657efaa589026b4cce9accc8e8a5bf3d693c86`:
+
+1. **Identify possible primitives** – Use `examples/identify_hash.rs` to infer candidate families from length. 32 bytes → SHA-256 / SHA3-256 / SHAKE truncated.
+2. **Verify candidate algorithms** – If a candidate message is known, recompute `H(message)` and compare. Verification is feasible; inversion is not.
+3. **Expose the underlying construction** – Map the primitive to its mathematical model: Merkle-Damgård compression for SHA-2, Keccak sponge with θ,ρ,π,χ,ι for SHA-3/SHAKE.
+4. **Determine applicable attack families** – See `docs/ATTACK_FAMILIES.md`. For hash functions: differential, linear, algebraic, meet-in-the-middle, collision/preimage analysis, reduced-round cryptanalysis, statistical/probability analysis.
+5. **Analyze reduced-round / reduced-parameter versions** – Use `attack/hash/experiments` for reduced-round differential trails and `math/finite_field/ddt` for DDT analysis.
+6. **Compare with published cryptanalysis** – `HASH_DIFFICULTY.md` summarizes best public results for SHA-2/SHA-3/SHAKE.
+7. **Estimate attack complexity and security margins** – Combine experimental results with published bounds. Distinguish generic security from best known attacks.
+8. **Report clearly** – State target, parameters, attack type, data/time/memory complexity, success probability, assumptions, and whether the result is reproduction or new experiment.
+
+This workflow ensures Herringfish is used as a mathematical laboratory, not a brute-force hash cracker.
