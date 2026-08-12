@@ -1,4 +1,5 @@
-use herringfish::attack::{differential::DifferentialAttack, Attack};
+use herringfish::attack::{Attack};
+use herringfish::attack::hash::{differential::DifferentialAttack, linear::LinearAttack, algebraic::AlgebraicAttack};
 
 fn main() {
     let family = "SHA3";

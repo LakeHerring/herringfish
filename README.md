@@ -24,7 +24,7 @@ src/
 
 # herringfish
 
-Mathematical Cryptanalysis & Cryptographic Attack Framework
+Mathematical Cryptanalysis & Cryptographic Attack Framework. Herringfish is not primarily a password cracker or hash-cracking utility. It is a mathematical cryptanalysis framework.
 
 Herringfish is a Rust-based cryptanalytic research framework for studying the mathematical foundations and security properties of modern cryptographic algorithms.
 
