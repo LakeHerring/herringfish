@@ -10,3 +10,5 @@ impl<T: Clone> Matrix<T> {
         Self { rows, cols, data: vec![default; rows*cols] }
     }
 }
+
+pub mod linear_algebra;

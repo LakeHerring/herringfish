@@ -57,7 +57,7 @@ fn main() {
     let (family_opt, attack_opt, rounds, ddt, keccak_chi) = params;
 
     if ddt {
-        use herringfish::math::finite_field::ddt::{DDT, PRESENT_SBOX};
+        use herringfish::math::ddt::{DDT, PRESENT_SBOX};
         let ddt = DDT::new(&PRESENT_SBOX);
         println!("DDT for PRESENT 4-bit S-box");
         println!("Differential uniformity: {}", ddt.differential_uniformity());
@@ -67,7 +67,7 @@ fn main() {
     }
 
     if keccak_chi {
-        use herringfish::math::finite_field::keccak_chi_ddt::{build_chi_ddt, chi_differential_uniformity};
+        use herringfish::math::keccak_chi_ddt::{build_chi_ddt, chi_differential_uniformity};
         let table = build_chi_ddt();
         let du = chi_differential_uniformity();
         println!("Keccak χ 5-bit DDT summary");
