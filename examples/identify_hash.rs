@@ -5,9 +5,7 @@ fn main() {
         std::process::exit(1);
     }
     let input = args[1].trim();
-    // Strip common prefixes
     let hex = input.trim_start_matches("0x").to_lowercase();
-    // Validate hex
     if !hex.chars().all(|c| c.is_ascii_hexdigit()) {
         eprintln!("Input is not valid hex");
         std::process::exit(1);
@@ -15,16 +13,7 @@ fn main() {
     let len = hex.len();
     let bytes = len / 2;
     println!("Digest length: {} hex chars ({} bytes)", len, bytes);
-    let candidates = match bytes {
-        16 => vec!["MD5"],
-        20 => vec!["SHA-1"],
-        32 => vec!["SHA-256", "SHA3-256", "BLAKE2b-256"],
-        48 => vec!["SHA-384"],
-        64 => vec!["SHA-512", "SHA3-512"],
-        32 => vec!["SHAKE128 output"],
-        _ => vec![],
-    };
-    // Better mapping
+
     let algos = match bytes {
         16 => vec!["MD5"],
         20 => vec!["SHA-1"],
@@ -33,15 +22,16 @@ fn main() {
         64 => vec!["SHA-512", "SHA3-512"],
         _ => vec![],
     };
+
     if algos.is_empty() {
         println!("Unknown length, could be SHAKE / custom output");
     } else {
         println!("Possible algorithms:");
-        for a in algos {
+        for a in &algos {
             println!(" - {}", a);
         }
     }
-    // Additional heuristic for herringfish families
+
     println!("\nHerringfish families:");
     if bytes == 32 {
         println!(" - SHA2 family: SHA-256");
@@ -50,5 +40,32 @@ fn main() {
     } else if bytes == 64 {
         println!(" - SHA2 family: SHA-512");
         println!(" - SHA3 family: SHA3-512");
+    }
+
+    // Side-channel considerations
+    println!("\nSide-channel considerations:");
+    match bytes {
+        32 => {
+            println!(" - 32-byte digests are common for SHA-256/SHA3-256.");
+            println!("   Many software implementations use byte-oriented table lookups for S-box/χ.");
+            println!("   Variable-time table accesses and secret-dependent branches can leak via cache timing.");
+            println!("   Recommendation: use constant-time, bit-sliced implementations for high-risk contexts.");
+        }
+        64 => {
+            println!(" - 64-byte digests are common for SHA-512/SHA3-512.");
+            println!("   64-bit word operations are often constant-time on modern CPUs, but message scheduling");
+            println!("   and padding can still introduce timing variability in naive code.");
+            println!("   Recommendation: validate with constant-time tests and avoid secret-dependent memory access.");
+        }
+        20 => {
+            println!(" - 20-byte SHA-1 digests are legacy.");
+            println!("   Many implementations are unmasked and variable-time.");
+            println!("   Recommendation: avoid SHA-1 in new designs; if used, enforce constant-time code.");
+        }
+        _ => {
+            println!(" - Length does not match common fixed-output hashes.");
+            println!("   SHAKE/XOF outputs are variable length; implementations must handle streaming safely.");
+            println!("   Recommendation: ensure output length is enforced at API boundary to avoid oracle leakage.");
+        }
     }
 }
