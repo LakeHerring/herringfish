@@ -1,0 +1,22 @@
+[package]
+name = "herringfish"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Cross-platform cryptography toolkit for Windows, macOS, and Linux"
+repository = "https://github.com/LakeHerring/herringfish"
+keywords = ["cryptography", "security", "cross-platform"]
+categories = ["cryptography"]
+
+[dev-dependencies]
+
+# ─── Build & Optimization Profile ──────────────────────────────────────────
+[profile.release]
+lto = true               # Link-time optimization for crypto hot paths
+opt-level = 3            # Maximize throughput (safe with audited crates)
+strip = true             # Reduce binary size, remove debug symbols
+codegen-units = 1        # Improves optimization consistency across platforms
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
