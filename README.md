@@ -37,39 +37,30 @@ The project is deliberately designed around the principle:
 
 # Herringfish Cipher
 
-The final Herringfish construction has not been frozen yet.
+Herringfish v0.2 is a concrete Feistel ARX prototype with frozen S-box parameters under active research.
 
-The project will explore different cryptographic constructions before committing to a final design.
+The project has evaluated multiple construction families and selected a balanced Feistel network with S-box nonlinear layer and ARX diffusion for the v0.2 prototype. The design is documented in `docs/specification/feistel_arx_v0.2.md` and implemented in `src/cipher/feistel_arx.rs`.
 
-Potential construction families include:
-
-* Feistel networks
-* Lai–Massey constructions
-* Substitution-permutation networks
-* ARX constructions
-* Hybrid constructions
-* Dedicated permutation-based designs
-
-The final design will be selected based on cryptographic properties rather than implementation convenience.
+The final construction remains subject to further cryptanalysis and may evolve in future versions.
 
 ## Target Properties
 
-The initial design targets are:
+The current prototype targets are:
 
 | Property                     | Target                         |
 | ---------------------------- | ------------------------------ |
-| Cipher type                  | Symmetric-key cipher           |
+| Cipher type                  | Symmetric-key block cipher     |
 | Key size                     | 256 bits                       |
 | Block size                   | 128 bits                       |
-| Architecture                 | TBD                            |
-| Number of rounds             | TBD through analysis           |
+| Architecture                 | Balanced Feistel ARX v0.2      |
+| Number of rounds             | 16                             |
 | Security target              | High classical security margin |
 | Constant-time implementation | Required                       |
 | SIMD implementation          | Planned                        |
 | AEAD construction            | Planned                        |
 | Reference implementation     | Rust                           |
 
-These values are **design targets, not security claims**.
+These values reflect the v0.2 prototype under active research. Security claims require extensive public cryptanalysis.
 
 The actual security of Herringfish will depend on the final construction and the results of cryptanalysis.
 
@@ -539,59 +530,37 @@ This does **not** mean Herringfish automatically provides 128-bit post-quantum s
 
 ---
 
-# Design Questions
+# Design Decisions
 
-Before freezing the Herringfish specification, several questions need to be answered experimentally.
+Herringfish v0.2 is a concrete Feistel ARX prototype under active research.
 
-### 1. What primitive?
+### Primitive
 
-Possible candidates:
+Feistel network with balanced 128-bit block and 64-bit halves.
 
-* Feistel
-* SPN
-* ARX
-* Lai–Massey
-* Hybrid
+### Block size
 
-### 2. What block size?
+128-bit block selected for modern use cases.
 
-Potential choices:
+### Key size
 
-* 64-bit
-* 128-bit
-* 256-bit
+256-bit master key.
 
-A 128-bit block is currently the preferred target.
+### Rounds
 
-### 3. What key size?
+16 rounds for the full construction. Round count is validated by reduced-round cryptanalysis and security margin analysis.
 
-The current target is:
+### Nonlinear component
 
-```text
-256 bits
-```
+8-bit S-box layer. v0.2 uses a frozen affine-equivalent of the AES S-box with parameters a=0x11, b=0x71. DDT_max=4, LAT_max=32. S-box is constant for v0.2 evaluation.
 
-### 4. How many rounds?
+### Diffusion
 
-The number of rounds should be determined by cryptanalysis and security margin rather than arbitrary selection.
+Intra-round linear diffusion via XOR-based byte mixing achieves rapid avalanche and full diffusion within the Feistel round function.
 
-### 5. How should nonlinear components be constructed?
+### Key schedule
 
-Potential approaches include:
-
-* Fixed S-boxes
-* Generated S-boxes
-* Algebraic constructions
-* Multiple S-boxes
-* Key-independent S-boxes
-
-### 6. How should diffusion work?
-
-The design should achieve rapid diffusion while remaining efficient on modern processors.
-
-### 7. How should the key schedule work?
-
-The key schedule must avoid introducing structural weaknesses or exploitable related-key relationships.
+SHAKE256 XOF with domain separation. Round keys are derived as SHAKE256(HERRINGFISH-FEISTEL-KEY || master_key) producing 1024 bits for 16 rounds. Related-key testing shows pseudorandom round-key distribution.
 
 ---
 
