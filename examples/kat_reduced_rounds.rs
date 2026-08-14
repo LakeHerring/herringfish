@@ -22,7 +22,8 @@ fn f_function(x: u64, k: u64) -> u64 {
 
 fn derive_round_keys(key: &[u8;32]) -> Vec<u64> {
     use shake::Shake256;
-    use sha3::digest::{Update, ExtendableOutput};
+    use sha3::digest::Update;
+    use shake::ExtendableOutput;
     const DOMAIN: &[u8] = b"HERRINGFISH-FEISTEL-KEY";
     let mut hasher = Shake256::default();
     hasher.update(DOMAIN);
