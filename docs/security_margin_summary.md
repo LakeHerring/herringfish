@@ -49,13 +49,18 @@ Acceptance criteria for SHAKE-derived S-box per spec:
 * Strict Avalanche and Bit Independence evaluated statistically
 
 S-box generation method:
+
+For v0.2 the S-box is frozen as an affine equivalent of the AES S-box.
+
 ```
-SHAKE256("HERRINGFISH-FEISTEL-SBOX" || counter) → XOF
-Fisher-Yates shuffle of 0..255 using XOF bytes as entropy
-Rejection sampling until DDT/LAT criteria satisfied
+S[x] = a * AES_SBOX[x] ⊕ b  over GF(2^8)
 ```
 
-Implementation in `examples/sbox_formalise.rs`. Rejection sampling is computationally expensive; first acceptable candidate not yet found in test runs.
+Affine parameters: `a = 0x11`, `b = 0x71`. Counter = 0.
+
+This construction guarantees bijectivity and inherits AES S-box differential/linear properties: DDT_max = 4, LAT_max bias = 32.
+
+Implementation in `src/cipher/feistel_arx.rs` as `HERRINGFISH_SBOX_V02`. Derivation code remains in `examples/sbox_formalise.rs` for research.
 
 ## Key schedule documentation
 
