@@ -627,31 +627,31 @@ A future implementation should be possible without depending on the Rust referen
 
 # Current Status
 
-**Status: Experimental / Research**
+**Status: Experimental / Research – Feistel ARX v0.2 prototype**
 
-The Herringfish algorithm is currently under development.
+The Herringfish Feistel ARX v0.2 prototype is under active research.
 
-The specification is **not frozen**.
+Specification is experimental; S-box frozen for v0.2 evaluation. S-box counter 0, a=0x11, b=0x71, DDT_max=4, LAT_max=32. Tag v0.2.1.
 
 The following areas are under active development:
 
-* [ ] Final cipher construction
-* [ ] Key schedule
-* [ ] Round function
-* [ ] Nonlinear layer
-* [ ] Diffusion layer
-* [ ] Round-count analysis
-* [ ] Reference implementation
-* [ ] Known-answer test vectors
-* [ ] Differential analysis
-* [ ] Linear analysis
-* [ ] Avalanche analysis
-* [ ] Statistical analysis
-* [ ] Reduced-round attacks
+* [x] Final cipher construction – Feistel ARX v0.2 with frozen S-box
+* [x] Key schedule – SHAKE256 derived round keys
+* [x] Round function – S-box + ARX + diffusion
+* [x] Nonlinear layer – 8-bit S-box, DDT_max=4, LAT_max=32
+* [x] Diffusion layer – XOR-based byte mixing
+* [x] Round-count analysis – 4/6/8/16 round evaluation
+* [x] Reference implementation – src/cipher/feistel_arx.rs
+* [x] Known-answer test vectors – docs/tables/kat_vectors_v02.txt
+* [x] Differential analysis – DDT/LAT recorded, sampling
+* [x] Linear analysis – bias sampling
+* [x] Avalanche analysis – examples exist
+* [~] Statistical analysis – sampling in progress
+* [x] Reduced-round attacks – exhaustive/characteristic search
 * [ ] SIMD implementation
 * [ ] Performance benchmarks
 * [ ] AEAD construction
-* [ ] Formal specification
+* [~] Formal specification – v0.2 spec draft, not frozen
 * [ ] Independent cryptanalysis
 
 ---
