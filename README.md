@@ -1,228 +1,941 @@
 # Herringfish
 
-**Herringfish** is an experimental symmetric-key cryptography research project centered on a 128-bit balanced Feistel block cipher with 256-bit master key, nonlinear S-box processing, ARX-based diffusion, and a SHAKE256-derived key schedule.
+**Herringfish** is an experimental symmetric-key cryptography research project focused on the design, implementation, testing, and cryptanalysis of a novel block-cipher construction.
 
-The current construction is Herringfish Feistel ARX v0.2, an experimental research prototype rather than a production cryptographic primitive.
+The current construction, **Herringfish Feistel ARX v0.2**, is a 128-bit balanced Feistel network using an 8-bit nonlinear S-box layer, ARX-based processing, XOR-based diffusion, and a SHAKE256-derived key schedule.
 
-> ⚠️ Experimental cryptography
+The long-term objective is to develop a complete, independently testable cryptographic primitive with:
+
+* A clearly defined mathematical specification
+* A portable reference implementation
+* Deterministic test vectors
+* Known-answer tests
+* Reproducible cryptanalytic experiments
+* Performance benchmarks
+* Constant-time implementation techniques
+* SIMD implementations
+* Public cryptanalysis
+* Independent review
+
+> [!WARNING]
+> **Experimental cryptography**
 >
-> Herringfish is a research project and must not be used to protect real-world secrets, production systems, passwords, financial information, or other sensitive data.
+> Herringfish is a research project and **must not be used to protect real-world secrets, production systems, passwords, financial information, or other sensitive data**.
 >
-> A new cipher should be considered insecure until it has undergone extensive public cryptanalysis and independent review.
+> Herringfish has not undergone the level of independent cryptanalysis and public review required for a production cryptographic primitive.
+>
+> For real-world cryptographic applications, use established and extensively analyzed constructions such as AES-GCM or ChaCha20-Poly1305.
+
+The guiding principle of the project is:
+
+> **Design it. Implement it. Test it. Break it. Improve it.**
 
 ---
 
-## Project Goals
+# Project Goals
 
-* Design and document a symmetric-key cryptographic algorithm.
-* Implement a reference algorithm in Rust.
-* Explore candidate cipher constructions and select based on cryptanalysis.
+The primary goals of Herringfish are:
+
+* Design and investigate a novel symmetric-key block cipher.
+* Develop a precise mathematical specification.
+* Implement a portable reference implementation in Rust.
+* Explore and evaluate alternative construction strategies.
 * Analyze resistance against known cryptanalytic techniques.
-* Build automated cryptanalysis and testing tools.
+* Build automated cryptanalysis and attack tooling.
 * Provide deterministic test vectors and known-answer tests.
-* Develop portable implementations with constant-time design goals.
-* Investigate SIMD acceleration and benchmark across platforms.
+* Investigate constant-time implementation techniques.
+* Develop portable implementations across major CPU architectures.
+* Investigate SIMD acceleration.
+* Benchmark implementations across different platforms.
 * Study reduced-round variants and potential weaknesses.
-* Eventually design an authenticated-encryption construction around the primitive.
+* Develop reproducible cryptographic experiments.
+* Eventually investigate an authenticated-encryption construction around the primitive.
 
-Development principle: Design it, implement it, test it, and then try to break it.
-
----
-
-# Current Status
-
-**Status: Experimental / Research – Feistel ARX v0.2 prototype**
-
-Specification is experimental. S-box is frozen for v0.2 evaluation. S-box counter 0, affine parameters a=0x11, b=0x71, DDT_max=4, LAT_max=32. Tag v0.2.1.
-
-### Specification status
-
-| Artifact | Status |
-|---|---|
-| Cipher construction | v0.2 research prototype |
-| Specification | Draft |
-| S-box | Frozen for v0.2 |
-| Key schedule | Frozen for v0.2 |
-| Test vectors | Available |
-| Reference implementation | Available |
-| Reduced-round analysis | Preliminary |
-| Statistical analysis | Ongoing |
-| Independent cryptanalysis | Not yet performed |
-| AEAD | Not implemented |
-| Production use | Not recommended |
-
-### Prototype properties
-
-| Property | Value |
-|---|---|
-| Cipher type | Symmetric-key block cipher |
-| Key size | 256 bits |
-| Block size | 128 bits |
-| Architecture | Balanced Feistel ARX v0.2 |
-| Rounds | 16 |
-| Security goal | Investigate a substantial classical security margin |
-| Constant-time design goal | Required |
-| SIMD | Planned |
-| AEAD | Planned |
-| Reference implementation | Rust |
-
-The 256-bit key size is a design parameter, not evidence of 256-bit security. A 256-bit key does not automatically make the cipher 256-bit secure.
-
-### Security claims
-
-Herringfish currently makes no claim of proven or established cryptographic security.
-
-* 256-bit key size does not imply 256-bit security.
-* Passing statistical tests does not establish cryptographic security.
-* Passing known-answer tests establishes implementation correctness, not security.
-* S-box DDT/LAT properties do not establish full-cipher resistance to differential or linear cryptanalysis.
-* Reduced-round resistance does not establish full-round security.
-* Constant-time coding practices do not by themselves establish side-channel resistance.
-* A successful attack against Herringfish is considered valuable research data.
-
-### What Herringfish is not
-
-* Not a standardized cipher
-* Not a NIST-approved primitive
-* Not independently cryptanalyzed
-* Not suitable for production cryptography
-* Not a replacement for AES, ChaCha20, or established AEAD schemes
-* Not claimed to provide 256-bit cryptographic security merely because it has a 256-bit key
-
-For production applications, established and extensively analyzed constructions such as AES-GCM and ChaCha20-Poly1305 should be preferred.
+The project deliberately treats the cipher as a **mathematical object first and a software implementation second**.
 
 ---
 
-# Herringfish Cipher
+# Herringfish Feistel ARX v0.2
 
-Herringfish v0.2 is a concrete Feistel ARX prototype with frozen S-box parameters under active research.
+The current Herringfish construction is **Feistel ARX v0.2**, an experimental balanced Feistel block cipher.
 
-The design is documented in `docs/specification/feistel_arx_v0.2.md` and implemented in `src/cipher/feistel_arx.rs`. The final construction remains subject to further cryptanalysis and may evolve in future versions.
+The v0.2 construction combines:
 
-## Design decisions
+* A 128-bit block size
+* A 256-bit master key
+* 16 Feistel rounds
+* An 8-bit nonlinear S-box
+* ARX-based processing
+* XOR-based byte diffusion
+* SHAKE256-derived round keys
+* Domain-separated key derivation
 
-### Primitive
+The current design is documented in:
 
-Feistel network with balanced 128-bit block and 64-bit halves.
+```text
+docs/specification/feistel_arx_v0.2.md
+```
 
-### Block size
+and the current Rust implementation is located at:
 
-128-bit block selected for modern use cases.
+```text
+src/cipher/feistel_arx.rs
+```
 
-### Key size
+The v0.2 construction is a **research prototype**. Its parameters are currently frozen for evaluation, but the construction may change as cryptanalysis progresses.
 
-256-bit master key.
+Freezing parameters for an evaluation version does not imply that the design has been proven secure.
 
-### Rounds
+---
 
-16 rounds selected as the current v0.2 research configuration. Reduced-round analysis is being used to investigate the resulting security margin.
+## Target Properties
 
-### Nonlinear component
+| Property                 | v0.2                                                |
+| ------------------------ | --------------------------------------------------- |
+| Primitive                | Symmetric-key block cipher                          |
+| Construction             | Balanced Feistel                                    |
+| Block size               | 128 bits                                            |
+| Master key               | 256 bits                                            |
+| Feistel halves           | 64 bits each                                        |
+| Rounds                   | 16                                                  |
+| Nonlinear layer          | 8-bit S-box                                         |
+| Diffusion                | XOR-based byte mixing                               |
+| Key schedule             | SHAKE256 XOF                                        |
+| Reference implementation | Rust                                                |
+| SIMD                     | Planned                                             |
+| AEAD                     | Planned                                             |
+| Security goal            | Investigate a substantial classical security margin |
 
-8-bit S-box layer. v0.2 uses a frozen affine-equivalent transformation of the AES S-box.
+These are **design parameters and research targets**, not established security guarantees.
 
-The v0.2 S-box is defined as an affine-equivalent transformation of the AES S-box with affine parameters a=0x11 and b=0x71 under the construction's specified byte transformation.
+A 256-bit key does not automatically provide 256-bit cryptographic security. Likewise, statistical testing, avalanche testing, or successful known-answer tests do not establish cryptographic security.
 
-S-box counter: 0
-DDT maximum: 4
-LAT maximum: 32
+The actual security of Herringfish depends on the complete construction and the results of cryptanalysis.
 
-Full permutation is defined in `src/cipher/feistel_arx.rs` as `HERRINGFISH_SBOX_V02`.
+---
 
-### Diffusion
+# What Herringfish Is — and Is Not
 
-Intra-round linear diffusion via XOR-based byte mixing achieves rapid avalanche and full diffusion within the Feistel round function.
+Herringfish is currently:
 
-### Key schedule
+* An experimental cryptographic research project.
+* A concrete block-cipher prototype.
+* A reference implementation and research platform.
+* A framework for testing cryptographic hypotheses.
+* A platform for developing cryptanalytic tooling.
 
-SHAKE256 XOF with domain separation. Round keys are derived as SHAKE256(domain_separator || master_key) producing 1024 bits for 16 rounds.
+Herringfish is **not** currently:
 
-Domain separator for round-key derivation is `HERRINGFISH-FEISTEL-KEY`. Output is little-endian encoded into 64-bit round keys.
+* A standardized cipher.
+* A NIST-approved cryptographic primitive.
+* A production-ready encryption algorithm.
+* Independently cryptanalyzed.
+* Proven secure.
+* A replacement for AES or ChaCha20.
+* An AEAD scheme.
+* Guaranteed to provide 256-bit security merely because the key is 256 bits.
 
-Preliminary statistical testing of generated round keys has not identified obvious non-random structure.
+Finding a weakness in Herringfish is considered a **successful research result**.
 
-### ARX definition
+---
 
-The "ARX" designation refers specifically to the use of addition, rotation, and XOR operations within the round function. The nonlinear S-box layer is an additional component and is not itself considered part of the ARX primitive.
+# Design Philosophy
 
-### Constant-time
+Herringfish follows a research-oriented development process.
 
-Implementations are designed to avoid secret-dependent timing behavior. Constant-time properties must be validated through implementation review and appropriate side-channel testing; the reference implementation should not be assumed to be constant-time merely because it avoids obvious branches.
+The algorithm should be understood mathematically before implementation details and performance optimizations are considered.
 
-The reference S-box implementation uses table lookup indexed by secret-dependent data. This can create cache side channels. Constant-time S-box implementation is a hardening goal.
+The intended development lifecycle is:
+
+```text
+Cryptographic Design
+        │
+        ▼
+Mathematical Specification
+        │
+        ▼
+Reference Implementation
+        │
+        ▼
+Known-Answer Tests
+        │
+        ▼
+Statistical Testing
+        │
+        ▼
+Cryptanalysis
+        │
+        ▼
+Reduced-Round Analysis
+        │
+        ▼
+Optimization
+        │
+        ▼
+Public Review
+        │
+        ▼
+Independent Analysis
+        │
+        ▼
+Specification Freeze
+```
+
+Performance optimization must never obscure the security properties or mathematical behavior of the construction.
 
 ---
 
 # Cryptanalysis
 
-The project includes research tooling for investigating potential weaknesses.
+A central purpose of Herringfish is to **attack the cipher itself**.
 
-### Block-cipher analysis
+The project includes research tooling intended to identify structural weaknesses, statistical biases, insufficient diffusion, weak key scheduling, and other potential attack surfaces.
 
-Differential cryptanalysis
-Linear cryptanalysis
-Integral cryptanalysis
-Impossible differential
-Related-key analysis
-Algebraic attacks
-Meet-in-the-middle where applicable
-Structural attacks
+Cryptanalysis is divided into several areas.
 
-### Construction and mode analysis
+## Differential Cryptanalysis
 
-CPA security
-CCA security
-Forgery resistance
-Nonce misuse resistance
-Authentication security
+Differential analysis investigates how input differences propagate through the construction.
 
-### Analysis in progress
+Areas of investigation include:
 
-S-box differential analysis – DDT computed
-S-box linear analysis – LAT computed
-Full-cipher differential analysis – preliminary sampling
-Full-cipher linear analysis – preliminary sampling
-Avalanche analysis – examples exist
-Statistical analysis – sampling in progress
-Reduced-round attack tooling – exhaustive and characteristic searches
+* Difference distribution tables
+* Differential probabilities
+* Differential characteristics
+* Differential trails
+* Reduced-round characteristics
+* High-probability characteristics
+* Differential distinguishers
+* Key-dependent differential behavior
 
-Reduced-round resistance does not establish full-round security.
+S-box DDT measurements describe properties of the nonlinear component. They do **not**, by themselves, establish resistance of the complete cipher.
+
+---
+
+## Linear Cryptanalysis
+
+Linear analysis investigates statistical relationships between plaintext, ciphertext, key, and intermediate-state bits.
+
+Areas of investigation include:
+
+* Linear approximation tables
+* Linear biases
+* Linear characteristics
+* Reduced-round approximations
+* Bias propagation
+* Potential linear distinguishers
+
+S-box LAT measurements are useful component-level information but do not establish full-cipher security.
+
+---
+
+## Avalanche Analysis
+
+Avalanche analysis measures how changes to input bits propagate through the cipher.
+
+Measurements include:
+
+* Avalanche scores
+* Hamming-distance distributions
+* Per-round diffusion
+* Bit independence
+* Input/output bit dependencies
+* Diffusion speed
+
+For an idealized cipher, a one-bit input difference should eventually affect approximately half of the output bits.
+
+Avalanche behavior is useful for identifying obvious structural problems but is **not a proof of cryptographic security**.
+
+---
+
+## Related-Key Analysis
+
+Related-key analysis investigates whether controlled relationships between keys produce exploitable relationships between ciphertexts or internal states.
+
+This is particularly relevant to the key schedule.
+
+The objective is to identify:
+
+* Weak key relationships
+* Predictable round-key relationships
+* Structural key dependencies
+* Differential behavior across related keys
+* Potential related-key distinguishers
+
+Statistical observations of round keys should not be interpreted as proof that the key schedule is cryptographically secure.
+
+---
+
+## Reduced-Round Analysis
+
+Reduced-round versions of Herringfish are evaluated to investigate how security develops as the number of rounds increases.
+
+For example:
+
+```text
+Herringfish
+├── 1 round
+├── 2 rounds
+├── 3 rounds
+├── ...
+├── 14 rounds
+├── 15 rounds
+└── 16 rounds
+```
+
+Reduced-round experiments may include:
+
+* Exhaustive search
+* Differential characteristics
+* Linear approximations
+* Statistical distinguishers
+* Structural analysis
+* Automated characteristic searches
+
+The objective is to determine whether the full-round configuration provides a meaningful security margin.
+
+Resistance of a reduced-round variant does not establish security of the full construction, and successful attacks against reduced-round variants do not necessarily apply to the full cipher.
+
+---
+
+## Statistical Analysis
+
+Statistical testing is used to identify obvious structural biases.
+
+Experiments may include:
+
+* Output distributions
+* Bit frequencies
+* Correlations
+* χ² tests
+* Hamming-weight distributions
+* Serial correlations
+* Bias propagation
+* Randomness testing
+* Per-round statistical measurements
+
+Statistical tests can reveal structural problems, but **random-looking output does not prove cryptographic security**.
+
+---
+
+# Brute-Force Analysis
+
+Brute-force experiments are primarily intended to validate attack infrastructure and measure the practical cost of exhaustive search.
+
+The general model is:
+
+```text
+Known plaintext
+      │
+      ▼
+Candidate key
+      │
+      ▼
+Herringfish encryption
+      │
+      ▼
+Compare ciphertext
+      │
+      ├── No match → next candidate
+      │
+      └── Match → candidate key
+```
+
+Controlled brute-force experiments may use:
+
+* Reduced key sizes
+* Reduced-round variants
+* GPU acceleration
+* Known-answer test vectors
+* Attack-framework validation
+
+A generic exhaustive search over a 256-bit key space has approximately:
+
+```text
+2^256
+```
+
+possible keys and is computationally infeasible with conventional hardware.
+
+The existence of brute-force tooling should therefore not be interpreted as an expectation that the full 256-bit key space can be searched.
+
+---
+
+# Implementation
+
+The reference implementation is written in **Rust**.
+
+Rust provides:
+
+* Memory safety
+* Strong type guarantees
+* High performance
+* Cross-platform support
+* Low-level control
+* A strong ecosystem for cryptographic software
+* Useful facilities for implementing security-sensitive code
+
+The implementation prioritizes:
+
+1. Correctness
+2. Deterministic behavior
+3. Testability
+4. Portability
+5. Constant-time implementation techniques
+6. Performance
+
+Optimization follows correctness and cryptographic analysis.
+
+---
+
+# Constant-Time Implementation
+
+Cryptographic implementations should avoid secret-dependent observable behavior.
+
+Herringfish implementations are therefore designed to avoid:
+
+* Secret-dependent branches
+* Secret-dependent memory access
+* Secret-dependent table lookups where practical
+* Unnecessary allocations in cryptographic operations
+* Other avoidable timing dependencies
+
+Constant-time behavior is an **implementation goal and requirement**, not an automatically established property.
+
+A source-code implementation that appears constant-time must still be evaluated through implementation review and appropriate side-channel testing.
+
+In particular, the S-box implementation must be evaluated carefully because table-based implementations can introduce cache-based side channels when indexed by secret-dependent values.
+
+---
+
+# SIMD and Hardware Acceleration
+
+Herringfish is intended to support hardware acceleration where practical.
+
+## x86-64
+
+Potential targets include:
+
+* AVX2
+* AVX-512
+* Other relevant x86-64 SIMD extensions
+
+## ARM
+
+Potential targets include:
+
+* NEON
+* ARM cryptographic extensions where applicable
+
+## GPU
+
+Experimental GPU implementations may be used for:
+
+* Cryptanalysis
+* Large-scale statistical testing
+* Brute-force experiments
+* Attack-framework development
+* Performance research
+
+GPU implementations are research and acceleration tools and are not intended to replace the portable reference implementation.
+
+SIMD implementations must produce results identical to the reference implementation.
+
+---
+
+# Test Vectors
+
+Stable specification versions should provide deterministic test vectors.
+
+A basic block-cipher test vector contains:
+
+```text
+Key
+Plaintext
+Ciphertext
+```
+
+For example:
+
+```text
+Key:
+0000000000000000000000000000000000000000000000000000000000000000
+
+Plaintext:
+00000000000000000000000000000000
+
+Ciphertext:
+<TBD>
+```
+
+The repository currently contains v0.2 known-answer vectors at:
+
+```text
+docs/tables/kat_vectors_v02.txt
+```
+
+Test vectors are used for:
+
+* Reference implementation testing
+* Regression testing
+* Cross-platform validation
+* SIMD equivalence testing
+* Independent implementations
+* Reproducible research
+
+---
+
+# Testing Strategy
+
+Herringfish uses several layers of testing.
+
+## Unit Tests
+
+Individual components are tested independently where practical:
+
+* Key schedule
+* Round function
+* S-box
+* Diffusion layer
+* Mixing functions
+* Encryption
+* Decryption
+
+## Known-Answer Tests
+
+Known inputs must produce deterministic expected outputs.
+
+## Round-Trip Tests
+
+The fundamental Feistel correctness property is:
+
+```text
+decrypt(encrypt(P, K), K) == P
+```
+
+for all valid inputs.
+
+Passing round-trip tests demonstrates functional consistency, not cryptographic security.
+
+## Differential Tests
+
+Independent implementations and internal states can be compared to detect unintended differences.
+
+## Statistical Tests
+
+Large numbers of generated outputs can be analyzed for obvious statistical weaknesses.
+
+## SIMD Equivalence Tests
+
+Optimized implementations must produce exactly the same results as the reference implementation.
+
+```text
+Reference implementation
+          │
+          ├──── identical ────► AVX2
+          │
+          ├──── identical ────► AVX-512
+          │
+          └──── identical ────► ARM / other implementations
+```
+
+---
+
+# Project Structure
+
+The repository structure is intentionally evolving as the research project develops.
+
+The current cipher implementation is centered around:
+
+```text
+herringfish/
+│
+├── src/
+│   ├── cipher/
+│   │   ├── mod.rs
+│   │   └── feistel_arx.rs
+│   │
+│   ├── cryptanalysis/
+│   ├── math/
+│   ├── simd/
+│   └── lib.rs
+│
+├── tests/
+│   └── vectors/
+│
+├── benchmarks/
+├── examples/
+│
+├── docs/
+│   ├── specification/
+│   └── tables/
+│
+├── Cargo.toml
+└── README.md
+```
+
+The exact structure may change as additional cryptanalysis, SIMD, AEAD, and benchmarking components are implemented.
+
+---
+
+# Performance
+
+Performance benchmarking is an engineering objective, not evidence of cryptographic security.
+
+Future benchmarks will measure:
+
+* Encryption throughput
+* Decryption throughput
+* Key setup
+* Key-schedule cost
+* Small-message performance
+* Large-buffer throughput
+* SIMD acceleration
+* CPU scaling
+* GPU performance where applicable
+
+Results should distinguish between:
+
+```text
+Reference implementation
+        │
+        ├── Scalar
+        │
+        ├── SIMD
+        │
+        └── Hardware-specific implementations
+```
+
+Benchmark results should include sufficient information to make experiments reproducible, including compiler version, target architecture, relevant feature flags, and hardware where practical.
+
+---
+
+# Security Model
+
+A formal security model remains a future objective.
+
+For the **block cipher primitive**, areas of analysis include:
+
+* Differential cryptanalysis
+* Linear cryptanalysis
+* Related-key attacks
+* Integral attacks
+* Impossible differential attacks
+* Statistical distinguishers
+* Structural attacks
+* Meet-in-the-middle attacks where applicable
+* Algebraic attacks
+* Other relevant generic or structural attacks
+
+Security properties such as chosen-plaintext and chosen-ciphertext security depend on how a block cipher is composed into an encryption mode or authenticated-encryption construction.
+
+Future AEAD research will therefore separately evaluate:
+
+* Confidentiality
+* Integrity
+* Forgery resistance
+* Nonce handling
+* Misuse resistance
+* Chosen-plaintext security
+* Chosen-ciphertext security
+
+Side-channel resistance is an implementation-level property and requires separate analysis.
+
+---
+
+# Post-Quantum Considerations
+
+Herringfish is a **symmetric-key primitive** and is therefore fundamentally different from post-quantum public-key algorithms such as:
+
+* ML-KEM
+* ML-DSA
+* SLH-DSA
+
+Quantum computing is nevertheless relevant to symmetric cryptography.
+
+For an idealized `n`-bit key, Grover's algorithm provides a quadratic reduction in generic exhaustive-search complexity, approximately:
+
+```text
+2^n → 2^(n/2)
+```
+
+A 256-bit key therefore provides a theoretical generic-search target corresponding to approximately 128 bits of quantum brute-force complexity under the simplified Grover model.
+
+This **does not establish 128-bit post-quantum security for Herringfish**.
+
+The actual quantum security of a concrete cipher would depend on the complete construction and any applicable quantum cryptanalytic techniques.
+
+---
+
+# Design Decisions
+
+Herringfish Feistel ARX v0.2 is the current frozen research configuration.
+
+## Primitive
+
+A balanced Feistel network with two 64-bit halves.
+
+## Block Size
+
+The block size is:
+
+```text
+128 bits
+```
+
+The size was selected as a modern block-cipher research target.
+
+## Key Size
+
+The master key is:
+
+```text
+256 bits
+```
+
+The key size is a design parameter and does not by itself establish 256-bit security.
+
+## Round Count
+
+The v0.2 research configuration uses:
+
+```text
+16 rounds
+```
+
+The round count is a current design choice. Reduced-round analysis is being used to investigate diffusion, distinguishers, attacks, and potential security margin.
+
+## Nonlinear Component
+
+The round function uses an 8-bit S-box.
+
+For v0.2, the S-box is frozen for evaluation and is specified as an affine-equivalent transformation of the AES S-box.
+
+Current recorded parameters:
+
+```text
+S-box counter: 0
+a:             0x11
+b:             0x71
+DDT maximum:   4
+LAT maximum:   32
+```
+
+The exact mathematical transformation is defined by the v0.2 specification.
+
+Component-level DDT and LAT properties do not establish security of the complete cipher.
+
+## Diffusion
+
+The round function uses XOR-based byte mixing to provide intra-round diffusion.
+
+The diffusion layer is being evaluated through:
+
+* Avalanche measurements
+* Hamming-distance analysis
+* Per-round diffusion analysis
+* Statistical experiments
+* Reduced-round analysis
+
+Claims regarding complete-cipher diffusion remain subject to continued analysis.
+
+## Key Schedule
+
+The v0.2 key schedule uses the SHAKE256 extendable-output function with domain separation.
+
+Conceptually:
+
+```text
+SHAKE256(
+    HERRINGFISH-FEISTEL-KEY ||
+    master_key
+)
+```
+
+The v0.2 construction derives:
+
+```text
+1024 bits
+```
+
+of round-key material for 16 rounds.
+
+The exact encoding, domain-separation string, byte ordering, and round-key extraction procedure are defined in the formal specification.
+
+Preliminary statistical analysis of generated round-key material is used to search for obvious structural behavior. Such testing does not constitute a proof of key-schedule security.
+
+---
+
+# Development Principles
+
+Herringfish follows several core principles.
+
+## Security Before Performance
+
+A fast insecure cipher is still insecure.
+
+## Simplicity Before Complexity
+
+Every component should have a clear mathematical and cryptographic justification.
+
+## Measure Instead of Assume
+
+Cryptographic properties should be tested experimentally whenever practical.
+
+## Attack Our Own Design
+
+The project actively searches for weaknesses rather than assuming that the construction is secure.
+
+## Reproducibility
+
+Experiments should be deterministic and reproducible whenever practical.
+
+## Independent Verification
+
+A future implementation should be possible without depending on the Rust reference implementation.
+
+## Honest Negative Results
+
+A successful attack, distinguisher, bias, or structural weakness is valuable research information.
 
 ---
 
 # Reproducibility
 
-Cryptanalytic experiments should record:
+Cryptanalytic experiments should record sufficient information for independent reproduction.
 
-* Herringfish version/tag
+Where applicable, experiments should record:
+
+* Herringfish version or Git tag
 * Specification version
 * Experiment parameters
 * Number of samples
-* Random seed where applicable
-* Hardware/software environment
+* Random seed
 * Compiler version
-* Relevant Cargo features
+* Operating system
+* CPU architecture
+* Relevant CPU features
+* Cargo features
+* Hardware configuration
+* Execution time
+
+Research results should distinguish between **observed experimental results** and **security conclusions**.
 
 ---
 
-# Project structure
+# Specification and Validation Status
 
-src/
-├── cipher/
-│   ├── mod.rs
-│   └── feistel_arx.rs
-tests/
-examples/
-docs/
-└── lib.rs
-
-Structure will evolve as research progresses.
+| Component                        | Status                              |
+| -------------------------------- | ----------------------------------- |
+| Cipher construction              | Feistel ARX v0.2 research prototype |
+| Specification                    | v0.2 draft                          |
+| S-box                            | Frozen for v0.2 evaluation          |
+| Key schedule                     | Implemented                         |
+| Round function                   | Implemented                         |
+| Reference implementation         | Implemented                         |
+| Known-answer vectors             | Available                           |
+| S-box DDT                        | Computed                            |
+| S-box LAT                        | Computed                            |
+| Avalanche analysis               | Preliminary                         |
+| Full-cipher statistical analysis | Ongoing                             |
+| Reduced-round analysis           | Ongoing                             |
+| Reduced-round attack tooling     | Available                           |
+| SIMD implementation              | Not implemented                     |
+| Performance benchmarks           | Not implemented                     |
+| AEAD construction                | Not implemented                     |
+| Independent cryptanalysis        | Not yet performed                   |
+| Production use                   | **Not recommended**                 |
 
 ---
 
-# Development principles
+# Current Status
 
-Security before performance. Simplicity before complexity. Every component must have a clear cryptographic justification. Performance optimization must not obscure security properties.
+**Status: Experimental / Research — Herringfish Feistel ARX v0.2**
+
+The current v0.2 configuration is frozen for cryptographic evaluation while analysis continues.
+
+Current S-box evaluation parameters:
+
+```text
+S-box counter: 0
+a:             0x11
+b:             0x71
+DDT maximum:   4
+LAT maximum:   32
+```
+
+Current research status:
+
+* [x] Feistel ARX v0.2 construction
+* [x] 128-bit block design
+* [x] 256-bit master-key design
+* [x] 16-round configuration
+* [x] SHAKE256-derived key schedule
+* [x] Round function
+* [x] 8-bit nonlinear S-box
+* [x] XOR-based diffusion layer
+* [x] Reference implementation — `src/cipher/feistel_arx.rs`
+* [x] Known-answer test vectors — `docs/tables/kat_vectors_v02.txt`
+* [x] S-box DDT computation
+* [x] S-box LAT computation
+* [x] Preliminary linear analysis
+* [x] Preliminary avalanche analysis
+* [x] Reduced-round evaluation
+* [x] Reduced-round attack tooling
+* [~] Full-cipher statistical analysis
+* [~] Full-cipher cryptanalysis
+* [~] Formal specification — v0.2 draft
+* [ ] SIMD implementation
+* [ ] Performance benchmarks
+* [ ] AEAD construction
+* [ ] Independent cryptanalysis
+* [ ] Independent implementation
+* [ ] Public security review
+
+The `[~]` state indicates work that is actively being developed or evaluated.
+
+---
+
+# Research Status
+
+A successful implementation of Herringfish does **not** imply that Herringfish is cryptographically secure.
+
+Likewise:
+
+* Passing unit tests does not establish security.
+* Passing known-answer tests does not establish security.
+* Good avalanche behavior does not establish security.
+* Random-looking statistical output does not establish security.
+* Strong S-box DDT/LAT properties do not establish full-cipher security.
+* Reduced-round resistance does not establish full-round security.
+* A 256-bit key does not automatically provide 256-bit security.
+* Avoiding obvious timing leaks does not establish complete side-channel resistance.
+
+New cryptographic algorithms frequently contain weaknesses that are not apparent during initial development.
+
+The intended lifecycle is:
+
+```text
+Prototype
+   ↓
+Testing
+   ↓
+Cryptanalysis
+   ↓
+Revision
+   ↓
+Cryptanalysis
+   ↓
+Public Review
+   ↓
+Revision
+   ↓
+Independent Analysis
+   ↓
+Specification Freeze
+```
+
+Herringfish should not be considered mature merely because it passes its own test suite.
 
 ---
 
@@ -230,10 +943,73 @@ Security before performance. Simplicity before complexity. Every component must 
 
 Contributions involving cryptographic analysis are especially valuable.
 
-Useful contributions include cryptanalytic attacks, differential characteristics, linear approximations, statistical analysis, performance improvements, SIMD implementations, independent implementations, test vectors, mathematical analysis, documentation, and reproducible experiments.
+Useful contributions include:
+
+* Cryptanalytic attacks
+* Differential characteristics
+* Linear approximations
+* Statistical analysis
+* Reduced-round analysis
+* Key-schedule analysis
+* Mathematical analysis
+* Performance research
+* SIMD implementations
+* Independent implementations
+* Test vectors
+* Reproducible experiments
+* Documentation
+
+### Reporting Weaknesses
+
+If you identify a weakness in Herringfish, please document:
+
+* The affected version
+* The affected component
+* Attack assumptions
+* Required resources
+* Number of rounds affected
+* Complexity
+* Memory requirements
+* Success probability
+* Reproduction steps
+* Any available proof or experimental evidence
+
+A weakness is considered a **successful research result**, not a failure of the project.
+
+---
+
+# Disclaimer
+
+Herringfish is experimental cryptographic research software.
+
+It has not been subjected to the level of public scrutiny, peer review, formal analysis, or independent cryptanalysis required to establish confidence in a production cryptographic algorithm.
+
+**Do not use Herringfish to protect real-world data.**
+
+The project is intended for:
+
+* Cryptographic research
+* Experimentation
+* Education
+* Benchmarking
+* Cryptanalysis
+* Algorithm development
+* Reproducible security research
+
+For production cryptography, use established and independently analyzed algorithms and constructions appropriate to the application.
 
 ---
 
 # License
 
-See LICENSE file.
+Herringfish is released under the MIT License.
+
+Copyright © 2026.
+
+See [`LICENSE`](LICENSE) for the complete license text.
+
+---
+
+## Herringfish
+
+**Design it. Implement it. Test it. Break it. Improve it.**
