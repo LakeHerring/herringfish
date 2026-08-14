@@ -1,4 +1,10 @@
-#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
+#![allow(
+    clippy::all,
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unused_assignments
+)]
 use herringfish::cipher::feistel_arx::NUM_ROUNDS;
 use rand::Rng;
 use std::convert::TryInto;

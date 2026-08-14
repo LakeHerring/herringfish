@@ -49,7 +49,11 @@ impl FeistelArx {
     pub fn new_with_rounds(key: &[u8; KEY_SIZE], rounds: usize) -> Self {
         let round_keys = Self::derive_round_keys(key, rounds);
         let sbox = Self::derive_sbox();
-        Self { round_keys, sbox, num_rounds: rounds }
+        Self {
+            round_keys,
+            sbox,
+            num_rounds: rounds,
+        }
     }
 
     fn derive_round_keys(key: &[u8; KEY_SIZE], rounds: usize) -> Vec<u64> {

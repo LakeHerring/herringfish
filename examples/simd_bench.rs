@@ -1,4 +1,10 @@
-#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
+#![allow(
+    clippy::all,
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unused_assignments
+)]
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 use std::time::Instant;
 
@@ -8,11 +14,13 @@ use std::time::Instant;
 fn main() {
     const ITER: usize = 5_000_000;
     const BLOCKS: usize = 1000;
-    
+
     // Warm up
     let mut acc = 0usize;
-    for i in 0..256 { acc += HERRINGFISH_SBOX_V02[i] as usize; }
-    
+    for i in 0..256 {
+        acc += HERRINGFISH_SBOX_V02[i] as usize;
+    }
+
     // Scalar S-box application
     let start = Instant::now();
     for _ in 0..ITER {
@@ -23,10 +31,14 @@ fn main() {
         acc = acc.wrapping_add(v.iter().map(|&x| x as usize).sum());
     }
     let dur_scalar = start.elapsed();
-    
+
     println!("SIMD benchmark placeholder");
     println!("Iterations: {}", ITER);
-    println!("Scalar S-box: {:?}  ({:.0} ops/s)", dur_scalar, ITER as f64 / dur_scalar.as_secs_f64());
+    println!(
+        "Scalar S-box: {:?}  ({:.0} ops/s)",
+        dur_scalar,
+        ITER as f64 / dur_scalar.as_secs_f64()
+    );
     println!("\nFuture work:");
     println!("  - AVX2/AVX-512 table lookup via _mm256_i8gather_epi32");
     println!("  - Bitsliced S-box implementation");

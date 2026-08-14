@@ -1,4 +1,10 @@
-#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
+#![allow(
+    clippy::all,
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unused_assignments
+)]
 use sha3::digest::{ExtendableOutput, Update};
 use shake::Shake256;
 

@@ -1,6 +1,12 @@
-#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
-use herringfish::cipher::key_schedule::KeySchedule;
+#![allow(
+    clippy::all,
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unused_assignments
+)]
 use herringfish::cipher::NUM_ROUNDS;
+use herringfish::cipher::key_schedule::KeySchedule;
 
 fn hamming_distance_bytes(a: &[u8], b: &[u8]) -> usize {
     a.iter()

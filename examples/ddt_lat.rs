@@ -1,4 +1,10 @@
-#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
+#![allow(
+    clippy::all,
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unused_assignments
+)]
 fn sbox(x: u8) -> u8 {
     const SBOX: [u8; 256] = [
         0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab,

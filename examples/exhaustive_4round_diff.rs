@@ -1,4 +1,10 @@
-#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
+#![allow(
+    clippy::all,
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unused_assignments
+)]
 
 fn main() {
     // Placeholder for exhaustive 4-round differential search

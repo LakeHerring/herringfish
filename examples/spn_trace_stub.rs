@@ -1,4 +1,10 @@
-#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
+#![allow(
+    clippy::all,
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unused_assignments
+)]
 use herringfish::cipher::key_schedule::KeySchedule;
 use herringfish::cipher::round::{add_round_key, mix_columns, shift_rows, sub_bytes};
 use herringfish::cipher::{BLOCK_SIZE, NUM_ROUNDS};

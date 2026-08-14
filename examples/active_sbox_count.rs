@@ -1,4 +1,10 @@
-#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
+#![allow(
+    clippy::all,
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unused_assignments
+)]
 fn main() {
     // Diffusion layer: out[i] = in[i] ^ in[(i+1)%8] ^ in[(i+3)%8]
     // Compute branch number by brute force over 8-byte vectors

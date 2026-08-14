@@ -1,4 +1,10 @@
-#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
+#![allow(
+    clippy::all,
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unused_assignments
+)]
 use herringfish::cipher::Cipher;
 
 fn hamming_distance(a: &[u8], b: &[u8]) -> usize {

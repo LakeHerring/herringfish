@@ -1,4 +1,10 @@
-#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
+#![allow(
+    clippy::all,
+    dead_code,
+    unused_imports,
+    unused_variables,
+    unused_assignments
+)]
 /// AES S-box used as reference for DDT/LAT analysis
 fn sbox(x: u8) -> u8 {
     const SBOX: [u8; 256] = [
