@@ -1,16 +1,18 @@
 //! Cipher core types and API
 
+#![allow(clippy::needless_range_loop)]
+
+pub mod feistel_arx;
 pub mod key_schedule;
 pub mod round;
-pub mod shake_key_schedule;
-pub mod feistel_arx;
 pub mod sbox_ct;
+pub mod shake_key_schedule;
 
 use crate::cipher::key_schedule::KeySchedule;
-use crate::cipher::round::{encrypt_round, decrypt_round};
+use crate::cipher::round::{decrypt_round, encrypt_round};
 
 pub const BLOCK_SIZE: usize = 16; // 128 bits
-pub const KEY_SIZE: usize = 32;   // 256 bits
+pub const KEY_SIZE: usize = 32; // 256 bits
 pub const NUM_ROUNDS: usize = 14;
 
 /// Key type for Herringfish prototype

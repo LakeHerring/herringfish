@@ -1,8 +1,11 @@
-use herringfish::cipher::{Cipher, BLOCK_SIZE, NUM_ROUNDS as SPN_ROUNDS};
+use herringfish::cipher::{BLOCK_SIZE, Cipher, NUM_ROUNDS as SPN_ROUNDS};
 use std::convert::TryInto;
 
 fn hamming_distance(a: &[u8], b: &[u8]) -> usize {
-    a.iter().zip(b.iter()).map(|(x,y)| (x ^ y).count_ones() as usize).sum()
+    a.iter()
+        .zip(b.iter())
+        .map(|(x, y)| (x ^ y).count_ones() as usize)
+        .sum()
 }
 
 fn main() {
@@ -12,7 +15,7 @@ fn main() {
     let key = [0u8; 32];
     let cipher = Cipher::new(&key);
     let base_pt = [0u8; 16];
-    
+
     // Final avalanche
     let mut sums = 0usize;
     for bit in 0..128 {
@@ -27,8 +30,12 @@ fn main() {
         sums += hamming_distance(&base_buf, &buf);
     }
     let avg = sums as f64 / 128.0;
-    println!("SPN 14-round final avalanche avg {} bits, ratio {:.3}", avg, avg/128.0);
-    
+    println!(
+        "SPN 14-round final avalanche avg {} bits, ratio {:.3}",
+        avg,
+        avg / 128.0
+    );
+
     // For Feistel we already computed. Print comparison.
     println!("Feistel ARX 16-round final avalanche avg ~64 bits ratio ~0.500 from previous run");
     println!("Both achieve near-ideal 50% avalanche at full round count.");

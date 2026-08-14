@@ -30,9 +30,9 @@ pub fn sbox_ct_lookup(x: u8) -> u8 {
 pub fn sbox_apply_ct(input: u64) -> u64 {
     let mut out = 0u64;
     for i in 0..8 {
-        let byte = ((input >> (8*i)) & 0xff) as u8;
+        let byte = ((input >> (8 * i)) & 0xff) as u8;
         let s = sbox_ct_lookup(byte);
-        out |= (s as u64) << (8*i);
+        out |= (s as u64) << (8 * i);
     }
     out
 }
@@ -58,9 +58,9 @@ mod tests {
             let ct = sbox_apply_ct(v);
             let mut direct = 0u64;
             for i in 0..8 {
-                let byte = ((v >> (8*i)) & 0xff) as u8;
+                let byte = ((v >> (8 * i)) & 0xff) as u8;
                 let s = HERRINGFISH_SBOX_V02[byte as usize];
-                direct |= (s as u64) << (8*i);
+                direct |= (s as u64) << (8 * i);
             }
             assert_eq!(ct, direct);
         }

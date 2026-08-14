@@ -3,9 +3,9 @@
 //! 256-bit master key -> 15 round keys of 128 bits each.
 //! SHAKE256-based expansion with domain separation.
 
-use shake::Shake256;
-use sha3::{digest::{Update, ExtendableOutput}};
 use crate::cipher::{BLOCK_SIZE, KEY_SIZE, NUM_ROUNDS};
+use sha3::digest::{ExtendableOutput, Update};
+use shake::Shake256;
 
 pub struct KeySchedule;
 

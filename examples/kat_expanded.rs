@@ -7,14 +7,18 @@ fn to_hex(b: &[u8]) -> String {
 fn main() {
     let mut keys = Vec::new();
     for i in 0..10 {
-        let mut k = [0u8;32];
-        for j in 0..32 { k[j] = ((i*32 + j) % 256) as u8; }
+        let mut k = [0u8; 32];
+        for j in 0..32 {
+            k[j] = ((i * 32 + j) % 256) as u8;
+        }
         keys.push(k);
     }
     let mut plaintexts = Vec::new();
     for i in 0..10 {
-        let mut p = [0u8;16];
-        for j in 0..16 { p[j] = ((i*16 + j) % 256) as u8; }
+        let mut p = [0u8; 16];
+        for j in 0..16 {
+            p[j] = ((i * 16 + j) % 256) as u8;
+        }
         plaintexts.push(p);
     }
     println!("# Herringfish Feistel ARX v0.2 Expanded KAT");

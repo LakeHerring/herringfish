@@ -1,4 +1,4 @@
-use herringfish::cipher::{shake_key_schedule::derive_round_keys_shake, BLOCK_SIZE, NUM_ROUNDS};
+use herringfish::cipher::{BLOCK_SIZE, NUM_ROUNDS, shake_key_schedule::derive_round_keys_shake};
 
 #[test]
 fn shake_key_schedule_deterministic() {

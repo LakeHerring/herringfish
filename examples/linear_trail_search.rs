@@ -1,14 +1,18 @@
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 
-fn build_lat() -> [[i32;256];256] {
-    let mut lat = [[0i32;256];256];
+fn build_lat() -> [[i32; 256]; 256] {
+    let mut lat = [[0i32; 256]; 256];
     for a in 0..256 {
         for b in 0..256 {
             let mut sum = 0i32;
             for x in 0..256 {
                 let ax = ((x as u8) & a as u8).count_ones() & 1;
                 let bx = (HERRINGFISH_SBOX_V02[x] & b as u8).count_ones() & 1;
-                if ax == bx { sum += 1; } else { sum -= 1; }
+                if ax == bx {
+                    sum += 1;
+                } else {
+                    sum -= 1;
+                }
             }
             lat[a][b] = sum;
         }
@@ -22,7 +26,9 @@ fn main() {
     for a in 1..256 {
         for b in 1..256 {
             let v = lat[a][b].abs();
-            if v > max_bias { max_bias = v; }
+            if v > max_bias {
+                max_bias = v;
+            }
         }
     }
     println!("S-box LAT max bias = {}", max_bias);

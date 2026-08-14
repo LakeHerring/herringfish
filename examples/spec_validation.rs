@@ -27,9 +27,15 @@ fn main() {
             counts[y as usize] += 1;
         }
         let max = counts.iter().max().unwrap();
-        if *max > ddt_max { ddt_max = *max; }
+        if *max > ddt_max {
+            ddt_max = *max;
+        }
     }
-    println!("  DDT max count: {}  ->  prob = {}", ddt_max, ddt_max as f64 / 256.0);
+    println!(
+        "  DDT max count: {}  ->  prob = {}",
+        ddt_max,
+        ddt_max as f64 / 256.0
+    );
 
     // LAT max bias for non-trivial masks
     let mut lat_max = 0i32;
@@ -42,7 +48,9 @@ fn main() {
                 sum += if parity == 0 { 1 } else { -1 };
             }
             let bias = sum.abs() as i32;
-            if bias > lat_max { lat_max = bias; }
+            if bias > lat_max {
+                lat_max = bias;
+            }
         }
     }
     println!("  LAT max bias count: {}", lat_max);

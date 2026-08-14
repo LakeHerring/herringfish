@@ -6,19 +6,23 @@ fn f_function(x: u64, k: u64) -> u64 {
     let sbox = &HERRINGFISH_SBOX_V02;
     let mut out = 0u64;
     for i in 0..8 {
-        let x_byte = ((x >> (8*i)) & 0xff) as u8;
-        let k_byte = ((k >> (8*i)) & 0xff) as u8;
+        let x_byte = ((x >> (8 * i)) & 0xff) as u8;
+        let k_byte = ((k >> (8 * i)) & 0xff) as u8;
         let sb = sbox[(x_byte ^ k_byte) as usize];
-        out |= (sb as u64) << (8*i);
+        out |= (sb as u64) << (8 * i);
     }
-    let mut bytes = [0u8;8];
-    for i in 0..8 { bytes[i] = ((out >> (8*i)) & 0xff) as u8; }
-    let mut out_bytes = [0u8;8];
+    let mut bytes = [0u8; 8];
     for i in 0..8 {
-        out_bytes[i] = bytes[i] ^ bytes[(i+1)%8] ^ bytes[(i+3)%8];
+        bytes[i] = ((out >> (8 * i)) & 0xff) as u8;
+    }
+    let mut out_bytes = [0u8; 8];
+    for i in 0..8 {
+        out_bytes[i] = bytes[i] ^ bytes[(i + 1) % 8] ^ bytes[(i + 3) % 8];
     }
     let mut out2 = 0u64;
-    for i in 0..8 { out2 |= (out_bytes[i] as u64) << (8*i); }
+    for i in 0..8 {
+        out2 |= (out_bytes[i] as u64) << (8 * i);
+    }
     out2
 }
 
@@ -42,7 +46,7 @@ fn main() {
     let mut best_in = 0u128;
     let mut best_out = 0u128;
     // Brute force over small input differences
-    for diff in 1u128..= (1u128 << 8) {
+    for diff in 1u128..=(1u128 << 8) {
         let mut counts = std::collections::HashMap::new();
         // sample subset of plaintexts
         for pt in 0u128..1024 {
@@ -57,11 +61,16 @@ fn main() {
             if prob > best_prob {
                 best_prob = prob;
                 best_in = diff;
-                best_out = *counts.iter().max_by_key(|(_,c)| *c).unwrap().0;
+                best_out = *counts.iter().max_by_key(|(_, c)| *c).unwrap().0;
             }
         }
     }
     println!("Best differential for {} rounds", ROUNDS);
-    println!("Δin = {:#018x}, Δout = {:#018x}, p̂ = {:.6}", best_in, best_out, best_prob);
-    println!("Note: heuristic search over 1024 plaintexts with zero keys. For rigorous analysis, use exact DDT and key-independent trails.");
+    println!(
+        "Δin = {:#018x}, Δout = {:#018x}, p̂ = {:.6}",
+        best_in, best_out, best_prob
+    );
+    println!(
+        "Note: heuristic search over 1024 plaintexts with zero keys. For rigorous analysis, use exact DDT and key-independent trails."
+    );
 }
