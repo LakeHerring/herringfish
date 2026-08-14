@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 /// Meet-in-the-middle differential hull analysis for 6-round Herringfish Feistel ARX
 /// Forward 3 rounds from input, backward 3 rounds from output, match on middle state.
+/// Uses top-K per-byte enumeration to make 3-active-byte search feasible.
 
 fn build_ddt() -> [[u16;256];256] {
     let mut ddt = [[0u16;256];256];
@@ -29,7 +30,17 @@ fn active_bytes(v: u64) -> usize {
     (0..8).filter(|i| ((v >> (8*i)) & 0xff) != 0).count()
 }
 
-fn enumerate_forward(ddt: &[[u16;256];256], dl0: u64, dr0: u64, rounds: usize, max_active: usize, top_n: usize) -> HashMap<(u64,u64), f64> {
+fn top_k_t_values(ddt: &[[u16;256];256], dx: u8, k: usize) -> Vec<(u8, f64)> {
+    let mut vals: Vec<(u8, f64)> = (0..256).map(|t| {
+        let cnt = ddt[dx as usize][t as usize];
+        (t as u8, cnt as f64 / 256.0)
+    }).collect();
+    vals.sort_by(|a,b| (b.1).partial_cmp(&a.1).unwrap());
+    vals.truncate(k);
+    vals
+}
+
+fn enumerate_forward(ddt: &[[u16;256];256], dl0: u64, dr0: u64, rounds: usize, max_active: usize, top_n: usize, top_k_per_byte: usize) -> HashMap<(u64,u64), f64> {
     let mut cur = HashMap::new();
     cur.insert((dl0, dr0), 1.0);
     for _ in 0..rounds {
@@ -41,23 +52,31 @@ fn enumerate_forward(ddt: &[[u16;256];256], dl0: u64, dr0: u64, rounds: usize, m
             for i in 0..8 {
                 if ((dr >> (8*i)) & 0xff) != 0 { active_idx.push(i); }
             }
-            let total = 256usize.pow(active_idx.len() as u32);
-            for mask in 0..total {
+            // Precompute top-K candidates per active byte
+            let mut candidates_per_byte: Vec<Vec<(u8,f64)>> = Vec::new();
+            for &i in &active_idx {
+                let dx = ((dr >> (8*i)) & 0xff) as u8;
+                if dx == 0 {
+                    candidates_per_byte.push(vec![(0,1.0)]);
+                } else {
+                    candidates_per_byte.push(top_k_t_values(ddt, dx, top_k_per_byte));
+                }
+            }
+            // Cartesian product
+            let total = candidates_per_byte.iter().map(|v| v.len()).product::<usize>();
+            for idx in 0..total {
+                let mut tmp = idx;
                 let mut t_val = 0u64;
-                let mut tmp = mask;
-                for &i in &active_idx {
-                    let tb = (tmp % 256) as u8;
-                    tmp /= 256;
+                let mut prob = p;
+                for (b_idx, &i) in active_idx.iter().enumerate() {
+                    let choices = &candidates_per_byte[b_idx];
+                    let choice_idx = tmp % choices.len();
+                    tmp /= choices.len();
+                    let (tb, p_byte) = choices[choice_idx];
                     t_val |= (tb as u64) << (8*i);
+                    prob *= p_byte;
                 }
                 let f_out = diffuse(t_val);
-                let mut prob = p;
-                for &i in &active_idx {
-                    let din_b = ((dr >> (8*i)) & 0xff) as u8;
-                    let t_b = ((t_val >> (8*i)) & 0xff) as u8;
-                    let cnt = ddt[din_b as usize][t_b as usize];
-                    prob *= cnt as f64 / 256.0;
-                }
                 let dl_next = dr;
                 let dr_next = dl ^ f_out;
                 let e = next.entry((dl_next, dr_next)).or_insert(0.0);
@@ -72,15 +91,12 @@ fn enumerate_forward(ddt: &[[u16;256];256], dl0: u64, dr0: u64, rounds: usize, m
     cur
 }
 
-fn enumerate_backward(ddt: &[[u16;256];256], dl_out: u64, dr_out: u64, rounds: usize, max_active: usize, top_n: usize) -> HashMap<(u64,u64), f64> {
+fn enumerate_backward(ddt: &[[u16;256];256], dl_out: u64, dr_out: u64, rounds: usize, max_active: usize, top_n: usize, top_k_per_byte: usize) -> HashMap<(u64,u64), f64> {
     let mut cur = HashMap::new();
     cur.insert((dl_out, dr_out), 1.0);
     for _ in 0..rounds {
         let mut next = HashMap::new();
         for (&(dl, dr), &p) in cur.iter() {
-            // backward step: previous state (dl_prev, dr_prev)
-            // dr_prev = dl
-            // dl_prev = dr XOR f(dl)
             let dr_prev = dl;
             let k = active_bytes(dr_prev);
             if k > max_active { continue; }
@@ -88,26 +104,31 @@ fn enumerate_backward(ddt: &[[u16;256];256], dl_out: u64, dr_out: u64, rounds: u
             for i in 0..8 {
                 if ((dr_prev >> (8*i)) & 0xff) != 0 { active_idx.push(i); }
             }
-            let total = 256usize.pow(active_idx.len() as u32);
-            for mask in 0..total {
+            let mut candidates_per_byte: Vec<Vec<(u8,f64)>> = Vec::new();
+            for &i in &active_idx {
+                let dx = ((dr_prev >> (8*i)) & 0xff) as u8;
+                if dx == 0 {
+                    candidates_per_byte.push(vec![(0,1.0)]);
+                } else {
+                    candidates_per_byte.push(top_k_t_values(ddt, dx, top_k_per_byte));
+                }
+            }
+            let total = candidates_per_byte.iter().map(|v| v.len()).product::<usize>();
+            for idx in 0..total {
+                let mut tmp = idx;
                 let mut t_val = 0u64;
-                let mut tmp = mask;
-                for &i in &active_idx {
-                    let tb = (tmp % 256) as u8;
-                    tmp /= 256;
+                let mut prob = p;
+                for (b_idx, &i) in active_idx.iter().enumerate() {
+                    let choices = &candidates_per_byte[b_idx];
+                    let choice_idx = tmp % choices.len();
+                    tmp /= choices.len();
+                    let (tb, p_byte) = choices[choice_idx];
                     t_val |= (tb as u64) << (8*i);
+                    prob *= p_byte;
                 }
                 let f_out = diffuse(t_val);
-                let mut prob = p;
-                for &i in &active_idx {
-                    let din_b = ((dr_prev >> (8*i)) & 0xff) as u8;
-                    let t_b = ((t_val >> (8*i)) & 0xff) as u8;
-                    let cnt = ddt[din_b as usize][t_b as usize];
-                    prob *= cnt as f64 / 256.0;
-                }
                 let dl_prev = dr ^ f_out;
-                let dr_prev_state = dr_prev;
-                let e = next.entry((dl_prev, dr_prev_state)).or_insert(0.0);
+                let e = next.entry((dl_prev, dr_prev)).or_insert(0.0);
                 if prob > *e { *e = prob; }
             }
         }
@@ -122,19 +143,18 @@ fn enumerate_backward(ddt: &[[u16;256];256], dl_out: u64, dr_out: u64, rounds: u
 fn main() {
     let ddt = build_ddt();
     println!("Meet-in-the-middle hull analysis for 6 rounds");
-    println!("Config: max_active_bytes=2, top_n=2000");
+    println!("Config: max_active_bytes=3, top_n=5000, top_k_per_byte=8");
     
-    let dr_in = 1u64 << 0; // 1-bit input difference
-    let forward_map = enumerate_forward(&ddt, 0, dr_in, 3, 2, 2000);
+    let dr_in = 1u64 << 0;
+    let forward_map = enumerate_forward(&ddt, 0, dr_in, 3, 3, 5000, 8);
     println!("Forward 3 rounds states: {}", forward_map.len());
     
-    // Backward from output differences with 1 active byte
     let mut best_prob = 0.0;
     let mut best_pair = None;
-    for bit in 0..64 {
+    // Test a few output differences
+    for bit in 0..8 {
         let dr_out = 1u64 << bit;
-        // try zero left output for simplicity
-        let backward_map = enumerate_backward(&ddt, 0, dr_out, 3, 2, 2000);
+        let backward_map = enumerate_backward(&ddt, 0, dr_out, 3, 3, 5000, 8);
         for (&(dl_mid, dr_mid), &p_back) in backward_map.iter() {
             if let Some(&p_fwd) = forward_map.get(&(dl_mid, dr_mid)) {
                 let total = p_fwd * p_back;
@@ -151,7 +171,8 @@ fn main() {
         println!("Input ΔR:  {:#018x}", in_diff);
         println!("Output ΔR: {:#018x}", out_diff);
         println!("Middle state: ΔL={:#018x}, ΔR={:#018x}", dl_mid, dr_mid);
+    } else {
+        println!("No matching intermediate state found with current budget.");
     }
-    println!("\nNote: This is a pruned meet-in-the-middle search with active byte budget 2.");
-    println!("Increase budget/top_n for more exhaustive hull enumeration.");
+    println!("\nNote: Using top-K per-byte enumeration to keep search tractable.");
 }
