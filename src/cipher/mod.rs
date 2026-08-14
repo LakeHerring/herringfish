@@ -4,6 +4,7 @@ pub mod key_schedule;
 pub mod round;
 pub mod shake_key_schedule;
 pub mod feistel_arx;
+pub mod sbox_ct;
 
 use crate::cipher::key_schedule::KeySchedule;
 use crate::cipher::round::{encrypt_round, decrypt_round};
