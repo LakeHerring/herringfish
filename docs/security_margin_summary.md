@@ -1,8 +1,8 @@
 # Herringfish Concrete Security Margin Quantification – Summary
 
-**Date:** 2025
-**Construction:** Feistel ARX v0.2
-**Parameters:** 128-bit block, 256-bit master key, 16 rounds
+**Date:** 2026-08-15
+**Construction:** Feistel ARX v0.2.2
+**Parameters:** 128-bit block, 256-bit master key, 16 rounds (parameterisable 4/6/8/16)
 **F-function:** `S[x⊕k]` with 8-bit S-box + intra-round diffusion `out[i]=in[i]⊕in[i+1]⊕in[i+3]`
 **Key schedule:** SHAKE256 XOF with domain `HERRINGFISH-FEISTEL-KEY`
 **S-box:** AES reference for baseline experiments
