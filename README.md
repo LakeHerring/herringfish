@@ -1,331 +1,737 @@
-Architecture
-src/
-├── attack/
-│   ├── hash/
-│   ├── symmetric/
-│   ├── public_key/
-│   ├── lattice/
-│   └── pqc/
+# Herringfish
+
+**Herringfish** explores a hybrid symmetric-key construction combining ideas from classical block ciphers, modern permutation-based cryptography, and sponge-derived cryptographic material.
+
+Inspired by the naming tradition of algorithms such as **Blowfish**, Herringfish is intended to be more than a software library: the long-term goal is to develop a complete, independently testable cryptographic primitive with a clearly defined specification, reference implementation, test vectors, performance characteristics, and documented security analysis.
+
+> ⚠️ **Experimental cryptography**
+>
+> Herringfish is a research project and must **not** be used to protect real-world secrets, production systems, passwords, financial information, or other sensitive data.
+>
+> A new cipher should be considered insecure until it has undergone extensive public cryptanalysis and independent review.
+
+---
+
+## Project Goals
+
+The primary goals of Herringfish are:
+
+* Design a novel symmetric-key cryptographic algorithm.
+* Develop a formally documented cipher specification.
+* Implement the reference algorithm in Rust.
+* Explore multiple candidate cipher constructions.
+* Analyze resistance against known cryptanalytic techniques.
+* Build automated cryptanalysis and testing tools.
+* Provide deterministic test vectors and known-answer tests.
+* Develop portable and constant-time implementations.
+* Investigate SIMD acceleration.
+* Benchmark the algorithm across different platforms.
+* Study reduced-round variants and potential weaknesses.
+* Eventually design an authenticated-encryption construction around the primitive.
+
+The project is deliberately designed around the principle:
+
+> **Design it, implement it, test it, and then try to break it.**
+
+---
+
+# Herringfish Cipher
+
+The final Herringfish construction has not been frozen yet.
+
+The project will explore different cryptographic constructions before committing to a final design.
+
+Potential construction families include:
+
+* Feistel networks
+* Lai–Massey constructions
+* Substitution-permutation networks
+* ARX constructions
+* Hybrid constructions
+* Dedicated permutation-based designs
+
+The final design will be selected based on cryptographic properties rather than implementation convenience.
+
+## Target Properties
+
+The initial design targets are:
+
+| Property                     | Target                         |
+| ---------------------------- | ------------------------------ |
+| Cipher type                  | Symmetric-key cipher           |
+| Key size                     | 256 bits                       |
+| Block size                   | 128 bits                       |
+| Architecture                 | TBD                            |
+| Number of rounds             | TBD through analysis           |
+| Security target              | High classical security margin |
+| Constant-time implementation | Required                       |
+| SIMD implementation          | Planned                        |
+| AEAD construction            | Planned                        |
+| Reference implementation     | Rust                           |
+
+These values are **design targets, not security claims**.
+
+The actual security of Herringfish will depend on the final construction and the results of cryptanalysis.
+
+---
+
+# Design Philosophy
+
+Herringfish is being developed differently from a conventional software-only cryptography project.
+
+The algorithm should be treated as a mathematical object first and an implementation second.
+
+The development process is therefore:
+
+```text
+Cryptographic Design
+        │
+        ▼
+Mathematical Specification
+        │
+        ▼
+Reference Implementation
+        │
+        ▼
+Known-Answer Tests
+        │
+        ▼
+Statistical Testing
+        │
+        ▼
+Cryptanalysis
+        │
+        ▼
+Optimization
+        │
+        ▼
+Independent Review
+        │
+        ▼
+Final Specification
+```
+
+Performance optimization should never be allowed to obscure the security properties of the underlying construction.
+
+---
+
+# Cryptanalysis
+
+A major component of Herringfish is the ability to attack the algorithm itself.
+
+The project includes research tooling for investigating potential weaknesses.
+
+Planned and experimental analysis includes:
+
+### Differential Cryptanalysis
+
+Investigate how differences propagate through the cipher.
+
+Areas of interest include:
+
+* Differential characteristics
+* Differential probabilities
+* Differential trails
+* Difference distribution tables
+* Reduced-round attacks
+* High-probability characteristics
+
+### Linear Cryptanalysis
+
+Investigate statistical relationships between:
+
+* plaintext bits
+* ciphertext bits
+* key bits
+* intermediate states
+
+Planned tooling includes linear approximation tables and bias analysis.
+
+### Avalanche Analysis
+
+Measure how a single input-bit change affects the resulting ciphertext.
+
+For an idealized cipher, changing one input bit should rapidly influence approximately half of the output bits.
+
+Measurements will include:
+
+* Avalanche score
+* Bit independence
+* Per-round diffusion
+* Hamming-distance distributions
+
+### Related-Key Analysis
+
+Investigate whether carefully related keys produce exploitable relationships between ciphertexts.
+
+This is particularly important for evaluating the key schedule.
+
+### Reduced-Round Analysis
+
+Herringfish will be tested with fewer rounds than the proposed full construction.
+
+For example:
+
+```text
+Herringfish
+├── 1 round
+├── 2 rounds
+├── 3 rounds
+├── ...
+├── N-1 rounds
+└── N rounds
+```
+
+A healthy design should demonstrate a meaningful security margin between the number of rounds required for practical cryptanalysis and the number used by the final cipher.
+
+### Statistical Analysis
+
+The project will investigate:
+
+* Output distributions
+* Bit frequencies
+* Correlations
+* χ² tests
+* Hamming-weight distributions
+* Serial correlations
+* Bias propagation
+* Randomness characteristics
+
+Statistical randomness tests cannot prove cryptographic security, but they can reveal obvious structural problems.
+
+---
+
+# Brute-Force Analysis
+
+Brute-force experiments are useful for validating the practical cost of exhaustive search and for testing the project's attack infrastructure.
+
+The project may use GPU acceleration for controlled experiments.
+
+For example:
+
+```text
+Known plaintext
+      │
+      ▼
+Candidate key
+      │
+      ▼
+Herringfish encryption
+      │
+      ▼
+Compare ciphertext
+      │
+      ├── No match → next candidate
+      │
+      └── Match → candidate key
+```
+
+Brute-force experiments are primarily intended for:
+
+* Reduced key sizes
+* Reduced-round variants
+* Benchmarking
+* Attack-framework validation
+* Educational demonstrations
+
+A full 256-bit key search is computationally infeasible with conventional hardware.
+
+---
+
+# Implementation
+
+The reference implementation is written in **Rust**.
+
+Rust is used because it provides:
+
+* Memory safety
+* Strong type guarantees
+* Excellent performance
+* Cross-platform support
+* Low-level control
+* Good support for constant-time implementation techniques
+* A strong ecosystem for cryptographic software
+
+The reference implementation will prioritize:
+
+1. Correctness
+2. Deterministic behavior
+3. Testability
+4. Constant-time operation
+5. Portability
+6. Performance
+
+Optimization comes after correctness and security analysis.
+
+---
+
+# SIMD
+
+Herringfish is intended to support hardware acceleration where practical.
+
+Potential implementation targets include:
+
+### x86-64
+
+* AVX2
+* AVX-512
+* AES-related instruction sets where applicable
+* Other relevant SIMD extensions
+
+### ARM
+
+* NEON
+* ARM cryptographic extensions where applicable
+
+### GPU
+
+Experimental GPU implementations may be used for:
+
+* Cryptanalysis
+* Large-scale statistical testing
+* Brute-force experiments
+* Performance research
+
+GPU implementations are not intended to replace the portable reference implementation.
+
+---
+
+# Constant-Time Implementation
+
+Cryptographic operations should avoid data-dependent timing behavior.
+
+The implementation will therefore attempt to avoid:
+
+* Secret-dependent branches
+* Secret-dependent memory access
+* Secret-dependent lookup tables
+* Unnecessary allocations
+* Other observable timing differences
+
+Constant-time behavior will be treated as an implementation requirement rather than an optional optimization.
+
+---
+
+# Test Vectors
+
+Every stable version of the Herringfish specification should eventually have deterministic test vectors.
+
+A test vector should contain information such as:
+
+```text
+Key
+Plaintext
+Ciphertext
+```
+
+For example:
+
+```text
+Key:
+0000000000000000000000000000000000000000000000000000000000000000
+
+Plaintext:
+00000000000000000000000000000000
+
+Ciphertext:
+<TBD>
+```
+
+The actual vectors will be generated only after the cipher construction has been sufficiently stabilized.
+
+Test vectors will be used for:
+
+* Rust implementation testing
+* Cross-platform validation
+* SIMD validation
+* Regression testing
+* Independent implementations
+* Future interoperability testing
+
+---
+
+# Testing Strategy
+
+Herringfish will use several levels of testing.
+
+## Unit Tests
+
+Individual components will be tested independently:
+
+* Key schedule
+* Round function
+* S-boxes
+* Permutations
+* Mixing functions
+* Encryption
+* Decryption
+
+## Known-Answer Tests
+
+Known inputs must always produce known outputs.
+
+## Round-Trip Tests
+
+The fundamental property:
+
+```text
+decrypt(encrypt(P, K), K) == P
+```
+
+must hold for all valid inputs.
+
+## Differential Tests
+
+Compare implementations and intermediate states to detect unintended differences.
+
+## Statistical Tests
+
+Large numbers of generated ciphertexts will be analyzed for obvious statistical weaknesses.
+
+## SIMD Equivalence Tests
+
+SIMD implementations must produce exactly the same results as the portable reference implementation.
+
+```text
+Reference implementation
+          │
+          ├──── identical ────► AVX2
+          │
+          ├──── identical ────► AVX-512
+          │
+          └──── identical ────► ARM/other implementations
+```
+
+---
+
+# Project Structure
+
+The project is expected to evolve toward a structure similar to:
+
+```text
+herringfish/
 │
-├── math/
-│   ├── bigint/
-│   ├── finite_field/
-│   ├── polynomial/
-│   ├── matrix/
-│   ├── lattice/
-│   ├── ntt/
-│   └── probability/
+├── src/
+│   ├── cipher/
+│   │   ├── mod.rs
+│   │   ├── key_schedule.rs
+│   │   ├── round.rs
+│   │   ├── encrypt.rs
+│   │   └── decrypt.rs
+│   │
+│   ├── aead/
+│   │
+│   ├── cryptanalysis/
+│   │   ├── differential.rs
+│   │   ├── linear.rs
+│   │   ├── avalanche.rs
+│   │   ├── related_key.rs
+│   │   └── statistics.rs
+│   │
+│   ├── math/
+│   │
+│   ├── simd/
+│   │
+│   └── lib.rs
 │
-└── primitives/
-    ├── hash/
-    ├── symmetric/
-    ├── asymmetric/
-    └── pqc/
-
-# herringfish
-
-Mathematical Cryptanalysis & Cryptographic Attack Framework. Herringfish is not primarily a password cracker or hash-cracking utility. It is a mathematical cryptanalysis framework.
-
-Herringfish is a Rust-based cryptanalytic research framework for studying the mathematical foundations and security properties of modern cryptographic algorithms.
-
-Rather than focusing primarily on password cracking or hash lookup attacks, Herringfish implements mathematical and structural attack techniques against cryptographic primitives and their underlying constructions.
-
-Primitive → Mathematical Model → Attack → Analysis → Result
-Goals
-
-Herringfish aims to provide a unified environment for:
-
-Mathematical cryptanalysis
-Cryptographic attack research
-Reduced-round analysis
-Algebraic attacks
-Differential and linear cryptanalysis
-Lattice-based attacks
-Number-theoretic attacks
-Finite-field and polynomial attacks
-Complexity estimation
-Cryptographic primitive analysis
-Experimental attacks against reduced/toy instances
-
-The project is intended for research, education, validation, and experimentation.
-
-## Overview
-
-`herringfish` is a research-oriented toolkit for mathematical cryptanalysis of hash functions. It focuses on the internal structures of SHA-2, SHA-3 and SHAKE rather than black-box collision search.
-
-Supported families:
-- **SHA2** – SHA-256, SHA-512 variants
-- **SHA3** – Keccak-f permutation, SHA3-256/512
-- **SHAKE** – SHAKE128, SHAKE256 extendable-output functions
-
-Modules:
-- `primitives` – Reference implementations and differential/linear hooks for SHA-256 compressor, Keccak-f, SHA3/SHAKE
-- `attack` – Differential, Linear, Algebraic attack scaffolding with a common `Attack` trait
-- `math` – Combinatorics, DDT construction, Keccak χ DDT, linear algebra utilities, probability helpers
-
-## Building
-
-```bash
-cargo build --release
+├── tests/
+│   ├── vectors/
+│   ├── known_answer.rs
+│   ├── differential.rs
+│   └── avalanche.rs
+│
+├── benchmarks/
+│
+├── examples/
+│
+├── docs/
+│   └── specification/
+│
+├── Cargo.toml
+└── README.md
 ```
 
-The release profile enables LTO, opt-level 3, strip and single codegen unit for crypto hot paths.
+The exact structure may change as the algorithm develops.
 
-## CLI usage
+---
 
-```bash
-cargo run -- --family SHA3 --attack differential --rounds 6
-cargo run -- --family SHA2 --attack differential --rounds 16
-cargo run -- --ddt
-cargo run -- --keccak-chi-ddt
+# Performance
+
+Performance benchmarking will be part of the project, but performance will not be used as evidence of cryptographic security.
+
+Benchmarks will measure:
+
+* Encryption throughput
+* Decryption throughput
+* Key setup
+* Key schedule cost
+* Small-message performance
+* Large-buffer throughput
+* SIMD acceleration
+* CPU scaling
+* GPU performance where applicable
+
+Results should distinguish between:
+
+```text
+Portable reference implementation
+            │
+            ├── Scalar
+            │
+            ├── SIMD
+            │
+            └── Hardware-specific optimized versions
 ```
 
-Options:
-- `--family <SHA2|SHA3|SHAKE>`
-- `--attack <differential|linear|algebraic>`
-- `--rounds <n>` default 4
-- `--ddt` compute DDT for PRESENT S-box
-- `--keccak-chi-ddt` print Keccak χ DDT summary
-- `--help`
+---
 
-## Project layout
+# Security Model
 
+Herringfish will eventually need to define a formal security model.
+
+Potential goals include resistance against:
+
+* Known-plaintext attacks
+* Chosen-plaintext attacks
+* Chosen-ciphertext attacks
+* Differential cryptanalysis
+* Linear cryptanalysis
+* Related-key attacks
+* Integral attacks
+* Impossible differential attacks
+* Statistical attacks
+* Structural attacks
+* Meet-in-the-middle attacks where applicable
+* Algebraic attacks
+* Side-channel attacks at the implementation level
+
+The final security claims will be based on analysis rather than assumptions.
+
+---
+
+# Post-Quantum Considerations
+
+Herringfish is primarily a **symmetric-key algorithm**.
+
+It is therefore fundamentally different from public-key post-quantum algorithms such as:
+
+* ML-KEM
+* ML-DSA
+* SLH-DSA
+
+However, quantum attacks remain relevant.
+
+In particular, Grover's algorithm reduces the generic exhaustive-search complexity of an idealized `n`-bit key from approximately:
+
+```text
+2^n
 ```
-src/
-  primitives/  sha2.rs sha256.rs sha3.rs shake.rs keccak.rs
-  attack/      differential.rs linear.rs algebraic.rs mod.rs
-  math/        combinatorics.rs ddt.rs keccak_chi_ddt.rs linear_algebra.rs probability.rs
-scripts/       update_acvp_vectors.sh / .ps1
-tests/vectors/ ACVP test vectors
+
+to:
+
+```text
+2^(n/2)
 ```
 
-## Development notes
+This is one reason a 256-bit key is an interesting target for a modern experimental cipher.
 
-- The current implementation contains reduced-round demonstrators and placeholders for full round analysis. Replace placeholders with real Keccak-f / SHA-256 round analysis for production research.
-- Warnings are tracked; see `cargo check` output.
-- ACVP vectors can be refreshed with `scripts/update_acvp_vectors.sh`.
+This does **not** mean Herringfish automatically provides 128-bit post-quantum security. The final security level depends on the complete construction.
 
-The architecture deliberately separates three concerns:
+---
 
-primitives
+# Design Questions
 
-Implementations and mathematical representations of cryptographic primitives.
+Before freezing the Herringfish specification, several questions need to be answered experimentally.
 
-Examples:
+### 1. What primitive?
 
-SHA-2
-SHA-3
-SHAKE
-AES
-RSA
-ECC
-ML-KEM
-ML-DSA
-math
+Possible candidates:
 
-Reusable mathematical machinery used by both primitives and attacks.
+* Feistel
+* SPN
+* ARX
+* Lai–Massey
+* Hybrid
 
-Examples:
+### 2. What block size?
 
-Arbitrary-precision arithmetic
-Modular arithmetic
-Polynomial arithmetic
-Finite fields
-Matrices and vectors
-NTT
-Lattice operations
-Probability and statistical analysis
-attack
+Potential choices:
 
-Cryptanalytic algorithms operating against the mathematical representations exposed by the primitives.
+* 64-bit
+* 128-bit
+* 256-bit
 
-Examples:
+A 128-bit block is currently the preferred target.
 
-Differential cryptanalysis
-Linear cryptanalysis
-Algebraic attacks
-Meet-in-the-middle
-Birthday attacks
-Discrete logarithm attacks
-Integer factorization
-LLL/BKZ lattice attacks
-LWE/Module-LWE attacks
-Cryptographic Scope
+### 3. What key size?
 
-Herringfish is designed to eventually cover several major families of cryptography.
+The current target is:
 
-Family	Examples	Attack areas
-Hash functions	SHA-224/256/384/512	Collision, preimage, structural, reduced-round
-SHA-3 family	SHA3, SHAKE	Keccak permutation, differential, structural
-Symmetric	AES and related primitives	Differential, linear, algebraic
-RSA	RSA variants	Factorization, algebraic/parameter attacks
-ECC	ECDSA, ECDH	Discrete logarithms, subgroup attacks
-Lattice/PQC	ML-KEM, ML-DSA	LWE, Module-LWE, lattice reduction
-Finite-field crypto	DH, DSA	Discrete logarithms
-General constructions	Various	Algebraic and combinatorial analysis
-Mathematical Attack Model
+```text
+256 bits
+```
 
-A central design principle is that Herringfish should not treat cryptographic algorithms as opaque black boxes.
+### 4. How many rounds?
 
-For example, ML-KEM can be represented as:
+The number of rounds should be determined by cryptanalysis and security margin rather than arbitrary selection.
 
-ML-KEM
-   │
-   ▼
-Module-LWE
-   │
-   ▼
-Polynomial Ring
-   │
-   ▼
-Lattice Representation
-   │
-   ▼
-Lattice Reduction
-   │
-   ├── LLL
-   ├── BKZ
-   └── Enumeration
-   │
-   ▼
-Attack Complexity
+### 5. How should nonlinear components be constructed?
 
-Similarly, SHA-3 can be analyzed through its underlying Keccak construction:
+Potential approaches include:
 
-SHA-3
-  │
-  ▼
-Keccak-f
-  │
-  ├── θ
-  ├── ρ
-  ├── π
-  ├── χ
-  └── ι
-  │
-  ▼
-Reduced / Full Round Analysis
-  │
-  ▼
-Cryptanalytic Attack
+* Fixed S-boxes
+* Generated S-boxes
+* Algebraic constructions
+* Multiple S-boxes
+* Key-independent S-boxes
 
-This allows attacks to operate on the mathematical structure of the primitive, rather than merely treating the primitive as a function that accepts bytes and returns bytes.
+### 6. How should diffusion work?
 
-Attack Results
+The design should achieve rapid diffusion while remaining efficient on modern processors.
 
-An important objective is to distinguish between successfully recovering a secret and demonstrating the cost of an attack.
+### 7. How should the key schedule work?
 
-An attack may therefore produce results such as:
+The key schedule must avoid introducing structural weaknesses or exploitable related-key relationships.
 
-Attack Result
-├── Target
-├── Parameters
-├── Attack type
-├── Data complexity
-├── Time complexity
-├── Memory complexity
-├── Success probability
-├── Required mathematical assumptions
-├── Recovered information
-└── Experimental results
+---
 
-For example, an ML-KEM attack may determine that a particular lattice reduction parameter is required without actually recovering a real-world ML-KEM-768 secret.
+# Development Principles
 
-Likewise, a SHA-256 experiment may demonstrate a structural attack against a reduced-round construction without claiming that full SHA-256 has been broken.
+Herringfish follows several principles.
 
-Design Philosophy
+### Security before performance
 
-Herringfish follows several principles:
+A fast insecure cipher is still insecure.
 
-Mathematics first
+### Simplicity before complexity
 
-Cryptographic security ultimately depends on mathematical assumptions. Herringfish therefore exposes those mathematical structures rather than hiding them behind high-level APIs.
+Every component should have a clear cryptographic justification.
 
-Research before optimization
+### Measure instead of assume
 
-Correct mathematical models and reproducible experiments take priority over raw performance. Performance optimizations—including SIMD and parallel execution—are introduced where they meaningfully improve cryptanalytic workloads.
+Cryptographic properties should be tested experimentally whenever possible.
 
-Reduced instances are first-class targets
+### Attack our own design
 
-Many cryptanalytic techniques cannot practically be demonstrated against full-strength modern primitives. Reduced-round and toy parameter sets are therefore legitimate and important targets.
+The project should actively search for weaknesses rather than attempting to prove that none exist.
 
-Reproducibility
+### Reproducibility
 
-Attack parameters, complexity estimates, intermediate mathematical structures, and results should be reproducible.
+Experiments should be deterministic and reproducible whenever practical.
 
-Rust-native
+### Independent verification
 
-The framework is written in Rust with an emphasis on:
+A future implementation should be possible without depending on the Rust reference implementation.
 
-Type safety
-Memory safety
-Deterministic computation
-Parallelism
-SIMD acceleration
-Cross-platform execution
-Current Development
+---
 
-Herringfish is currently under active development.
+# Current Status
 
-Current work includes:
+**Status: Experimental / Research**
 
- Cryptanalysis framework architecture
- Mathematical core
- Modular arithmetic
- Polynomial arithmetic
- Matrix/vector infrastructure
- NTT infrastructure
- SHA-2 primitives
- SHA-3 primitives
- SHAKE primitives
- Differential cryptanalysis framework
- Algebraic attack framework
- Lattice infrastructure
- LLL
- BKZ
- LWE analysis
- Module-LWE analysis
- ML-KEM analysis
- ML-DSA analysis
- RSA/factorization attacks
- Discrete-log attacks
- Comprehensive benchmarks
- Reproducible attack reports
+The Herringfish algorithm is currently under development.
 
+The specification is **not frozen**.
 
-## License
+The following areas are under active development:
 
-MIT
+* [ ] Final cipher construction
+* [ ] Key schedule
+* [ ] Round function
+* [ ] Nonlinear layer
+* [ ] Diffusion layer
+* [ ] Round-count analysis
+* [ ] Reference implementation
+* [ ] Known-answer test vectors
+* [ ] Differential analysis
+* [ ] Linear analysis
+* [ ] Avalanche analysis
+* [ ] Statistical analysis
+* [ ] Reduced-round attacks
+* [ ] SIMD implementation
+* [ ] Performance benchmarks
+* [ ] AEAD construction
+* [ ] Formal specification
+* [ ] Independent cryptanalysis
 
-## Compliance
+---
 
-See [COMPLIANCE.md](COMPLIANCE.md). Research use only.
+# Research Status
 
-## Side-channel considerations
+A successful implementation of Herringfish does **not** imply that Herringfish is cryptographically secure.
 
-See [SIDE_CHANNEL.md](SIDE_CHANNEL.md).
+New cryptographic algorithms routinely contain weaknesses that are not apparent during initial development.
 
-## Attack Families & Principles
+The intended lifecycle is:
 
-See [docs/ATTACK_FAMILIES.md](docs/ATTACK_FAMILIES.md) for the full list of supported attack families and design principles.
+```text
+Prototype
+   ↓
+Testing
+   ↓
+Cryptanalysis
+   ↓
+Revision
+   ↓
+Cryptanalysis
+   ↓
+Public review
+   ↓
+Revision
+   ↓
+Independent analysis
+   ↓
+Specification freeze
+```
 
-Herringfish distinguishes between:
-- Generic security
-- Best published attack
-- Herringfish reproduction
-- Herringfish experimental result
+A cipher should not be considered mature simply because it passes its own test suite.
 
-## How to use Herringfish for a digest
+---
 
-Given a digest such as `02208b9403a87df9f4ed6b2ee2657efaa589026b4cce9accc8e8a5bf3d693c86`:
+# Contributing
 
-1. **Identify possible primitives** – Use `examples/identify_hash.rs` to infer candidate families from length. 32 bytes → SHA-256 / SHA3-256 / SHAKE truncated.
-2. **Verify candidate algorithms** – If a candidate message is known, recompute `H(message)` and compare. Verification is feasible; inversion is not.
-3. **Expose the underlying construction** – Map the primitive to its mathematical model: Merkle-Damgård compression for SHA-2, Keccak sponge with θ,ρ,π,χ,ι for SHA-3/SHAKE.
-4. **Determine applicable attack families** – See `docs/ATTACK_FAMILIES.md`. For hash functions: differential, linear, algebraic, meet-in-the-middle, collision/preimage analysis, reduced-round cryptanalysis, statistical/probability analysis.
-5. **Analyze reduced-round / reduced-parameter versions** – Use `attack/hash/experiments` for reduced-round differential trails and `math/finite_field/ddt` for DDT analysis.
-6. **Compare with published cryptanalysis** – `HASH_DIFFICULTY.md` summarizes best public results for SHA-2/SHA-3/SHAKE.
-7. **Estimate attack complexity and security margins** – Combine experimental results with published bounds. Distinguish generic security from best known attacks.
-8. **Report clearly** – State target, parameters, attack type, data/time/memory complexity, success probability, assumptions, and whether the result is reproduction or new experiment.
+Contributions involving cryptographic analysis are especially valuable.
 
-This workflow ensures Herringfish is used as a mathematical laboratory, not a brute-force hash cracker.
+Useful contributions include:
+
+* Cryptanalytic attacks
+* Differential characteristics
+* Linear approximations
+* Statistical analysis
+* Performance improvements
+* SIMD implementations
+* Independent implementations
+* Test vectors
+* Mathematical analysis
+* Documentation
+* Reproducible experiments
+
+Finding a weakness is considered a **successful research result**, not a failure of the project.
+
+---
+
+# Disclaimer
+
+Herringfish is experimental cryptographic research software.
+
+It has not been subjected to the level of public scrutiny, peer review, formal analysis, or cryptanalysis required to establish confidence in a production cryptographic algorithm.
+
+**Do not use Herringfish to protect real-world data.**
+
+The project is intended for research, experimentation, education, benchmarking, and cryptographic analysis.
+
+---
+
+# License
+
+MIT License
+
+Copyright © 2026
+
+See [`LICENSE`](LICENSE) for the complete license text.
+
+---
+
+## Herringfish
+
+**Design it. Implement it. Test it. Break it. Improve it.**
