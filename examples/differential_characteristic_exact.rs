@@ -1,3 +1,4 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 
 // Build S-box DDT: ddt[dx][dy] = count
@@ -19,7 +20,7 @@ fn byte_prob(ddt: &[[u16; 256]; 256], dx: u8, dy: u8) -> f64 {
     ddt[dx as usize][dy as usize] as f64 / 256.0
 }
 
-fn f_diff_prob(ddt: &[[u16; 256]; 256], d_in: u64, d_out: u64) -> f64 {
+fn f_diff_prob(_ddt: &[[u16; 256]; 256], d_in: u64, _d_out: u64) -> f64 {
     // F = S-box per byte then diffusion out[i]=in[i]^in[i+1]^in[i+3]
     // For exact probability we need joint distribution; here we approximate by
     // iterating over all possible intermediate S-box outputs consistent with d_in

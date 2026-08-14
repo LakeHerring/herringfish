@@ -1,3 +1,4 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use rand::{Rng, SeedableRng};
 use sha3::digest::{ExtendableOutput, Update};
 use shake::Shake256;

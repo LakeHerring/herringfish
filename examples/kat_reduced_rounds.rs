@@ -1,3 +1,4 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use herringfish::cipher::feistel_arx::FeistelArx;
 use std::fs::File;
 use std::io::Write;

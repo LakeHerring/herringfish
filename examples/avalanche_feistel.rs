@@ -1,5 +1,6 @@
-use herringfish::cipher::feistel_arx::{FeistelArx, NUM_ROUNDS};
-use rand::{Rng, rand_core};
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
+use herringfish::cipher::feistel_arx::NUM_ROUNDS;
+use rand::Rng;
 use std::convert::TryInto;
 
 fn f_function(x: u64, k: u64) -> u64 {
@@ -11,7 +12,7 @@ fn f_function(x: u64, k: u64) -> u64 {
     t.rotate_left(11)
 }
 
-fn encrypt_trace(key: &[u8; 32], pt: &[u8; 16], round_keys: &[u64]) -> Vec<[u8; 16]> {
+fn encrypt_trace(_key: &[u8; 32], pt: &[u8; 16], round_keys: &[u64]) -> Vec<[u8; 16]> {
     let mut left = u64::from_le_bytes(pt[0..8].try_into().unwrap());
     let mut right = u64::from_le_bytes(pt[8..16].try_into().unwrap());
     let mut states = Vec::with_capacity(NUM_ROUNDS + 1);
@@ -83,8 +84,8 @@ fn main() {
     // differential characteristic search for 4,8,12 rounds - simple brute force for 1 active input bit
     for rounds in [4, 8, 12] {
         // brute force all input differences with Hamming weight 1
-        let mut best_prob = 0.0;
-        let mut best_diff = 0;
+        let _best_prob = 0.0;
+        let _best_diff = 0;
         // For demonstration, sample a subset due to combinatorial explosion
         // We'll enumerate all 128 single-bit differences and count output collisions for a fixed key
         // Actually differential probability estimation needs many pairs. We'll do a simple heuristic:

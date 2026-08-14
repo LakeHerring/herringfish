@@ -1,3 +1,4 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 
 /// Build S-box DDT
@@ -61,14 +62,14 @@ fn main() {
     for rounds in [6usize, 8usize] {
         // Start with ΔL=0, ΔR = 1-bit -> one active byte in F
         // We simulate worst-case active byte growth
-        let mut active_mask = 1u8; // one byte active in F input
+        let _active_mask = 1u8; // one byte active in F input
         let mut log_prob = 0.0f64;
         // For each round, F input is right half
         // Initial state: ΔL=0, ΔR has 1 active byte
         // We need to track active bytes in both halves
         let mut left_active = 0u8;
         let mut right_active = 1u8; // start with one byte active in right
-        for r in 0..rounds {
+        for _r in 0..rounds {
             // F input = right_active
             let k = count_active(right_active);
             log_prob += k as f64 * p_max.log2();

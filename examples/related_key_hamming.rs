@@ -1,3 +1,4 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use herringfish::cipher::key_schedule::KeySchedule;
 use rand::{Rng, RngExt, SeedableRng};
 

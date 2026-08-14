@@ -1,3 +1,4 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use rand::{Rng, SeedableRng};
 use sha3::digest::{ExtendableOutput, Update};
 use shake::Shake256;
@@ -100,7 +101,7 @@ fn spn_round(state: &mut [u8; 16], round_key: &[u8; 16], final_round: bool) {
         *b = sbox(*b);
     }
     // ShiftRows
-    let mut tmp = *state;
+    let tmp = *state;
     for row in 0..4 {
         for col in 0..4 {
             let src_col = (col + row) % 4;
@@ -183,7 +184,7 @@ fn differential_max_prob(key: &[u8; 32], rounds: usize, samples: usize, is_feist
     } else {
         spn_encrypt_trace(key, &base_pt)
     };
-    let base_out = *base_trace.last().unwrap();
+    let _base_out = *base_trace.last().unwrap();
     // Use 1-bit input difference
     let mut best = 0.0;
     for bit in 0..8 {

@@ -1,4 +1,4 @@
-use herringfish::cipher::feistel_arx::FeistelArx;
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use rand::{Rng, SeedableRng};
 use std::collections::HashMap;
 

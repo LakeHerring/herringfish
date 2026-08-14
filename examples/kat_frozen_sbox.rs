@@ -1,3 +1,4 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use herringfish::cipher::feistel_arx::FeistelArx;
 
 fn to_hex(bytes: &[u8]) -> String {
@@ -29,7 +30,7 @@ fn main() {
     for k in &keys {
         let cipher = FeistelArx::new(k);
         for p in &plaintexts {
-            let mut pt = *p;
+            let pt = *p;
             let mut ct = pt;
             cipher.encrypt_block(&mut ct);
             println!("Key: {}", to_hex(k));

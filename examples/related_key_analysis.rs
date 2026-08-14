@@ -1,3 +1,4 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use herringfish::cipher::NUM_ROUNDS;
 use herringfish::cipher::key_schedule::KeySchedule;
 use rand::{Rng, SeedableRng};
@@ -39,7 +40,7 @@ fn main() {
             rng.fill_bytes(&mut diff);
             // force exactly w bits
             let mut bits_set = 0;
-            for i in 0..32 {
+            for _i in 0..32 {
                 if bits_set >= w {
                     break;
                 }

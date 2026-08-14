@@ -1,3 +1,4 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use std::arch::x86_64::*;
 use std::time::Instant;
 

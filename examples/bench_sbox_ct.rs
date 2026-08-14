@@ -1,3 +1,4 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use herringfish::cipher::feistel_arx::FeistelArx;
 use std::time::Instant;
 
@@ -14,7 +15,7 @@ fn main() {
     cipher.encrypt_block_ct(&mut block);
 
     const ITER: usize = 100_000;
-    let mut data = [0u8; 16];
+    let data = [0u8; 16];
 
     // Table lookup version
     let start = Instant::now();

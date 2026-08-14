@@ -1,9 +1,10 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use herringfish::cipher::feistel_arx::FeistelArx;
 use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
 
 fn derive_round_keys(key: &[u8; 32]) -> Vec<u64> {
-    let cipher = FeistelArx::new(key);
+    let _cipher = FeistelArx::new(key);
     // Access private round keys via reflection? Can't.
     // We'll re-derive using same method as FeistelArx
     use shake::Shake256;

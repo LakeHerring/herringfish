@@ -1,5 +1,4 @@
-use herringfish::cipher::feistel_arx::FeistelArx;
-use std::collections::HashMap;
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 
 fn main() {
     // Placeholder for exhaustive 4-round differential search

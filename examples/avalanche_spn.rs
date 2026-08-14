@@ -1,5 +1,5 @@
-use herringfish::cipher::{BLOCK_SIZE, Cipher, NUM_ROUNDS as SPN_ROUNDS};
-use std::convert::TryInto;
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
+use herringfish::cipher::Cipher;
 
 fn hamming_distance(a: &[u8], b: &[u8]) -> usize {
     a.iter()

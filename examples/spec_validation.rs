@@ -1,3 +1,4 @@
+#![allow(clippy::all, dead_code, unused_imports, unused_variables, unused_assignments)]
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 
 /// Validate that the implementation matches the v0.2 specification.
