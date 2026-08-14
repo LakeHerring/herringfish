@@ -7,6 +7,7 @@
 
 use shake::Shake256;
 use sha3::digest::{Update, ExtendableOutput};
+use crate::cipher::sbox_ct::sbox_ct_lookup;
 
 pub const BLOCK_SIZE: usize = 16;
 pub const KEY_SIZE: usize = 32;
@@ -92,6 +93,57 @@ impl FeistelArx {
         block[0..8].copy_from_slice(&left.to_le_bytes());
         block[8..16].copy_from_slice(&right.to_le_bytes());
     }
+
+    pub fn encrypt_block_ct(&self, block: &mut [u8; BLOCK_SIZE]) {
+        let mut left = u64::from_le_bytes(block[0..8].try_into().unwrap());
+        let mut right = u64::from_le_bytes(block[8..16].try_into().unwrap());
+
+        for &k in &self.round_keys {
+            let f_out = f_function_ct(right, k);
+            let new_right = left ^ f_out;
+            left = right;
+            right = new_right;
+        }
+
+        block[0..8].copy_from_slice(&left.to_le_bytes());
+        block[8..16].copy_from_slice(&right.to_le_bytes());
+    }
+
+    pub fn decrypt_block_ct(&self, block: &mut [u8; BLOCK_SIZE]) {
+        let mut left = u64::from_le_bytes(block[0..8].try_into().unwrap());
+        let mut right = u64::from_le_bytes(block[8..16].try_into().unwrap());
+
+        for &k in self.round_keys.iter().rev() {
+            let f_out = f_function_ct(left, k);
+            let new_left = right ^ f_out;
+            right = left;
+            left = new_left;
+        }
+
+        block[0..8].copy_from_slice(&left.to_le_bytes());
+        block[8..16].copy_from_slice(&right.to_le_bytes());
+    }
+}
+
+fn f_function_ct(x: u64, k: u64) -> u64 {
+    // S-box layer with constant-time lookup
+    let mut t = 0u64;
+    for i in 0..8 {
+        let x_byte = ((x >> (8*i)) & 0xff) as u8;
+        let k_byte = ((k >> (8*i)) & 0xff) as u8;
+        let sb = sbox_ct_lookup(x_byte ^ k_byte);
+        t |= (sb as u64) << (8*i);
+    }
+    // Linear diffusion layer inside F
+    let mut bytes = [0u8;8];
+    for i in 0..8 { bytes[i] = ((t >> (8*i)) & 0xff) as u8; }
+    let mut out_bytes = [0u8;8];
+    for i in 0..8 {
+        out_bytes[i] = bytes[i] ^ bytes[(i+1)%8] ^ bytes[(i+3)%8];
+    }
+    let mut out = 0u64;
+    for i in 0..8 { out |= (out_bytes[i] as u64) << (8*i); }
+    out
 }
 
 fn f_function(x: u64, k: u64, sbox: &[u8;256]) -> u64 {

@@ -131,7 +131,20 @@ Bias decreasing with rounds, within sampling noise.
 * Related-key 1-bit diff: mean round-key Hamming = 32.04 bits, std = 0.97
 Consistent with independent 64-bit keys.
 
+## Implementation hardening and side-channel review
+
+* Constant-time S-box module `src/cipher/sbox_ct.rs` implemented using `subtle::ConstantTimeEq` selection over 256 entries.
+* `FeistelArx::encrypt_block_ct` / `decrypt_block_ct` added, using `f_function_ct` with constant-time S-box lookup.
+* Correctness verified: CT output matches table-lookup output for all tested inputs.
+* Benchmark `examples/bench_sbox_ct.rs` on release build:
+  * Table lookup: ~10.9 M ops/s
+  * Constant-time: ~6.6 k ops/s
+  * Overhead factor ≈ 1 647×
+* Overhead is expected for pedagogical selection-over-all implementation. Production use would require bitsliced or hardware-accelerated S-box.
+* S-box table lookup remains secret-dependent and thus not constant-time in the reference implementation. The CT variant is provided for research and side-channel evaluation.
+
 ## Next steps
 * Trail search and hull analysis for 6-8 rounds
-* Formal side-channel review of S-box lookup
+* Formal side-channel review of SHAKE expansion
+* Performance benchmarks for SIMD-accelerated implementations
 * KAT vectors for frozen S-box
