@@ -249,45 +249,25 @@ This separation makes the nonlinear and diffusion properties independently analy
 
 # 8. S-box Generation
 
-The Herringfish v0.2 S-box is generated deterministically from SHAKE256.
+For Herringfish Feistel ARX v0.2, the S-box is frozen for interoperability.
 
-The S-box derivation uses the domain-separation string:
+The v0.2 S-box is an affine-equivalent transformation of the AES S-box.
 
-```text id="c0a7g3"
-HERRINGFISH-FEISTEL-SBOX
+Construction:
+
+```text
+S[x] = a * AES_SBOX[x] ⊕ b  over GF(2^8)
 ```
 
-The derivation process must produce a candidate permutation over:
+Affine parameters:
+* a = 0x11
+* b = 0x71
 
-```text id="xqkvv9"
-{0, 1, 2, ..., 255}
-```
+S-box counter: 0
 
-The candidate is accepted only if it satisfies the defined cryptographic criteria.
+Domain separation string `HERRINGFISH-FEISTEL-SBOX` is retained for future versions but is not used for v0.2 S-box generation. The frozen permutation is defined in `src/cipher/feistel_arx.rs` as `HERRINGFISH_SBOX_V02` and archived in `docs/tables/`.
 
-Otherwise, the derivation counter is incremented and a new candidate is generated.
-
-Conceptually:
-
-```text id="s7a2sl"
-counter = 0
-
-while candidate does not satisfy criteria:
-
-    candidate =
-        SHAKE256(
-            "HERRINGFISH-FEISTEL-SBOX"
-            || counter
-        )
-
-    construct candidate S-box
-
-    test candidate
-
-    counter += 1
-```
-
-The exact byte-to-permutation construction must be deterministic and specified separately so that independent implementations produce the identical S-box.
+DDT_max = 4, LAT_max bias = 32. The S-box satisfies the acceptance criteria defined in Section 9.
 
 ---
 
