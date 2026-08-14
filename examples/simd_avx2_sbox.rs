@@ -5,9 +5,14 @@
     unused_variables,
     unused_assignments
 )]
+
+#[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
+
+#[cfg(target_arch = "x86_64")]
 use std::time::Instant;
 
+#[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "avx2")]
 unsafe fn diffusion_avx2(block: __m256i) -> __m256i {
     // Diffusion: out[i] = in[i] ^ in[i+1] ^ in[i+3]
@@ -17,6 +22,7 @@ unsafe fn diffusion_avx2(block: __m256i) -> __m256i {
     _mm256_xor_si256(_mm256_xor_si256(a, b), c)
 }
 
+#[cfg(target_arch = "x86_64")]
 fn main() {
     if !is_x86_feature_detected!("avx2") {
         println!("AVX2 not supported");
@@ -80,4 +86,9 @@ fn main() {
         dur_scalar.as_secs_f64() / dur_avx.as_secs_f64()
     );
     println!("Checksum scalar: {}, avx: {}", acc, acc_avx);
+}
+
+#[cfg(not(target_arch = "x86_64"))]
+fn main() {
+    println!("AVX2 benchmark is only supported on x86_64 targets");
 }
