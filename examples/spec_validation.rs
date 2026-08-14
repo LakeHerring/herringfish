@@ -1,5 +1,4 @@
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
-use herringfish::cipher::feistel_arx::FeistelArx;
 
 /// Validate that the implementation matches the v0.2 specification.
 fn main() {
@@ -19,9 +18,9 @@ fn main() {
     }
     println!("  Bijective: {}", ok);
 
-    // DDT max
+    // DDT max for non-zero dx
     let mut ddt_max = 0u16;
-    for dx in 0..256 {
+    for dx in 1..=255 {
         let mut counts = [0u16; 256];
         for x in 0..256 {
             let y = HERRINGFISH_SBOX_V02[x ^ dx] ^ HERRINGFISH_SBOX_V02[x];
@@ -32,17 +31,17 @@ fn main() {
     }
     println!("  DDT max count: {}  ->  prob = {}", ddt_max, ddt_max as f64 / 256.0);
 
-    // LAT max bias
+    // LAT max bias for non-trivial masks
     let mut lat_max = 0i32;
-    for a in 0..=255 {
-        for b in 0..=255 {
+    for a in 1..=255 {
+        for b in 1..=255 {
             let mut sum = 0i32;
             for x in 0..256 {
                 let y = HERRINGFISH_SBOX_V02[x];
                 let parity = ((x & a) as u8).count_ones() & 1 ^ ((y & b) as u8).count_ones() & 1;
                 sum += if parity == 0 { 1 } else { -1 };
             }
-            let bias = (sum.abs() as i32);
+            let bias = sum.abs() as i32;
             if bias > lat_max { lat_max = bias; }
         }
     }

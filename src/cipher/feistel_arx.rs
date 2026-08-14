@@ -13,7 +13,6 @@ pub const KEY_SIZE: usize = 32;
 pub const NUM_ROUNDS: usize = 16;
 
 const DOMAIN_FEISTEL_KEY: &[u8] = b"HERRINGFISH-FEISTEL-KEY";
-const DOMAIN_FEISTEL_SBOX: &[u8] = b"HERRINGFISH-FEISTEL-SBOX";
 pub const HERRINGFISH_SBOX_V02: [u8;256] = [0x78,0x8c,0x37,0xfb,0x3a,0xf0,0xb4,0x50,0x6c,0x60,0x3c,0xdc,0xf6,0x79,0x84,0x26,
     0xaf,0x0b,0x9c,0x9d,0xb2,0xcf,0x2a,0x18,0xe2,0x4a,0x1d,0xc0,0xee,0x7b,0x62,0x05,
     0x43,0xc5,0x11,0x01,0x0a,0x93,0x6f,0xc9,0x28,0x6a,0x46,0x09,0x51,0x86,0x7d,0x2f,
@@ -62,49 +61,6 @@ impl FeistelArx {
 
     fn derive_sbox() -> [u8; 256] {
         HERRINGFISH_SBOX_V02
-    }
-
-    fn is_bijective(sbox: &[u8;256]) -> bool {
-        let mut seen = [false;256];
-        for &b in sbox.iter() {
-            let idx = b as usize;
-            if seen[idx] { return false; }
-            seen[idx] = true;
-        }
-        true
-    }
-
-    fn ddt_max(sbox: &[u8;256]) -> u16 {
-        let mut max_v = 0u16;
-        for dx in 1..256 {
-            for dy in 1..256 {
-                let mut cnt = 0u16;
-                for x in 0..256 {
-                    if sbox[(x ^ dx) as usize] ^ sbox[x] == dy as u8 {
-                        cnt += 1;
-                    }
-                }
-                if cnt > max_v { max_v = cnt; }
-            }
-        }
-        max_v
-    }
-
-    fn lat_max(sbox: &[u8;256]) -> i32 {
-        let mut max_v = 0i32;
-        for a in 1..256 {
-            for b in 1..256 {
-                let mut sum = 0i32;
-                for x in 0..256 {
-                    let ax = ((x as u8) & a as u8).count_ones() & 1;
-                    let bx = (sbox[x] & b as u8).count_ones() & 1;
-                    if ax ^ bx == 0 { sum += 1; } else { sum -= 1; }
-                }
-                let abs = sum.abs();
-                if abs > max_v { max_v = abs; }
-            }
-        }
-        max_v
     }
 
     pub fn encrypt_block(&self, block: &mut [u8; BLOCK_SIZE]) {

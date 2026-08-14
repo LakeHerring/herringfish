@@ -269,6 +269,8 @@ Domain separation string `HERRINGFISH-FEISTEL-SBOX` is retained for future versi
 
 DDT_max = 4, LAT_max bias = 32. The S-box satisfies the acceptance criteria defined in Section 9.
 
+Specification validation is performed by `examples/spec_validation.rs`, which checks bijectivity, DDT_max and LAT_max against the frozen S-box. Known-answer test vectors are maintained in `docs/tables/kat_vectors_v02.txt` and `docs/tables/kat_expanded_v02.txt`.
+
 ---
 
 # 9. S-box Acceptance Criteria
@@ -935,6 +937,7 @@ The S-box used by the reference implementation is frozen for interoperability.
 * Full permutation is defined in `src/cipher/feistel_arx.rs` as `HERRINGFISH_SBOX_V02`.
 * Matrices archived in `docs/tables/ddt_matrix.txt` and `docs/tables/lat_matrix.txt`.
 * Known-answer test vectors: `docs/tables/kat_vectors_v02.txt`.
+* Specification validation: `examples/spec_validation.rs` validates S-box bijectivity, DDT_max, LAT_max, key schedule parameters and cipher parameters against this section.
 
 ### Normative KAT set
 
