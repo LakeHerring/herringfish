@@ -1,7 +1,7 @@
 # Herringfish Feistel ARX Prototype v0.2
 
 **Status:** Experimental research prototype
-**Version:** 0.2
+**Version:** 0.2 (Release v0.2.3)
 **Construction:** 128-bit balanced Feistel network with S-box and linear-diffusion round function
 **Master key:** 256 bits
 **Rounds:** 16

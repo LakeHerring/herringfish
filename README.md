@@ -1,5 +1,13 @@
 # Herringfish
 
+[![Latest Release](https://img.shields.io/github/v/release/LakeHerring/herringfish?display_name=tag&sort=semver)](https://github.com/LakeHerring/herringfish/releases/latest)
+[![CI](https://github.com/LakeHerring/herringfish/actions/workflows/rust.yml/badge.svg)](https://github.com/LakeHerring/herringfish/actions/workflows/rust.yml)
+[![License](https://img.shields.io/github/license/LakeHerring/herringfish)](https://github.com/LakeHerring/herringfish/blob/main/LICENSE)
+
+> Experimental symmetric-key cryptography research project...
+
+# Herringfish
+
 **Herringfish** is an experimental symmetric-key cryptography research project focused on the design, implementation, testing, and cryptanalysis of a novel block-cipher construction.
 
 The current construction, **Herringfish Feistel ARX v0.2**, is a 128-bit balanced Feistel network using an 8-bit nonlinear S-box layer, ARX-based processing, XOR-based diffusion, and a SHAKE256-derived key schedule.
@@ -851,9 +859,9 @@ Research results should distinguish between **observed experimental results** an
 
 # Current Status
 
-**Status: Experimental / Research — Herringfish Feistel ARX v0.2.2**
+**Status: Experimental / Research — Herringfish Feistel ARX v0.2.3**
 
-The current v0.2 configuration is frozen for cryptographic evaluation while analysis continues. Tag `v0.2.2` is the latest release.
+The current v0.2 configuration is frozen for cryptographic evaluation while analysis continues. Tag `v0.2.3` is the latest release.
 
 Current S-box evaluation parameters:
 
@@ -886,7 +894,7 @@ Current research status:
 * [x] Constant-time S-box implementation – `src/cipher/sbox_ct.rs`
 * [x] Key-schedule independence tests – formalised with 100k samples
 * [x] Meet-in-the-middle hull analysis tooling
-* Formal specification — v0.2 draft
+* [~] Formal specification — v0.2 draft
 * [~] Full-cipher statistical analysis
 * [~] Full-cipher cryptanalysis
 * [~] SIMD implementation – partial: AVX2 diffusion benchmark exists, S-box gather/bitslicing
