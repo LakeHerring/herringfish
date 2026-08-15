@@ -17,11 +17,15 @@ pub fn diffusion_avx2(block: __m256i) -> __m256i {
 
 #[cfg(target_arch = "x86_64")]
 pub unsafe fn sbox_gather_avx2(input: __m256i, table: &[u8; 256]) -> __m256i {
-    // Gather 32 bytes through S-box table using AVX2 gather
-    // This is a simplified prototype - production use would need proper table layout
-    // For now, fall back to scalar per byte
-    // Placeholder for bitsliced/gather implementation
-    input
+    // AVX2 S-box gather prototype using load/store + scalar table lookup
+    // True AVX2 gather would use _mm256_i32gather_epi32 with zero-extended indices.
+    // This implementation demonstrates vectorised load/store with scalar lookup for research.
+    let mut bytes = [0u8; 32];
+    _mm256_storeu_si256(bytes.as_mut_ptr() as *mut __m256i, input);
+    for i in 0..32 {
+        bytes[i] = table[bytes[i] as usize];
+    }
+    _mm256_loadu_si256(bytes.as_ptr() as *const __m256i)
 }
 
 #[cfg(not(target_arch = "x86_64"))]

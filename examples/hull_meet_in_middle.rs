@@ -196,10 +196,10 @@ fn enumerate_backward(
 fn main() {
     let ddt = build_ddt();
     println!("Meet-in-the-middle hull analysis for 6 rounds");
-    println!("Config: max_active_bytes=3, top_n=5000, top_k_per_byte=8");
+    println!("Config: max_active_bytes=4, top_n=20000, top_k_per_byte=32");
 
     let dr_in = 1u64 << 0;
-    let forward_map = enumerate_forward(&ddt, 0, dr_in, 3, 3, 10000, 16);
+    let forward_map = enumerate_forward(&ddt, 0, dr_in, 3, 4, 20000, 32);
     println!("Forward 3 rounds states: {}", forward_map.len());
 
     let mut best_prob = 0.0;
@@ -207,7 +207,7 @@ fn main() {
     // Test a few output differences
     for bit in 0..8 {
         let dr_out = 1u64 << bit;
-        let backward_map = enumerate_backward(&ddt, 0, dr_out, 3, 3, 10000, 16);
+        let backward_map = enumerate_backward(&ddt, 0, dr_out, 3, 4, 20000, 32);
         for (&(dl_mid, dr_mid), &p_back) in backward_map.iter() {
             if let Some(&p_fwd) = forward_map.get(&(dl_mid, dr_mid)) {
                 let total = p_fwd * p_back;
