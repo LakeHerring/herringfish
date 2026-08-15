@@ -36,17 +36,21 @@ pub unsafe fn sbox_gather_avx2(input: __m256i, table: &[u8; 256]) -> __m256i {
                 idx[i] = bytes[base + i] as u32;
             }
             let idx_vec = _mm256_setr_epi32(
-                idx[0] as i32, idx[1] as i32, idx[2] as i32, idx[3] as i32,
-                idx[4] as i32, idx[5] as i32, idx[6] as i32, idx[7] as i32,
+                idx[0] as i32,
+                idx[1] as i32,
+                idx[2] as i32,
+                idx[3] as i32,
+                idx[4] as i32,
+                idx[5] as i32,
+                idx[6] as i32,
+                idx[7] as i32,
             );
             let gathered = _mm256_i32gather_epi32(table_u32, idx_vec, 1);
             let gathered_bytes = _mm256_and_si256(gathered, mask);
             // Store the 8 gathered bytes into the correct position in out_bytes
             let mut tmp = [0u8; 32];
             _mm256_storeu_si256(tmp.as_mut_ptr() as *mut __m256i, gathered_bytes);
-            for i in 0..8 {
-                out_bytes[base + i] = tmp[i];
-            }
+            out_bytes[base..base + 8].copy_from_slice(&tmp[..8]);
         }
         _mm256_loadu_si256(out_bytes.as_ptr() as *const __m256i)
     }

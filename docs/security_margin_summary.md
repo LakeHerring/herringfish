@@ -165,3 +165,29 @@ Observations are consistent with expected avalanche behavior under the tested sa
 * Formal side-channel review documented in `docs/side_channel_review_v0.2.md`
 * Full-cipher statistical analysis confirmed with 1M samples; 5-10M sample runs planned for tighter confidence intervals
 * KAT vectors for frozen S-box published
+
+## Analysis mode semantics – best characteristic vs differential hull
+
+The current meet-in-the-middle tooling implements a *best-characteristic* search:
+
+```
+P_state ← max_{C reaching state} P(C)
+```
+
+A differential hull requires summation over all characteristics:
+
+```
+P(ΔX→ΔY) = Σ_{C : ΔX→ΔY} P(C)
+```
+
+These are distinct quantities. Best characteristic is cheap and useful for finding strong trails. Differential hull is mathematically correct for hull analysis and is significantly more expensive.
+
+Herringfish cryptanalysis tooling will expose three explicit modes:
+
+* **best** – max P(C). Fastest. Used for trail discovery.
+* **truncated/beam** – beam search with bounded width. Trade-off between coverage and cost.
+* **hull** – Σ P(C). Correct hull value. Requires summing probabilities per intermediate state, not taking max.
+
+The existing `examples/hull_meet_in_middle.rs` currently implements best-characteristic mode. Hull mode will be added with summed probabilities per state, precomputed top-K DDT tables, precomputed diffusion tables, and beam search.
+
+This distinction is documented to avoid conflating best-characteristic results with differential hull claims.
