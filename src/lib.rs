@@ -6,5 +6,6 @@
 //! WARNING: Experimental. Not for production use.
 
 pub mod cipher;
+pub mod simd;
 
 pub use cipher::{Cipher, Key};

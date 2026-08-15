@@ -195,19 +195,39 @@ fn enumerate_backward(
 
 fn main() {
     let ddt = build_ddt();
-    println!("Meet-in-the-middle hull analysis for 6 rounds");
+    println!("Meet-in-the-middle hull analysis for 8 rounds");
     println!("Config: max_active_bytes=4, top_n=20000, top_k_per_byte=32");
 
-    let dr_in = 1u64 << 0;
-    let forward_map = enumerate_forward(&ddt, 0, dr_in, 3, 4, 20000, 32);
-    println!("Forward 3 rounds states: {}", forward_map.len());
+    // Enumerate input differences with Hamming weight 1
+    let mut input_diffs = Vec::new();
+    for bit in 0..8 {
+        input_diffs.push(1u64 << bit);
+    }
+    // Also include weight-2 differences for broader coverage
+    for i in 0..8 {
+        for j in i+1..8 {
+            input_diffs.push((1u64 << i) | (1u64 << j));
+        }
+    }
+
+    let forward_map = enumerate_forward(&ddt, 0, input_diffs[0], 4, 4, 20000, 32);
+    println!("Forward 4 rounds states: {}", forward_map.len());
 
     let mut best_prob = 0.0;
     let mut best_pair = None;
-    // Test a few output differences
+    // Test output differences with Hamming weight 1 and 2
+    let mut output_diffs = Vec::new();
     for bit in 0..8 {
-        let dr_out = 1u64 << bit;
-        let backward_map = enumerate_backward(&ddt, 0, dr_out, 3, 4, 20000, 32);
+        output_diffs.push(1u64 << bit);
+    }
+    for i in 0..8 {
+        for j in i+1..8 {
+            output_diffs.push((1u64 << i) | (1u64 << j));
+        }
+    }
+
+    for &dr_out in &output_diffs {
+        let backward_map = enumerate_backward(&ddt, 0, dr_out, 4, 4, 20000, 32);
         for (&(dl_mid, dr_mid), &p_back) in backward_map.iter() {
             if let Some(&p_fwd) = forward_map.get(&(dl_mid, dr_mid)) {
                 let total = p_fwd * p_back;
@@ -220,7 +240,7 @@ fn main() {
     }
 
     println!(
-        "Best 6-round characteristic probability found: {:.3e}",
+        "Best 8-round characteristic probability found: {:.3e}",
         best_prob
     );
     if let Some((in_diff, out_diff, dl_mid, dr_mid)) = best_pair {

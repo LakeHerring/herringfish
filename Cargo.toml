@@ -15,6 +15,7 @@ shake = "0.1.0"
 subtle = "2.6"
 
 [dev-dependencies]
+criterion = "0.5"
 
 # ─── Build & Optimization Profile ──────────────────────────────────────────
 [profile.release]
