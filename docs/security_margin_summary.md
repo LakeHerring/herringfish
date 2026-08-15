@@ -1,7 +1,7 @@
 # Herringfish Concrete Security Margin Quantification – Summary
 
 **Date:** 2026-08-15
-**Construction:** Feistel ARX v0.2.2
+**Construction:** Feistel ARX v0.2.3
 **Parameters:** 128-bit block, 256-bit master key, 16 rounds (parameterisable 4/6/8/16)
 **F-function:** `S[x⊕k]` with 8-bit S-box + intra-round diffusion `out[i]=in[i]⊕in[i+1]⊕in[i+3]`
 **Key schedule:** SHAKE256 XOF with domain `HERRINGFISH-FEISTEL-KEY`
@@ -154,7 +154,8 @@ Example `examples/statistical_full_cipher.rs` with 100,000 samples:
 Observations are consistent with expected avalanche behavior under the tested sampling methodology. No statistical anomaly detected within the tested sample size.
 
 ## Next steps
-* Trail search and hull analysis for 6-8 rounds
+* Trail search and hull analysis for 6-8 rounds with increased budget and weight-3 output differences
+* True 32-lane AVX2 S-box gather with full index widening completed; systematic Criterion benchmarks pending
 * Formal side-channel review of SHAKE expansion
-* Performance benchmarks for SIMD-accelerated implementations
-* KAT vectors for frozen S-box
+* Full-cipher statistical analysis confirmed; update security margin summary with larger sample sizes
+* KAT vectors for frozen S-box published

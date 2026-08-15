@@ -195,8 +195,8 @@ fn enumerate_backward(
 
 fn main() {
     let ddt = build_ddt();
-    println!("Meet-in-the-middle hull analysis for 6 rounds");
-    println!("Config: max_active_bytes=4, top_n=20000, top_k_per_byte=32");
+    println!("Meet-in-the-middle hull analysis for 8 rounds");
+    println!("Config: max_active_bytes=4, top_n=20000, top_k_per_byte=32, output weight up to 3");
 
     // Enumerate input differences with Hamming weight 1
     let mut input_diffs = Vec::new();
@@ -211,12 +211,12 @@ fn main() {
     }
 
     let dr_in = input_diffs[0];
-    let forward_map = enumerate_forward(&ddt, 0, dr_in, 4, 8, 50000, 32);
+    let forward_map = enumerate_forward(&ddt, 0, dr_in, 4, 4, 20000, 32);
     println!("Forward 4 rounds states: {}", forward_map.len());
 
     let mut best_prob = 0.0;
     let mut best_pair = None;
-    // Test output differences with Hamming weight 1 and 2
+    // Test output differences with Hamming weight 1, 2 and 3
     let mut output_diffs = Vec::new();
     for bit in 0..8 {
         output_diffs.push(1u64 << bit);
@@ -226,9 +226,16 @@ fn main() {
             output_diffs.push((1u64 << i) | (1u64 << j));
         }
     }
+    for i in 0..8 {
+        for j in i + 1..8 {
+            for k in j + 1..8 {
+                output_diffs.push((1u64 << i) | (1u64 << j) | (1u64 << k));
+            }
+        }
+    }
 
     for &dr_out in &output_diffs {
-        let backward_map = enumerate_backward(&ddt, 0, dr_out, 4, 8, 50000, 32);
+        let backward_map = enumerate_backward(&ddt, 0, dr_out, 4, 4, 20000, 32);
         for (&(dl_mid, dr_mid), &p_back) in backward_map.iter() {
             if let Some(&p_fwd) = forward_map.get(&(dl_mid, dr_mid)) {
                 let total = p_fwd * p_back;
