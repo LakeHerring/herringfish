@@ -840,8 +840,9 @@ Research results should distinguish between **observed experimental results** an
 | Full-cipher statistical analysis | Ongoing                             |
 | Reduced-round analysis           | Ongoing                             |
 | Reduced-round attack tooling     | Available                           |
-| SIMD implementation              | Not implemented                     |
-| Performance benchmarks           | Not implemented                     |
+| SIMD implementation              | Partial – AVX2 diffusion benchmark, example gated for x86_64 |
+| Performance benchmarks           | Preliminary – S-box CT, AVX2 diffusion |
+
 | AEAD construction                | Not implemented                     |
 | Independent cryptanalysis        | Not yet performed                   |
 | Production use                   | **Not recommended**                 |
@@ -850,9 +851,9 @@ Research results should distinguish between **observed experimental results** an
 
 # Current Status
 
-**Status: Experimental / Research — Herringfish Feistel ARX v0.2**
+**Status: Experimental / Research — Herringfish Feistel ARX v0.2.2**
 
-The current v0.2 configuration is frozen for cryptographic evaluation while analysis continues.
+The current v0.2 configuration is frozen for cryptographic evaluation while analysis continues. Tag `v0.2.2` is the latest release.
 
 Current S-box evaluation parameters:
 
@@ -882,11 +883,15 @@ Current research status:
 * [x] Preliminary avalanche analysis
 * [x] Reduced-round evaluation
 * [x] Reduced-round attack tooling
+* [x] Constant-time S-box implementation – `src/cipher/sbox_ct.rs`
+* [x] Key-schedule independence tests – formalised with 100k samples
+* [x] Meet-in-the-middle hull analysis tooling
 * [~] Full-cipher statistical analysis
 * [~] Full-cipher cryptanalysis
 * [~] Formal specification — v0.2 draft
-* [ ] SIMD implementation
-* [ ] Performance benchmarks
+* [~] SIMD implementation – AVX2 diffusion benchmark, example gated
+* [~] Performance benchmarks – S-box CT, AVX2 diffusion
+
 * [ ] AEAD construction
 * [ ] Independent cryptanalysis
 * [ ] Independent implementation
