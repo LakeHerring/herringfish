@@ -81,9 +81,18 @@ Endianness for multi-byte integer encoding is little-endian.
 | Round-key domain     |  `HERRINGFISH-FEISTEL-KEY` |
 | S-box domain         | `HERRINGFISH-FEISTEL-SBOX` |
 
-All operations must be interpreted according to the exact bit and byte ordering defined by the implementation specification.
+All operations must be interpreted according to the exact bit and byte ordering defined below.
 
-**Endianness remains a normative implementation detail and must be explicitly fixed before v0.2 is considered interoperable.**
+**Normative serialization and endianness – v0.2 freeze**
+
+* Block representation: 128-bit plaintext/ciphertext is serialized as 16 bytes in little-endian order. Byte 0 is the least significant byte of the first 64-bit half.
+* Half-block representation: each 64-bit half Lᵢ, Rᵢ is serialized as 8 bytes little-endian, with L₀ || R₀ forming the 16-byte block.
+* Master key: 256-bit key is serialized as 32 bytes in the order supplied by the caller; round-key derivation consumes the raw 32-byte key as-is.
+* Round keys: each 64-bit round key Kᵢ is produced as 8 little-endian bytes from the SHAKE256 XOF output.
+* Multi-byte integer encoding for counters and domain-separated inputs is little-endian.
+* S-box indexing: input byte is used directly as an 8-bit index 0..255; output byte is the S-box value.
+
+These serialization rules are normative for v0.2 interoperability.
 
 ---
 
@@ -1055,6 +1064,33 @@ If the construction does not use modular addition and rotations in the way the t
 Implementations are designed to avoid secret-dependent timing behavior. Constant-time properties must be validated through implementation review and appropriate side-channel testing; the reference implementation should not be assumed to be constant-time merely because it avoids obvious branches.
 
 The reference S-box uses table lookup indexed by secret-dependent data, which can create cache side channels. A constant-time variant `src/cipher/sbox_ct.rs` is provided for research evaluation. Constant-time behavior must be verified, not assumed.
+
+---
+
+# 28. Normative Freeze Summary – v0.2.3
+
+This section freezes all normative parameters for Herringfish Feistel ARX v0.2.
+
+## 28.1 Construction parameters
+
+* Cipher type: Balanced Feistel
+* Block size: 128 bits
+* Master key size: 256 bits
+* Rounds: 16
+* Round function: S-box substitution `y_i = S[x_i ⊕ k_i]` followed by linear diffusion `out[i] = in[i] ⊕ in[(i+1) mod 8] ⊕ in[(i+3) mod 8]`
+* S-box: `HERRINGFISH_SBOX_V02`, affine equivalent of AES S-box with `a = 0x11`, `b = 0x71`, counter = 0. DDT_max = 4, LAT_max bias = 32.
+* Key schedule: SHAKE256 XOF, domain `HERRINGFISH-FEISTEL-KEY`, `SHAKE256(domain || master_key)`, output 1024 bits as 16 × 64-bit round keys in little-endian.
+* Serialization: 16-byte blocks little-endian, 64-bit halves little-endian, round keys little-endian.
+
+## 28.2 Domain separation
+
+* Round-key derivation domain: `HERRINGFISH-FEISTEL-KEY`
+* S-box derivation domain: `HERRINGFISH-FEISTEL-SBOX`
+* Encoding: `SHAKE256(domain_separator || input)`, ASCII UTF-8 domain, no length prefix, raw master key input.
+
+## 28.3 Interoperability
+
+Implementations conforming to v0.2 must produce identical ciphertext for the normative KAT set in `docs/tables/kat_vectors_v02.txt` and must respect the serialization and endianness rules above. Any deviation is non-conforming.
 
 ---
 
