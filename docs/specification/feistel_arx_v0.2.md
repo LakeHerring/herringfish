@@ -947,6 +947,48 @@ Expanded validation set: `docs/tables/kat_expanded_v02.txt` contains 10×10 key/
 
 ---
 
+# 26. Version 0.2.2 Updates
+
+## 26.1 Implementation Hardening
+
+* Constant-time S-box module `src/cipher/sbox_ct.rs` implemented using `subtle::ConstantTimeEq` selection over 256 entries.
+* `FeistelArx::encrypt_block_ct` / `decrypt_block_ct` added, using `f_function_ct` with constant-time S-box lookup.
+* Correctness verified: CT output matches table-lookup output for all tested inputs.
+* Benchmark `examples/bench_sbox_ct.rs` on release build: table lookup ~10.9 M ops/s, constant-time ~6.6 k ops/s, overhead ~1 647×.
+* S-box table lookup remains secret-dependent in the reference implementation. The CT variant is provided for research and side-channel evaluation.
+
+## 26.2 Key Schedule Formalisation
+
+* Key-schedule independence tests formalised with 100k samples.
+* Pairwise round-key Hamming distance mean ≈512.08 bits, std 16.06.
+* Related-key 1-bit diff mean 512.00 bits, std 16.05.
+* Tests in `examples/key_schedule_independence_large.rs`.
+
+## 26.3 Hull and Trail Analysis
+
+* Meet-in-the-middle hull enumeration implemented in `examples/hull_meet_in_middle.rs`.
+* Current configuration `max_active_bytes=3, top_n=5000, top_k_per_byte=8` yields no matching intermediate state for 6 rounds with 1-bit input/output set under current budget.
+* Exact 4-6 round differential characteristic enumeration with DDT + linear diffusion available in `examples/differential_characteristic_exact_v2.rs`.
+* Linear trail search with full mask enumeration for 4-6 rounds in `examples/linear_trail_search_exact.rs`.
+
+## 26.4 Engineering
+
+* AVX2 diffusion benchmark `examples/simd_avx2_sbox.rs` – scalar vs AVX2, speedup ~2.79×, checksums match.
+* Example gated to `#[cfg(target_arch = "x86_64")]` for cross-platform CI.
+* `cargo fmt` / `cargo clippy` clean, examples allowlist for research code.
+* Reduced-round KATs generated for 4/6/8 rounds in `docs/tables/kat_reduced_rounds_v02.txt` via `examples/kat_reduced_rounds.rs`.
+* Parameterised Feistel for variable round counts via `FeistelArx::new_with_rounds`.
+
+## 26.5 Security Margin Update v0.2.2
+
+* Extended differential sampling to 2/4-bit input differences, larger mask sets for linear sampling.
+* All observed maxima remain at sampling floor 1/N for rounds 4/6/8/12.
+* Linear bias sampling with 20k samples ×20 trials: rounds 4 ≈0.01085, rounds 6 ≈0.00975, rounds 8 ≈0.00740.
+* No high-probability differential concentration detected under tested models.
+* Empirical margin remains ≥8 rounds beyond tested range under current models. No formal security bound claimed.
+
+---
+
 ## Herringfish Feistel ARX v0.2
 
 **Design it. Implement it. Measure it. Attack it. Improve it.**
