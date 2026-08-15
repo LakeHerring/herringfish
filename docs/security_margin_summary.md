@@ -143,6 +143,16 @@ Consistent with independent 64-bit keys.
 * Overhead is expected for pedagogical selection-over-all implementation. Production use would require bitsliced or hardware-accelerated S-box.
 * S-box table lookup remains secret-dependent and thus not constant-time in the reference implementation. The CT variant is provided for research and side-channel evaluation.
 
+## Full-cipher statistical analysis v0.2.2
+
+Example `examples/statistical_full_cipher.rs` with 100,000 samples:
+
+* Average Hamming distance: 63.99 bits (ideal 64)
+* Average bit flip probability: 0.4999 (ideal 0.5)
+* SAC mean absolute deviation: 0.0011
+
+Observations are consistent with expected avalanche behavior under the tested sampling methodology. No statistical anomaly detected within the tested sample size.
+
 ## Next steps
 * Trail search and hull analysis for 6-8 rounds
 * Formal side-channel review of SHAKE expansion

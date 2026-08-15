@@ -987,6 +987,75 @@ Expanded validation set: `docs/tables/kat_expanded_v02.txt` contains 10×10 key/
 * No high-probability differential concentration detected under tested models.
 * Empirical margin remains ≥8 rounds beyond tested range under current models. No formal security bound claimed.
 
+# 27. Normative Clarifications and Research Discipline
+
+## 27.1 Prototype Properties vs Security Claims
+
+This specification describes a research prototype. Design parameters and observed properties are explicitly separated from security claims.
+
+* The 256-bit master key size is a design parameter. It does not imply 256-bit security.
+* Passing statistical tests, avalanche tests, or known-answer tests establishes implementation correctness, not cryptographic security.
+* S-box DDT_max=4 and LAT_max=32 are local S-box properties. They do not establish full-cipher resistance to differential or linear cryptanalysis.
+* Reduced-round resistance does not establish full-round security.
+* Constant-time coding practices do not by themselves establish side-channel resistance.
+
+Herringfish currently makes no claim of proven or established cryptographic security.
+
+## 27.2 S-box Affine Transformation
+
+The v0.2 S-box is an affine-equivalent transformation of the AES S-box with explicitly defined affine parameters.
+
+Construction:
+```
+S[x] = a ⋅ AES_SBOX[x] ⊕ b  over GF(2^8)
+```
+
+Affine parameters under the construction's specified byte transformation:
+* a = 0x11  (multiplicative constant in GF(2^8))
+* b = 0x71  (additive constant)
+
+S-box counter: 0
+DDT_max: 4
+LAT_max: 32
+
+The exact transformation is defined in this specification, not only in prose. The frozen permutation is `HERRINGFISH_SBOX_V02` in `src/cipher/feistel_arx.rs`.
+
+## 27.3 SHAKE256 Key Schedule Encoding
+
+Round-key derivation uses SHAKE256 with explicit domain separation and encoding:
+
+```
+SHAKE256(
+    domain_separator || master_key
+)
+```
+
+* Domain separator: ASCII UTF-8 bytes, no length prefix
+* Domain string for round keys: `HERRINGFISH-FEISTEL-KEY`
+* Master key: raw 32-byte input
+* Output: first 1024 bits, little-endian 64-bit round keys
+
+S-box derivation for future versions:
+```
+SHAKE256(
+    HERRINGFISH-FEISTEL-SBOX || counter
+)
+```
+
+Preliminary statistical testing of generated round keys has not identified obvious non-random structure. This is an observation, not a cryptographic security claim.
+
+## 27.4 ARX Designation
+
+The "ARX" designation refers specifically to the use of addition, rotation, and XOR operations within the round function. The nonlinear S-box layer is an additional component and is not itself part of the ARX primitive.
+
+If the construction does not use modular addition and rotations in the way the term normally implies, the name should be revised. The current v0.2 round function comprises S-box substitution followed by linear XOR diffusion.
+
+## 27.5 Constant-Time Implementation
+
+Implementations are designed to avoid secret-dependent timing behavior. Constant-time properties must be validated through implementation review and appropriate side-channel testing; the reference implementation should not be assumed to be constant-time merely because it avoids obvious branches.
+
+The reference S-box uses table lookup indexed by secret-dependent data, which can create cache side channels. A constant-time variant `src/cipher/sbox_ct.rs` is provided for research evaluation. Constant-time behavior must be verified, not assumed.
+
 ---
 
 ## Herringfish Feistel ARX v0.2
