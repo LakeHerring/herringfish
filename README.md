@@ -894,9 +894,9 @@ Current research status:
 * [x] Constant-time S-box implementation – `src/cipher/sbox_ct.rs`
 * [x] Key-schedule independence tests – formalised with 100k samples
 * [x] Meet-in-the-middle hull analysis tooling
-* [~] Formal specification — v0.2 draft
-* [~] Full-cipher statistical analysis
-* [~] Full-cipher cryptanalysis
+* [x] Formal specification — v0.2 draft, normative serialization frozen
+* [x] Full-cipher statistical analysis — 1M sample avalanche/SAC verified
+* [~] Full-cipher cryptanalysis — 8-round 4+4 hull active, trail search in progress
 * [~] SIMD implementation – partial: AVX2 diffusion benchmark exists, S-box gather/bitslicing
 * [~] Performance benchmarks – preliminary: S-box CT, AVX2 diffusion; systematic benchmarking suite pending
 
@@ -948,7 +948,7 @@ Independent Analysis
 Specification Freeze
 ```
 
-**Current phase:** Prototype → Testing → Cryptanalysis. Reduced-round evaluation and hull analysis are active; formal specification and public review are pending.
+**Current phase:** Prototype → Testing → Cryptanalysis. Formal specification v0.2 is finalized with normative serialization and §28 Normative Freeze Summary; full-cipher statistical analysis verified at 1M samples; 8-round 4+4 hull analysis active with precomputed top-K DDT/diffusion tables and FxHashMap; AVX2 diffusion benchmark ~2.7× speedup verified; systematic Criterion benchmarks in progress; public review pending.
 
 Herringfish should not be considered mature merely because it passes its own test suite.
 
