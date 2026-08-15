@@ -940,6 +940,8 @@ Independent Analysis
 Specification Freeze
 ```
 
+**Current phase:** Prototype → Testing → Cryptanalysis. Reduced-round evaluation and hull analysis are active; formal specification and public review are pending.
+
 Herringfish should not be considered mature merely because it passes its own test suite.
 
 ---
