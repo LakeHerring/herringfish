@@ -886,11 +886,11 @@ Current research status:
 * [x] Constant-time S-box implementation – `src/cipher/sbox_ct.rs`
 * [x] Key-schedule independence tests – formalised with 100k samples
 * [x] Meet-in-the-middle hull analysis tooling
+* [~] Formal specification — v0.2 draft
 * [~] Full-cipher statistical analysis
 * [~] Full-cipher cryptanalysis
-* [~] Formal specification — v0.2 draft
-* [~] SIMD implementation – AVX2 diffusion benchmark, example gated
-* [~] Performance benchmarks – S-box CT, AVX2 diffusion
+* [~] SIMD implementation – partial: AVX2 diffusion benchmark exists, S-box gather/bitslicing
+* [~] Performance benchmarks – preliminary: S-box CT, AVX2 diffusion; systematic benchmarking suite pending
 
 * [ ] AEAD construction
 * [ ] Independent cryptanalysis
