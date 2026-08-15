@@ -162,6 +162,6 @@ Observations are consistent with expected avalanche behavior under the tested sa
 ## Next steps
 * Trail search and hull analysis for 6-8 rounds with increased budget and weight-3 output differences
 * True 32-lane AVX2 S-box gather with full index widening completed; systematic Criterion benchmarks pending
-* Formal side-channel review of SHAKE expansion
-* Full-cipher statistical analysis confirmed; update security margin summary with larger sample sizes
+* Formal side-channel review documented in `docs/side_channel_review_v0.2.md`
+* Full-cipher statistical analysis confirmed with 1M samples; 5-10M sample runs planned for tighter confidence intervals
 * KAT vectors for frozen S-box published
