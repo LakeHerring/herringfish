@@ -210,7 +210,8 @@ fn main() {
         }
     }
 
-    let forward_map = enumerate_forward(&ddt, 0, input_diffs[0], 4, 4, 20000, 32);
+    let dr_in = input_diffs[0];
+    let forward_map = enumerate_forward(&ddt, 0, dr_in, 4, 4, 20000, 32);
     println!("Forward 4 rounds states: {}", forward_map.len());
 
     let mut best_prob = 0.0;
