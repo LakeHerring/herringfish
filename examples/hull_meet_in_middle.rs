@@ -203,9 +203,7 @@ fn build_ddt_from_sbox() -> Ddt {
 
     for dx in 0..256 {
         for x in 0..256 {
-            let dy =
-                HERRINGFISH_SBOX_V02[x ^ dx] ^
-                HERRINGFISH_SBOX_V02[x];
+            let dy = HERRINGFISH_SBOX_V02[x ^ dx] ^ HERRINGFISH_SBOX_V02[x];
 
             ddt[dx][dy as usize] += 1;
         }
@@ -215,8 +213,8 @@ fn build_ddt_from_sbox() -> Ddt {
 }
 
 fn parse_ddt_file(path: &Path) -> Result<Ddt, String> {
-    let text = fs::read_to_string(path)
-        .map_err(|e| format!("Failed to read {}: {e}", path.display()))?;
+    let text =
+        fs::read_to_string(path).map_err(|e| format!("Failed to read {}: {e}", path.display()))?;
 
     let mut rows: Vec<Vec<u16>> = Vec::new();
 
@@ -234,10 +232,7 @@ fn parse_ddt_file(path: &Path) -> Result<Ddt, String> {
         let values: Vec<u16> = line
             .split_whitespace()
             .filter_map(|token| {
-                let cleaned = token
-                    .trim_matches(|c: char| {
-                        !c.is_ascii_hexdigit()
-                    });
+                let cleaned = token.trim_matches(|c: char| !c.is_ascii_hexdigit());
 
                 if cleaned.is_empty() {
                     return None;
@@ -297,15 +292,10 @@ fn load_exact_ddt(path: &Path) -> Result<Ddt, String> {
 
 fn validate_ddt_rows(ddt: &Ddt) -> Result<(), String> {
     for dx in 0..256 {
-        let sum: u32 = ddt[dx]
-            .iter()
-            .map(|&x| x as u32)
-            .sum();
+        let sum: u32 = ddt[dx].iter().map(|&x| x as u32).sum();
 
         if sum != 256 {
-            return Err(format!(
-                "DDT row dx=0x{dx:02x} sums to {sum}, expected 256"
-            ));
+            return Err(format!("DDT row dx=0x{dx:02x} sums to {sum}, expected 256"));
         }
     }
 
@@ -320,8 +310,7 @@ fn validate_ddt_against_sbox(ddt: &Ddt) -> bool {
             if ddt[dx][dy] != reference[dx][dy] {
                 println!(
                     "Mismatch at dx=0x{dx:02x}, dy=0x{dy:02x}: file={}, S-box={}",
-                    ddt[dx][dy],
-                    reference[dx][dy]
+                    ddt[dx][dy], reference[dx][dy]
                 );
 
                 return false;
@@ -353,14 +342,8 @@ fn print_ddt_validation(ddt: &Ddt, dx: usize) {
     println!("Examining dx = 0x{dx:02x}");
     println!("Non-zero transitions: {non_zero}");
     println!("Maximum differential count: {max_count}");
-    println!(
-        "Maximum probability: {:.6e}",
-        max_probability
-    );
-    println!(
-        "Maximum -log2(P): {:.4}",
-        max_weight
-    );
+    println!("Maximum probability: {:.6e}", max_probability);
+    println!("Maximum -log2(P): {:.4}", max_weight);
 
     let mut entries: Vec<(usize, u16)> = ddt[dx]
         .iter()
@@ -369,10 +352,7 @@ fn print_ddt_validation(ddt: &Ddt, dx: usize) {
         .map(|(dy, count)| (dy, *count))
         .collect();
 
-    entries.sort_by(|a, b| {
-        b.1.cmp(&a.1)
-            .then_with(|| a.0.cmp(&b.0))
-    });
+    entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
 
     println!();
     println!("Top DDT transitions:");
@@ -390,15 +370,10 @@ fn print_ddt_validation(ddt: &Ddt, dx: usize) {
         );
     }
 
-    let sum: u32 = ddt[dx]
-        .iter()
-        .map(|&x| x as u32)
-        .sum();
+    let sum: u32 = ddt[dx].iter().map(|&x| x as u32).sum();
 
     println!();
-    println!(
-        "DDT row count sum: {sum} / 256"
-    );
+    println!("DDT row count sum: {sum} / 256");
 
     if sum == 256 {
         println!("DDT row validation: PASS");
@@ -421,10 +396,7 @@ fn diffuse(t: u64) -> u64 {
     let mut out = [0u8; 8];
 
     for i in 0..8 {
-        out[i] =
-            bytes[i]
-            ^ bytes[(i + 1) % 8]
-            ^ bytes[(i + 3) % 8];
+        out[i] = bytes[i] ^ bytes[(i + 1) % 8] ^ bytes[(i + 3) % 8];
     }
 
     let mut result = 0u64;
@@ -464,10 +436,7 @@ fn active_byte_indices(value: u64) -> Vec<usize> {
     result
 }
 
-fn enumerate_byte_transitions(
-    ddt: &Ddt,
-    dx: u8,
-) -> Vec<(u8, u16)> {
+fn enumerate_byte_transitions(ddt: &Ddt, dx: u8) -> Vec<(u8, u16)> {
     let mut result = Vec::new();
 
     for dy in 0..256 {
@@ -485,10 +454,7 @@ fn enumerate_byte_transitions(
 // Exact round expansion
 // ============================================================
 
-fn expand_round(
-    ddt: &Ddt,
-    input: &HashMap<State, Dyadic>,
-) -> HashMap<State, Dyadic> {
+fn expand_round(ddt: &Ddt, input: &HashMap<State, Dyadic>) -> HashMap<State, Dyadic> {
     let mut output: HashMap<State, Dyadic> = HashMap::new();
 
     for (state, probability) in input.iter() {
@@ -500,31 +466,22 @@ fn expand_round(
         if active.is_empty() {
             let next = (dr, dl);
 
-            let entry = output
-                .entry(next)
-                .or_insert_with(Dyadic::zero);
+            let entry = output.entry(next).or_insert_with(Dyadic::zero);
 
             *entry = entry.add(*probability);
 
             continue;
         }
 
-        let mut choices: Vec<Vec<(u8, u16)>> =
-            Vec::with_capacity(active.len());
+        let mut choices: Vec<Vec<(u8, u16)>> = Vec::with_capacity(active.len());
 
         for &index in active.iter() {
-            let dx =
-                ((dr >> (8 * index)) & 0xff) as u8;
+            let dx = ((dr >> (8 * index)) & 0xff) as u8;
 
-            choices.push(
-                enumerate_byte_transitions(ddt, dx)
-            );
+            choices.push(enumerate_byte_transitions(ddt, dx));
         }
 
-        let total_combinations: usize = choices
-            .iter()
-            .map(|v| v.len())
-            .product();
+        let total_combinations: usize = choices.iter().map(|v| v.len()).product();
 
         for combination in 0..total_combinations {
             let mut selector = combination;
@@ -533,9 +490,7 @@ fn expand_round(
 
             let mut path_count: u128 = 1;
 
-            for (byte_index, &state_byte_index) in
-                active.iter().enumerate()
-            {
+            for (byte_index, &state_byte_index) in active.iter().enumerate() {
                 let list = &choices[byte_index];
 
                 let choice = selector % list.len();
@@ -543,9 +498,7 @@ fn expand_round(
 
                 let (dy, count) = list[choice];
 
-                t_value |=
-                    (dy as u64)
-                    << (8 * state_byte_index);
+                t_value |= (dy as u64) << (8 * state_byte_index);
 
                 path_count *= count as u128;
             }
@@ -557,14 +510,10 @@ fn expand_round(
 
             let transition_probability = Dyadic {
                 numerator: path_count,
-                denominator_bits:
-                    (active.len() * 8) as u32,
+                denominator_bits: (active.len() * 8) as u32,
             };
 
-            let contribution =
-                probability.multiply(
-                    transition_probability
-                );
+            let contribution = probability.multiply(transition_probability);
 
             let entry = output
                 .entry((dl_next, dr_next))
@@ -581,9 +530,7 @@ fn expand_round(
 // Probability mass
 // ============================================================
 
-fn total_probability(
-    map: &HashMap<State, Dyadic>,
-) -> Dyadic {
+fn total_probability(map: &HashMap<State, Dyadic>) -> Dyadic {
     let mut total = Dyadic::zero();
 
     for probability in map.values() {
@@ -593,25 +540,13 @@ fn total_probability(
     total
 }
 
-fn print_probability_mass(
-    label: &str,
-    map: &HashMap<State, Dyadic>,
-) {
+fn print_probability_mass(label: &str, map: &HashMap<State, Dyadic>) {
     let total = total_probability(map);
 
     println!("{label}:");
-    println!(
-        "  Numerator        : {}",
-        total.numerator
-    );
-    println!(
-        "  Denominator bits : {}",
-        total.denominator_bits
-    );
-    println!(
-        "  Probability      : {:.20e}",
-        total.probability_f64()
-    );
+    println!("  Numerator        : {}", total.numerator);
+    println!("  Denominator bits : {}", total.denominator_bits);
+    println!("  Probability      : {:.20e}", total.probability_f64());
     println!(
         "  -log2(P)         : {:.12}",
         total.log2_probability().neg()
@@ -622,35 +557,23 @@ fn print_probability_mass(
 // Sorting / reporting
 // ============================================================
 
-fn sorted_states(
-    map: &HashMap<State, Dyadic>,
-) -> Vec<(State, Dyadic)> {
-    let mut values: Vec<(State, Dyadic)> =
-        map.iter()
-            .map(|(state, probability)| {
-                (*state, *probability)
-            })
-            .collect();
+fn sorted_states(map: &HashMap<State, Dyadic>) -> Vec<(State, Dyadic)> {
+    let mut values: Vec<(State, Dyadic)> = map
+        .iter()
+        .map(|(state, probability)| (*state, *probability))
+        .collect();
 
     values.sort_by(|a, b| {
         b.1.numerator
             .cmp(&a.1.numerator)
-            .then_with(|| {
-                a.0.0.cmp(&b.0.0)
-            })
-            .then_with(|| {
-                a.0.1.cmp(&b.0.1)
-            })
+            .then_with(|| a.0.0.cmp(&b.0.0))
+            .then_with(|| a.0.1.cmp(&b.0.1))
     });
 
     values
 }
 
-fn print_top_states(
-    title: &str,
-    map: &HashMap<State, Dyadic>,
-    count: usize,
-) {
+fn print_top_states(title: &str, map: &HashMap<State, Dyadic>, count: usize) {
     println!();
     println!("------------------------------------------------------------");
     println!("{title}");
@@ -658,19 +581,10 @@ fn print_top_states(
 
     println!(
         "{:<6} {:18} {:18} {:20} {:12}",
-        "#",
-        "ΔL",
-        "ΔR",
-        "Probability",
-        "-log2(P)"
+        "#", "ΔL", "ΔR", "Probability", "-log2(P)"
     );
 
-    for (rank, (state, probability)) in
-        sorted_states(map)
-            .into_iter()
-            .take(count)
-            .enumerate()
-    {
+    for (rank, (state, probability)) in sorted_states(map).into_iter().take(count).enumerate() {
         println!(
             "{:<6} 0x{:016x} 0x{:016x} {:.10e} {:12.6}",
             rank + 1,
@@ -700,12 +614,8 @@ fn print_top_states(
 // the same DDT-derived transition probability used forward.
 // ============================================================
 
-fn expand_backward(
-    ddt: &Ddt,
-    output_map: &HashMap<State, Dyadic>,
-) -> HashMap<State, Dyadic> {
-    let mut result: HashMap<State, Dyadic> =
-        HashMap::new();
+fn expand_backward(ddt: &Ddt, output_map: &HashMap<State, Dyadic>) -> HashMap<State, Dyadic> {
+    let mut result: HashMap<State, Dyadic> = HashMap::new();
 
     for (state, probability) in output_map.iter() {
         let dl_out = state.0;
@@ -718,35 +628,24 @@ fn expand_backward(
         if active.is_empty() {
             let dl_prev = dr_out;
 
-            let predecessor =
-                (dl_prev, dr_prev);
+            let predecessor = (dl_prev, dr_prev);
 
-            let entry = result
-                .entry(predecessor)
-                .or_insert_with(Dyadic::zero);
+            let entry = result.entry(predecessor).or_insert_with(Dyadic::zero);
 
             *entry = entry.add(*probability);
 
             continue;
         }
 
-        let mut choices: Vec<Vec<(u8, u16)>> =
-            Vec::with_capacity(active.len());
+        let mut choices: Vec<Vec<(u8, u16)>> = Vec::with_capacity(active.len());
 
         for &index in active.iter() {
-            let dx =
-                ((dr_prev >> (8 * index)) & 0xff)
-                    as u8;
+            let dx = ((dr_prev >> (8 * index)) & 0xff) as u8;
 
-            choices.push(
-                enumerate_byte_transitions(ddt, dx)
-            );
+            choices.push(enumerate_byte_transitions(ddt, dx));
         }
 
-        let total_combinations: usize = choices
-            .iter()
-            .map(|v| v.len())
-            .product();
+        let total_combinations: usize = choices.iter().map(|v| v.len()).product();
 
         for combination in 0..total_combinations {
             let mut selector = combination;
@@ -755,9 +654,7 @@ fn expand_backward(
 
             let mut path_count: u128 = 1;
 
-            for (byte_index, &state_byte_index) in
-                active.iter().enumerate()
-            {
+            for (byte_index, &state_byte_index) in active.iter().enumerate() {
                 let list = &choices[byte_index];
 
                 let choice = selector % list.len();
@@ -765,9 +662,7 @@ fn expand_backward(
 
                 let (dy, count) = list[choice];
 
-                t_value |=
-                    (dy as u64)
-                    << (8 * state_byte_index);
+                t_value |= (dy as u64) << (8 * state_byte_index);
 
                 path_count *= count as u128;
             }
@@ -778,14 +673,10 @@ fn expand_backward(
 
             let transition_probability = Dyadic {
                 numerator: path_count,
-                denominator_bits:
-                    (active.len() * 8) as u32,
+                denominator_bits: (active.len() * 8) as u32,
             };
 
-            let contribution =
-                probability.multiply(
-                    transition_probability
-                );
+            let contribution = probability.multiply(transition_probability);
 
             let entry = result
                 .entry((dl_prev, dr_prev))
@@ -808,15 +699,9 @@ fn calculate_mitm_hull(
 ) -> HashMap<State, Dyadic> {
     let mut result = HashMap::new();
 
-    for (middle, forward_probability)
-        in forward.iter()
-    {
-        if let Some(backward_probability) =
-            backward.get(middle)
-        {
-            let contribution =
-                forward_probability
-                    .multiply(*backward_probability);
+    for (middle, forward_probability) in forward.iter() {
+        if let Some(backward_probability) = backward.get(middle) {
+            let contribution = forward_probability.multiply(*backward_probability);
 
             result.insert(*middle, contribution);
         }
@@ -845,12 +730,8 @@ fn main() {
     println!("  Probability denominator: 2^128");
     println!("  DDT source            : ddt_matrix.txt");
     println!();
-    println!(
-        "  Input ΔL              : 0x{INPUT_DL:016x}"
-    );
-    println!(
-        "  Input ΔR              : 0x{INPUT_DR:016x}"
-    );
+    println!("  Input ΔL              : 0x{INPUT_DL:016x}");
+    println!("  Input ΔR              : 0x{INPUT_DR:016x}");
     println!();
 
     // --------------------------------------------------------
@@ -868,11 +749,7 @@ fn main() {
             "MISSING"
         };
 
-        println!(
-            "  {:<70} {}",
-            path,
-            status
-        );
+        println!("  {:<70} {}", path, status);
     }
 
     println!();
@@ -924,13 +801,9 @@ fn main() {
     println!("------------------------------------------------------------");
 
     if validate_ddt_against_sbox(&ddt) {
-        println!(
-            "DDT file matches HERRINGFISH_SBOX_V02: PASS"
-        );
+        println!("DDT file matches HERRINGFISH_SBOX_V02: PASS");
     } else {
-        println!(
-            "DDT file matches HERRINGFISH_SBOX_V02: FAIL"
-        );
+        println!("DDT file matches HERRINGFISH_SBOX_V02: FAIL");
         return;
     }
 
@@ -952,18 +825,11 @@ fn main() {
     println!("INITIAL DIFFERENTIAL STATE");
     println!("------------------------------------------------------------");
 
-    println!(
-        "ΔL = 0x{INPUT_DL:016x}"
-    );
+    println!("ΔL = 0x{INPUT_DL:016x}");
 
-    println!(
-        "ΔR = 0x{INPUT_DR:016x}"
-    );
+    println!("ΔR = 0x{INPUT_DR:016x}");
 
-    println!(
-        "Active ΔR bytes = {}",
-        active_byte_indices(INPUT_DR).len()
-    );
+    println!("Active ΔR bytes = {}", active_byte_indices(INPUT_DR).len());
 
     // --------------------------------------------------------
     // Forward half
@@ -974,13 +840,9 @@ fn main() {
     println!("FORWARD HALF");
     println!("============================================================");
 
-    let mut forward: HashMap<State, Dyadic> =
-        HashMap::new();
+    let mut forward: HashMap<State, Dyadic> = HashMap::new();
 
-    forward.insert(
-        (INPUT_DL, INPUT_DR),
-        Dyadic::one(),
-    );
+    forward.insert((INPUT_DL, INPUT_DR), Dyadic::one());
 
     for round in 0..FORWARD_ROUNDS {
         println!();
@@ -990,10 +852,7 @@ fn main() {
             forward.len()
         );
 
-        forward = expand_round(
-            &ddt,
-            &forward,
-        );
+        forward = expand_round(&ddt, &forward);
 
         println!(
             "Forward round {} output states: {}",
@@ -1003,58 +862,30 @@ fn main() {
 
         let mass = total_probability(&forward);
 
-        println!(
-            "Forward probability mass: {:.20e}",
-            mass.probability_f64()
-        );
+        println!("Forward probability mass: {:.20e}", mass.probability_f64());
     }
 
-    print_top_states(
-        "TOP FORWARD MIDDLE STATES",
-        &forward,
-        TOP_OUTPUTS,
-    );
+    print_top_states("TOP FORWARD MIDDLE STATES", &forward, TOP_OUTPUTS);
 
     // --------------------------------------------------------
     // Select strongest forward middle
     // --------------------------------------------------------
 
-    let selected_middle =
-        sorted_states(&forward)
-            .into_iter()
-            .next();
+    let selected_middle = sorted_states(&forward).into_iter().next();
 
-    if let Some((middle, probability)) =
-        selected_middle
-    {
+    if let Some((middle, probability)) = selected_middle {
         println!();
-        println!(
-            "------------------------------------------------------------"
-        );
+        println!("------------------------------------------------------------");
         println!("STRONGEST FORWARD MIDDLE");
-        println!(
-            "------------------------------------------------------------"
-        );
+        println!("------------------------------------------------------------");
 
-        println!(
-            "Middle ΔL = 0x{:016x}",
-            middle.0
-        );
+        println!("Middle ΔL = 0x{:016x}", middle.0);
 
-        println!(
-            "Middle ΔR = 0x{:016x}",
-            middle.1
-        );
+        println!("Middle ΔR = 0x{:016x}", middle.1);
 
-        println!(
-            "P(Input → Middle) = {:.20e}",
-            probability.probability_f64()
-        );
+        println!("P(Input → Middle) = {:.20e}", probability.probability_f64());
 
-        println!(
-            "-log2(P) = {:.12}",
-            -probability.log2_probability()
-        );
+        println!("-log2(P) = {:.12}", -probability.log2_probability());
     }
 
     // --------------------------------------------------------
@@ -1066,32 +897,17 @@ fn main() {
     println!("EXACT 2-ROUND OUTPUT ENUMERATION");
     println!("============================================================");
 
-    let mut outputs: HashMap<State, Dyadic> =
-        HashMap::new();
+    let mut outputs: HashMap<State, Dyadic> = HashMap::new();
 
-    outputs.insert(
-        (INPUT_DL, INPUT_DR),
-        Dyadic::one(),
-    );
+    outputs.insert((INPUT_DL, INPUT_DR), Dyadic::one());
 
     for round in 0..TOTAL_ROUNDS {
         println!();
-        println!(
-            "Round {} input states : {}",
-            round + 1,
-            outputs.len()
-        );
+        println!("Round {} input states : {}", round + 1, outputs.len());
 
-        outputs = expand_round(
-            &ddt,
-            &outputs,
-        );
+        outputs = expand_round(&ddt, &outputs);
 
-        println!(
-            "Round {} output states: {}",
-            round + 1,
-            outputs.len()
-        );
+        println!("Round {} output states: {}", round + 1, outputs.len());
 
         let mass = total_probability(&outputs);
 
@@ -1111,17 +927,11 @@ fn main() {
     println!("2-ROUND OUTPUT STATISTICS");
     println!("------------------------------------------------------------");
 
-    println!(
-        "Unique output states : {}",
-        outputs.len()
-    );
+    println!("Unique output states : {}", outputs.len());
 
-    let total_output_probability =
-        total_probability(&outputs);
+    let total_output_probability = total_probability(&outputs);
 
-    println!(
-        "Total probability mass:"
-    );
+    println!("Total probability mass:");
 
     println!(
         "  Numerator        : {}",
@@ -1140,111 +950,65 @@ fn main() {
 
     println!(
         "  -log2(P)         : {:.12}",
-        -total_output_probability
-            .log2_probability()
+        -total_output_probability.log2_probability()
     );
 
-    let conservation =
-        (total_output_probability
-            .probability_f64()
-            - 1.0)
-            .abs()
-            < 1e-12;
+    let conservation = (total_output_probability.probability_f64() - 1.0).abs() < 1e-12;
 
     println!();
     println!(
         "Probability conservation : {}",
-        if conservation {
-            "PASS"
-        } else {
-            "FAIL"
-        }
+        if conservation { "PASS" } else { "FAIL" }
     );
 
     // --------------------------------------------------------
     // Top outputs
     // --------------------------------------------------------
 
-    print_top_states(
-        "TOP 2-ROUND OUTPUT HULLS",
-        &outputs,
-        TOP_OUTPUTS,
-    );
+    print_top_states("TOP 2-ROUND OUTPUT HULLS", &outputs, TOP_OUTPUTS);
 
     // --------------------------------------------------------
     // Best output
     // --------------------------------------------------------
 
-    let best_output =
-        sorted_states(&outputs)
-            .into_iter()
-            .next();
+    let best_output = sorted_states(&outputs).into_iter().next();
 
-    if let Some((output, probability)) =
-        best_output
-    {
+    if let Some((output, probability)) = best_output {
         println!();
         println!("------------------------------------------------------------");
         println!("BEST 2-ROUND DIFFERENTIAL");
         println!("------------------------------------------------------------");
 
-        println!(
-            "Output ΔL = 0x{:016x}",
-            output.0
-        );
+        println!("Output ΔL = 0x{:016x}", output.0);
 
-        println!(
-            "Output ΔR = 0x{:016x}",
-            output.1
-        );
+        println!("Output ΔR = 0x{:016x}", output.1);
 
-        println!(
-            "Hull probability = {:.20e}",
-            probability.probability_f64()
-        );
+        println!("Hull probability = {:.20e}", probability.probability_f64());
 
-        println!(
-            "-log2(P) = {:.12}",
-            -probability.log2_probability()
-        );
+        println!("-log2(P) = {:.12}", -probability.log2_probability());
     }
 
     // --------------------------------------------------------
     // Backward half from strongest output
     // --------------------------------------------------------
 
-    if let Some((target_output, direct_probability)) =
-        sorted_states(&outputs)
-            .into_iter()
-            .next()
-    {
+    if let Some((target_output, direct_probability)) = sorted_states(&outputs).into_iter().next() {
         println!();
         println!("============================================================");
         println!("BACKWARD HALF / MITM VALIDATION");
         println!("============================================================");
 
-        println!(
-            "Target output ΔL = 0x{:016x}",
-            target_output.0
-        );
+        println!("Target output ΔL = 0x{:016x}", target_output.0);
 
-        println!(
-            "Target output ΔR = 0x{:016x}",
-            target_output.1
-        );
+        println!("Target output ΔR = 0x{:016x}", target_output.1);
 
         println!();
 
-        let mut backward_output_map =
-            HashMap::new();
+        let mut backward_output_map = HashMap::new();
 
-        backward_output_map.insert(
-            target_output,
-            Dyadic::one(),
-        );
+        backward_output_map.insert(target_output, Dyadic::one());
 
-        let mut backward =
-            backward_output_map;
+        let mut backward = backward_output_map;
 
         for round in 0..BACKWARD_ROUNDS {
             println!(
@@ -1253,10 +1017,7 @@ fn main() {
                 backward.len()
             );
 
-            backward = expand_backward(
-                &ddt,
-                &backward,
-            );
+            backward = expand_backward(&ddt, &backward);
 
             println!(
                 "Backward round {} output states: {}",
@@ -1264,100 +1025,51 @@ fn main() {
                 backward.len()
             );
 
-            let mass =
-                total_probability(&backward);
+            let mass = total_probability(&backward);
 
-            println!(
-                "Backward probability mass: {:.20e}",
-                mass.probability_f64()
-            );
+            println!("Backward probability mass: {:.20e}", mass.probability_f64());
         }
 
         // ----------------------------------------------------
         // MITM intersection
         // ----------------------------------------------------
 
-        let hull =
-            calculate_mitm_hull(
-                &forward,
-                &backward,
-            );
+        let hull = calculate_mitm_hull(&forward, &backward);
 
         println!();
         println!("------------------------------------------------------------");
         println!("MITM INTERSECTION");
         println!("------------------------------------------------------------");
 
-        println!(
-            "Forward states  : {}",
-            forward.len()
-        );
+        println!("Forward states  : {}", forward.len());
 
-        println!(
-            "Backward states : {}",
-            backward.len()
-        );
+        println!("Backward states : {}", backward.len());
 
-        println!(
-            "Matching states : {}",
-            hull.len()
-        );
+        println!("Matching states : {}", hull.len());
 
-        if let Some((
-            middle,
-            contribution,
-        )) =
-            sorted_states(&hull)
-                .into_iter()
-                .next()
-        {
+        if let Some((middle, contribution)) = sorted_states(&hull).into_iter().next() {
             println!();
-            println!(
-                "Strongest matching middle:"
-            );
+            println!("Strongest matching middle:");
 
-            println!(
-                "  ΔL = 0x{:016x}",
-                middle.0
-            );
+            println!("  ΔL = 0x{:016x}", middle.0);
 
-            println!(
-                "  ΔR = 0x{:016x}",
-                middle.1
-            );
+            println!("  ΔR = 0x{:016x}", middle.1);
 
-            let forward_probability =
-                forward
-                    .get(&middle)
-                    .copied()
-                    .unwrap_or_else(
-                        Dyadic::zero
-                    );
+            let forward_probability = forward.get(&middle).copied().unwrap_or_else(Dyadic::zero);
 
-            let backward_probability =
-                backward
-                    .get(&middle)
-                    .copied()
-                    .unwrap_or_else(
-                        Dyadic::zero
-                    );
+            let backward_probability = backward.get(&middle).copied().unwrap_or_else(Dyadic::zero);
 
             println!(
                 "  Forward  P = {:.20e}",
-                forward_probability
-                    .probability_f64()
+                forward_probability.probability_f64()
             );
 
             println!(
                 "  Backward P = {:.20e}",
-                backward_probability
-                    .probability_f64()
+                backward_probability.probability_f64()
             );
 
-            println!(
-                "  Contribution = {:.20e}",
-                contribution.probability_f64()
-            );
+            println!("  Contribution = {:.20e}", contribution.probability_f64());
 
             println!(
                 "  Contribution -log2(P) = {:.12}",
@@ -1367,8 +1079,7 @@ fn main() {
             println!();
             println!(
                 "Direct 2-round hull = {:.20e}",
-                direct_probability
-                    .probability_f64()
+                direct_probability.probability_f64()
             );
 
             println!(
@@ -1377,33 +1088,17 @@ fn main() {
             );
 
             let difference =
-                (
-                    direct_probability
-                        .probability_f64()
-                    -
-                    contribution
-                        .probability_f64()
-                )
-                .abs();
+                (direct_probability.probability_f64() - contribution.probability_f64()).abs();
 
-            println!(
-                "Absolute difference = {:.20e}",
-                difference
-            );
+            println!("Absolute difference = {:.20e}", difference);
 
             if difference < 1e-30 {
-                println!(
-                    "MITM consistency: PASS"
-                );
+                println!("MITM consistency: PASS");
             } else {
-                println!(
-                    "MITM consistency: FAIL"
-                );
+                println!("MITM consistency: FAIL");
             }
         } else {
-            println!(
-                "No matching middle state found."
-            );
+            println!("No matching middle state found.");
         }
     }
 
@@ -1416,114 +1111,66 @@ fn main() {
     println!("VALIDATION RESULT");
     println!("============================================================");
 
-    println!(
-        "Output states generated : {}",
-        outputs.len()
-    );
+    println!("Output states generated : {}", outputs.len());
 
     println!(
         "Total probability mass   : {:.20e}",
-        total_output_probability
-            .probability_f64()
+        total_output_probability.probability_f64()
     );
 
     println!(
         "Probability conservation : {}",
-        if conservation {
-            "PASS"
-        } else {
-            "FAIL"
-        }
+        if conservation { "PASS" } else { "FAIL" }
     );
 
     println!();
-    println!(
-        "The complete 2-round differential output distribution"
-    );
-    println!(
-        "has been enumerated without TOP_N state pruning."
-    );
+    println!("The complete 2-round differential output distribution");
+    println!("has been enumerated without TOP_N state pruning.");
 
     println!();
     println!("============================================================");
     println!("IMPORTANT CRYPTANALYSIS NOTES");
     println!("============================================================");
 
-    println!(
-        "The DDT is loaded directly from ddt_matrix.txt."
-    );
+    println!("The DDT is loaded directly from ddt_matrix.txt.");
 
-    println!(
-        "The file DDT is independently compared against"
-    );
+    println!("The file DDT is independently compared against");
 
-    println!(
-        "HERRINGFISH_SBOX_V02 before enumeration."
-    );
+    println!("HERRINGFISH_SBOX_V02 before enumeration.");
 
     println!();
-    println!(
-        "Each S-box transition uses its exact integer DDT count."
-    );
+    println!("Each S-box transition uses its exact integer DDT count.");
 
-    println!(
-        "No floating-point probability accumulation is used"
-    );
+    println!("No floating-point probability accumulation is used");
 
-    println!(
-        "during the differential enumeration."
-    );
+    println!("during the differential enumeration.");
 
     println!();
-    println!(
-        "Probabilities are represented as:"
-    );
+    println!("Probabilities are represented as:");
 
-    println!(
-        "    numerator / 2^k"
-    );
+    println!("    numerator / 2^k");
 
-    println!(
-        "where k is tracked explicitly."
-    );
+    println!("where k is tracked explicitly.");
 
     println!();
-    println!(
-        "For the complete two-round distribution, all output"
-    );
+    println!("For the complete two-round distribution, all output");
 
-    println!(
-        "probabilities are therefore exact within the current"
-    );
+    println!("probabilities are therefore exact within the current");
 
-    println!(
-        "bytewise-S-box + diffuse differential model."
-    );
+    println!("bytewise-S-box + diffuse differential model.");
 
     println!();
-    println!(
-        "IMPORTANT:"
-    );
+    println!("IMPORTANT:");
 
-    println!(
-        "This does NOT yet prove that the analytical differential"
-    );
+    println!("This does NOT yet prove that the analytical differential");
 
-    println!(
-        "model is identical to the full Herringfish round."
-    );
+    println!("model is identical to the full Herringfish round.");
 
-    println!(
-        "The next cryptanalytic validation step should compare"
-    );
+    println!("The next cryptanalytic validation step should compare");
 
-    println!(
-        "this differential model against the actual round"
-    );
+    println!("this differential model against the actual round");
 
-    println!(
-        "implementation and the KAT/reference vectors."
-    );
+    println!("implementation and the KAT/reference vectors.");
 
     println!();
     println!("============================================================");
