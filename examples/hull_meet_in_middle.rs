@@ -161,34 +161,16 @@ type State = (u64, u64);
 
 fn table_paths() -> Vec<(&'static str, &'static str)> {
     vec![
-        (
-            "ddt_matrix.txt",
-            "docs/tables/ddt_matrix.txt",
-        ),
-        (
-            "sbox_accepted.txt",
-            "docs/tables/sbox_accepted.txt",
-        ),
+        ("ddt_matrix.txt", "docs/tables/ddt_matrix.txt"),
+        ("sbox_accepted.txt", "docs/tables/sbox_accepted.txt"),
         (
             "kat_reduced_rounds_v02.txt",
             "docs/tables/kat_reduced_rounds_v02.txt",
         ),
-        (
-            "kat_reduced_all.txt",
-            "docs/tables/kat_reduced_all.txt",
-        ),
-        (
-            "kat_expanded_v02.txt",
-            "docs/tables/kat_expanded_v02.txt",
-        ),
-        (
-            "kat_vectors_v02.txt",
-            "docs/tables/kat_vectors_v02.txt",
-        ),
-        (
-            "lat_matrix.txt",
-            "docs/tables/lat_matrix.txt",
-        ),
+        ("kat_reduced_all.txt", "docs/tables/kat_reduced_all.txt"),
+        ("kat_expanded_v02.txt", "docs/tables/kat_expanded_v02.txt"),
+        ("kat_vectors_v02.txt", "docs/tables/kat_vectors_v02.txt"),
+        ("lat_matrix.txt", "docs/tables/lat_matrix.txt"),
     ]
 }
 
