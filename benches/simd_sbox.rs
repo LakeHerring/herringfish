@@ -1,5 +1,6 @@
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
+#[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
 
 fn bench_scalar_sbox(c: &mut Criterion) {
