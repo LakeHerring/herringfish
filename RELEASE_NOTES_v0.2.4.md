@@ -14,6 +14,7 @@
 * Gated `std::arch::x86_64` imports in benches with `#[cfg(target_arch = "x86_64")]` to allow builds on aarch64 CI
 * Changed `examples/hull_meet_in_middle.rs` table paths from absolute Windows paths to repo-relative `docs/tables/...`
 * Changed `scripts/update_acvp_vectors.ps1` output directory from absolute path to relative `tests\vectors`
+* Re-formatted `table_paths()` in `examples/hull_meet_in_middle.rs` to pass `cargo fmt -- --check`
 
 ## 🔬 Cryptography
 * No changes to Herringfish cryptographic primitives
@@ -28,6 +29,11 @@
 * Example runs end-to-end in release mode with correct probability conservation and MITM consistency
 
 **Full Changelog**: v0.2.3...v0.2.4
+- 04a0ac1 style: run cargo fmt on hull_meet_in_middle table_paths
+- bd7d9b2 docs(release): update RELEASE_NOTES_v0.2.4 with portable paths
+- 27c60ef refactor(scripts): make ACVP vector output dir relative in update_acvp_vectors.ps1
+- 7db4c2d refactor(example): use relative paths for reference tables in hull_meet_in_middle
+- 331422a docs(release): expand RELEASE_NOTES_v0.2.4 with full changelog
 - 44e3ae4 docs(release): update RELEASE_NOTES_v0.2.4 with fmt and bench fixes
 - 736de4c fix(bench): gate std::arch::x86_64 import in simd_sbox
 - 548454d style: run cargo fmt on hull_meet_in_middle example
