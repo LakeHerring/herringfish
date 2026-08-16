@@ -1,5 +1,6 @@
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use herringfish::cipher::feistel_arx::FeistelArx;
+#[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
 
 #[cfg(target_arch = "x86_64")]
