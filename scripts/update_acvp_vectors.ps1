@@ -1,4 +1,4 @@
-$OutDir = "C:\Users\perra\Downloads\herringfish\tests\vectors"
+$OutDir = "tests\vectors"
 
 $RepoOwner = "usnistgov"
 $RepoName = "ACVP-Server"
