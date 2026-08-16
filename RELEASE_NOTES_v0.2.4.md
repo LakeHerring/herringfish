@@ -4,6 +4,7 @@
 * Example stability – `examples/hull_meet_in_middle.rs` now compiles cleanly with Rust 2021 edition patterns
 * Meet-in-the-middle hull tooling usable for 2-round exact enumeration and MITM validation
 * CI clean – format and cross-platform bench fixes applied
+* Portable paths – reference tables and ACVP vector script now use repo-relative paths
 
 ## 🐛 Fixes
 * Fixed `cannot explicitly dereference within an implicitly-borrowing pattern` in DDT validation iterator chain
@@ -11,6 +12,8 @@
 * Suppressed dead_code warnings in `examples/hull_meet_in_middle.rs`
 * Ran `cargo fmt` on `examples/hull_meet_in_middle.rs` to satisfy CI format check
 * Gated `std::arch::x86_64` imports in benches with `#[cfg(target_arch = "x86_64")]` to allow builds on aarch64 CI
+* Changed `examples/hull_meet_in_middle.rs` table paths from absolute Windows paths to repo-relative `docs/tables/...`
+* Changed `scripts/update_acvp_vectors.ps1` output directory from absolute path to relative `tests\vectors`
 
 ## 🔬 Cryptography
 * No changes to Herringfish cryptographic primitives
