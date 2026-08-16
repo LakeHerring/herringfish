@@ -1,4 +1,5 @@
 #![allow(clippy::all)]
+#![allow(dead_code)]
 
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 use std::collections::HashMap;
