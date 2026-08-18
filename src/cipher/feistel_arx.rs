@@ -1,43 +1,51 @@
-//! Feistel ARX prototype for Herringfish.
-//!
-//! 128-bit block, 64-bit halves, configurable number of rounds.
-//!
-//! Current round function:
-//!
-//!     F(x, k) = Diffuse(SBox(x XOR k))
-//!
-//! Feistel round:
-//!
-//!     L' = R
-//!     R' = L XOR F(R, k)
-//!
-//! Round keys are derived from SHAKE256 with domain separation.
-//! The S-box is the fixed HERRINGFISH_SBOX_V02 construction.
-//!
-//! # Important research note
-//!
-//! Despite the historical "ARX" name, the current F-function does
-//! not contain addition or rotation. It currently consists of:
-//!
-//!     XOR -> S-box -> linear byte diffusion
-//!
-//! If addition/rotation are introduced later, the differential model
-//! must be updated accordingly.
-//!
-//! # Differential property
-//!
-//! For a fixed round key k:
-//!
-//!     (x XOR k) XOR (x' XOR k) = x XOR x'
-//!
-//! Therefore the S-box input difference is independent of k.
-//!
-//! This means the S-box DDT can be evaluated using:
-//!
-//!     Δin = x XOR x'
-//!     Δout = S(x) XOR S(x XOR Δin)
-//!
-//! without knowing the actual round key.
+// Feistel ARX prototype for Herringfish.
+//
+// 128-bit block, 64-bit halves, configurable number of rounds.
+//
+// Current round function:
+// ```
+// text
+// F(x, k) = Diffuse(SBox(x XOR k))
+// L' = R
+// R' = L XOR F(R, k)
+// ```
+//
+// Round keys are derived from SHAKE256 with domain separation.
+// The S-box is the fixed HERRINGFISH_SBOX_V02 construction.
+//
+// # Important research note
+//
+// Despite the historical "ARX" name, the current F-function does
+// not contain addition or rotation. It currently consists of:
+//
+// ```
+// text
+// XOR -> S-box -> linear byte diffusion
+// ```
+//
+// If addition/rotation are introduced later, the differential model
+// must be updated accordingly.
+//
+// # Differential property
+//
+// For a fixed round key k:
+//
+// ```
+// text
+// (x XOR k) XOR (x' XOR k) = x XOR x'
+// ```
+//
+// Therefore the S-box input difference is independent of k.
+//
+// This means the S-box DDT can be evaluated using:
+//
+// ```
+// text
+// Δin  = x XOR x'
+// Δout = S(x) XOR S(x XOR Δin)
+// ```
+//
+// without knowing the actual round key.
 
 #![allow(clippy::needless_range_loop)]
 
@@ -54,10 +62,10 @@ const WORD_BYTES: usize = core::mem::size_of::<u64>();
 
 const DOMAIN_FEISTEL_KEY: &[u8] = b"HERRINGFISH-FEISTEL-KEY";
 
-/// Fixed Herringfish S-box version 0.2.
-///
-/// This table must remain a permutation if the design requires
-/// bijective byte substitution.
+// Fixed Herringfish S-box version 0.2.
+//
+// This table must remain a permutation if the design requires
+// bijective byte substitution.
 pub const HERRINGFISH_SBOX_V02: [u8; 256] = [
     0x78, 0x8c, 0x37, 0xfb, 0x3a, 0xf0, 0xb4, 0x50, 0x6c, 0x60, 0x3c, 0xdc, 0xf6, 0x79, 0x84, 0x26,
     0xaf, 0x0b, 0x9c, 0x9d, 0xb2, 0xcf, 0x2a, 0x18, 0xe2, 0x4a, 0x1d, 0xc0, 0xee, 0x7b, 0x62, 0x05,
@@ -77,7 +85,7 @@ pub const HERRINGFISH_SBOX_V02: [u8; 256] = [
     0xe5, 0x2e, 0xb0, 0xac, 0xcb, 0x75, 0x7f, 0xc3, 0x4c, 0xbb, 0xba, 0x8e, 0x34, 0x12, 0x8f, 0x1c,
 ];
 
-/// Herringfish Feistel construction.
+// Herringfish Feistel construction.
 pub struct FeistelArx {
     round_keys: Vec<u64>,
     sbox: [u8; 256],
@@ -90,11 +98,11 @@ impl FeistelArx {
         Self::new_with_rounds(key, NUM_ROUNDS)
     }
 
-    /// Construct a Herringfish Feistel cipher with a specified
-    /// positive number of rounds.
-    ///
-    /// This remains an assertion rather than a Result because this
-    /// is currently a research/prototype API.
+    // Construct a Herringfish Feistel cipher with a specified
+    // positive number of rounds.
+    //
+    // This remains an assertion rather than a Result because this
+    // is currently a research/prototype API.
     pub fn new_with_rounds(key: &[u8; KEY_SIZE], rounds: usize) -> Self {
         assert!(
             rounds > 0,
@@ -110,12 +118,12 @@ impl FeistelArx {
         }
     }
 
-    /// Derive round keys from the master key using SHAKE256.
-    ///
-    /// Each invocation consumes exactly eight bytes from the XOF.
-    ///
-    /// The output stream is deterministic for a given key and round
-    /// count and changing the master key changes the resulting stream.
+    // Derive round keys from the master key using SHAKE256.
+    //
+    // Each invocation consumes exactly eight bytes from the XOF.
+    //
+    // The output stream is deterministic for a given key and round
+    // count and changing the master key changes the resulting stream.
     pub(crate) fn derive_round_keys(key: &[u8; KEY_SIZE], rounds: usize) -> Vec<u64> {
         assert!(rounds > 0, "Cannot derive round keys for zero rounds");
 
@@ -144,10 +152,10 @@ impl FeistelArx {
         self.num_rounds
     }
 
-    /// Exposes the expanded round-key material.
-    ///
-    /// This is primarily intended for cryptanalysis and testing.
-    /// Applications using the cipher should normally not need this.
+    // Exposes the expanded round-key material.
+    //
+    // This is primarily intended for cryptanalysis and testing.
+    // Applications using the cipher should normally not need this.
     #[inline]
     pub fn round_keys(&self) -> &[u64] {
         &self.round_keys
@@ -174,7 +182,7 @@ impl FeistelArx {
         write_u64(&mut block[HALF_SIZE..], right);
     }
 
-    /// Decrypt one 128-bit block in place.
+    // Decrypt one 128-bit block in place.
     pub fn decrypt_block(&self, block: &mut [u8; BLOCK_SIZE]) {
         let mut left = read_u64(&block[..HALF_SIZE]);
         let mut right = read_u64(&block[HALF_SIZE..]);
@@ -192,7 +200,7 @@ impl FeistelArx {
         write_u64(&mut block[HALF_SIZE..], right);
     }
 
-    /// Constant-time S-box implementation.
+    // Constant-time S-box implementation.
     pub fn encrypt_block_ct(&self, block: &mut [u8; BLOCK_SIZE]) {
         let mut left = read_u64(&block[..HALF_SIZE]);
         let mut right = read_u64(&block[HALF_SIZE..]);
@@ -380,18 +388,18 @@ pub fn diffuse(t: u64) -> u64 {
 // Differential helpers
 // ============================================================
 
-/// Compute the actual differential of one Feistel round.
-///
-/// Given two concrete states:
-///
-///     (L0, R0)
-///     (L1, R1)
-///
-/// this returns:
-///
-///     (L0' XOR L1', R0' XOR R1')
-///
-/// using the actual cipher implementation.
+// Compute the actual differential of one Feistel round.
+//
+// Given two concrete states:
+//
+//     (L0, R0)
+//     (L1, R1)
+//
+// this returns:
+//
+//     (L0' XOR L1', R0' XOR R1')
+//
+// using the actual cipher implementation.
 pub(crate) fn differential_round(
     state0: (u64, u64),
     state1: (u64, u64),
@@ -404,31 +412,31 @@ pub(crate) fn differential_round(
     (output0.0 ^ output1.0, output0.1 ^ output1.1)
 }
 
-/// Analytical Feistel differential relation.
-///
-///     ΔL' = ΔR
-///     ΔR' = ΔL XOR ΔF
+// Analytical Feistel differential relation.
+//
+//     ΔL' = ΔR
+//     ΔR' = ΔL XOR ΔF
 #[inline]
 pub(crate) fn differential_feistel_relation(dl: u64, dr: u64, df: u64) -> (u64, u64) {
     (dr, dl ^ df)
 }
 
-/// Compute the differential of the S-box layer for
-/// a fixed input difference.
-///
-/// The key is deliberately not required.
-///
-/// For each byte:
-///
-///     S(x XOR k) XOR S(x XOR Δ XOR k)
-///
-/// becomes
-///
-///     S(z) XOR S(z XOR Δ)
-///
-/// where z = x XOR k.
-///
-/// This is the exact algebraic basis for DDT analysis.
+// Compute the differential of the S-box layer for
+// a fixed input difference.
+//
+// The key is deliberately not required.
+//
+// For each byte:
+//
+//     S(x XOR k) XOR S(x XOR Δ XOR k)
+//
+// becomes
+//
+//     S(z) XOR S(z XOR Δ)
+//
+// where z = x XOR k.
+//
+// This is the exact algebraic basis for DDT analysis.
 pub(crate) fn sbox_layer_difference(x: u64, dx: u64, key: u64, sbox: &[u8; 256]) -> u64 {
     let y0 = apply_sbox_layer(x, key, sbox);
 
