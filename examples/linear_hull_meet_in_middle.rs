@@ -3,12 +3,12 @@
 //! This tool performs exact enumeration of linear hulls by summing
 //! correlations from forward and backward directions at a middle state.
 
-use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
-use std::collections::HashMap;
 #![allow(unused_variables)]
-#![allow(unused_constants)]
 #![allow(dead_code)]
 #![allow(unused_parens)]
+
+use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
+use std::collections::HashMap;
 
 // ============================================================
 // Configuration (Adjust for higher rounds)
@@ -225,7 +225,7 @@ fn main() {
     forward_states.insert(start_mask, LinearDyadic::one());
 
     for r in 0..FORWARD_ROUNDS {
-        let mut next_states: HashMap<LState, LinearDyadic> = HashMap::new();
+        let next_states: HashMap<LState, LinearDyadic> = HashMap::new();
         for (state, prob) in forward_states.iter() {
             for (next_s, corr) in expand_round_linear(&lat, *state, (0, 0)) {
                 // Simplified call
