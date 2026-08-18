@@ -48,6 +48,7 @@
 // without knowing the actual round key.
 
 #![allow(clippy::needless_range_loop)]
+#![allow(dead_code)]
 
 use crate::cipher::sbox_ct::sbox_ct_lookup;
 use sha3::digest::{ExtendableOutput, Update, XofReader};
@@ -240,6 +241,7 @@ impl FeistelArx {
     ///
     /// This is crate-visible for cryptanalysis and differential
     /// validation.
+    #[allow(dead_code)]
     #[inline]
     pub(crate) fn encrypt_round(left: u64, right: u64, round_key: u64) -> (u64, u64) {
         feistel_round(left, right, round_key)
@@ -271,6 +273,7 @@ fn write_u64(bytes: &mut [u8], value: u64) {
 // Feistel round
 // ============================================================
 
+#[allow(dead_code)]
 #[inline]
 fn feistel_round(left: u64, right: u64, round_key: u64) -> (u64, u64) {
     feistel_round_with_sbox(left, right, round_key, &HERRINGFISH_SBOX_V02)
@@ -325,6 +328,7 @@ fn f_function(x: u64, k: u64, sbox: &[u8; 256]) -> u64 {
 // S-box layer
 // ============================================================
 
+#[allow(dead_code)]
 #[inline]
 fn apply_sbox_layer(x: u64, k: u64, sbox: &[u8; 256]) -> u64 {
     let mut t = 0u64;
@@ -400,6 +404,7 @@ pub fn diffuse(t: u64) -> u64 {
 //     (L0' XOR L1', R0' XOR R1')
 //
 // using the actual cipher implementation.
+#[allow(dead_code)]
 pub(crate) fn differential_round(
     state0: (u64, u64),
     state1: (u64, u64),
@@ -416,6 +421,7 @@ pub(crate) fn differential_round(
 //
 //     ΔL' = ΔR
 //     ΔR' = ΔL XOR ΔF
+#[allow(dead_code)]
 #[inline]
 pub(crate) fn differential_feistel_relation(dl: u64, dr: u64, df: u64) -> (u64, u64) {
     (dr, dl ^ df)
@@ -437,6 +443,7 @@ pub(crate) fn differential_feistel_relation(dl: u64, dr: u64, df: u64) -> (u64, 
 // where z = x XOR k.
 //
 // This is the exact algebraic basis for DDT analysis.
+#[allow(dead_code)]
 pub(crate) fn sbox_layer_difference(x: u64, dx: u64, key: u64, sbox: &[u8; 256]) -> u64 {
     let y0 = apply_sbox_layer(x, key, sbox);
 
@@ -449,6 +456,7 @@ pub(crate) fn sbox_layer_difference(x: u64, dx: u64, key: u64, sbox: &[u8; 256])
 /// supplying the round key.
 ///
 /// This is suitable for DDT-oriented analysis.
+#[allow(dead_code)]
 pub(crate) fn sbox_layer_difference_keyless(x: u64, dx: u64, sbox: &[u8; 256]) -> u64 {
     apply_sbox_layer(x, 0, sbox) ^ apply_sbox_layer(x ^ dx, 0, sbox)
 }

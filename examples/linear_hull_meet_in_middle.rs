@@ -5,6 +5,10 @@
 
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 use std::collections::HashMap;
+#![allow(unused_variables)]
+#![allow(unused_constants)]
+#![allow(dead_code)]
+#![allow(unused_parens)]
 
 // ============================================================
 // Configuration (Adjust for higher rounds)

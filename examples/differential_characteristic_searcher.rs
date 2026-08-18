@@ -331,6 +331,7 @@ fn enumerate_sbox_layer(
 // ============================================================================
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 struct DifferentialState {
     round: usize,
     dl: u64,
