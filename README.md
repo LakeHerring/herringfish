@@ -873,39 +873,46 @@ DDT maximum:   4
 LAT maximum:   32
 ```
 
-Current research status:
+Current Research Status
 
-* [x] Feistel ARX v0.2 construction
-* [x] 128-bit block design
-* [x] 256-bit master-key design
-* [x] 16-round configuration
-* [x] SHAKE256-derived key schedule
-* [x] Round function
-* [x] 8-bit nonlinear S-box
-* [x] XOR-based diffusion layer
-* [x] Reference implementation — `src/cipher/feistel_arx.rs`
-* [x] Known-answer test vectors — `docs/tables/kat_vectors_v02.txt`
-* [x] S-box DDT computation
-* [x] S-box LAT computation
-* [x] Preliminary linear analysis
-* [x] Preliminary avalanche analysis
-* [x] Reduced-round evaluation
-* [x] Reduced-round attack tooling
-* [x] Constant-time S-box implementation – `src/cipher/sbox_ct.rs`
-* [x] Key-schedule independence tests – formalised with 100k samples
-* [x] Meet-in-the-middle hull analysis tooling
-* [x] Formal specification — v0.2 draft, normative serialization frozen
-* [x] Full-cipher statistical analysis — 1M sample avalanche/SAC verified
-* [~] Full-cipher cryptanalysis — 8-round 4+4 hull active, trail search in progress
-* [~] SIMD implementation – partial: AVX2 diffusion benchmark exists, S-box gather/bitslicing
-* [~] Performance benchmarks – preliminary: S-box CT, AVX2 diffusion; systematic benchmarking suite pending
+Completed
+ * [x] Feistel ARX v0.2 construction
+ * [x] 128-bit block design
+ * [x] 256-bit master-key design
+ * [x] 16-round configuration
+ * [x] SHAKE256-derived key schedule with domain separation
+ * [x] Round function (XOR → S-box → Linear Diffusion)
+ * [x] 8-bit nonlinear S-box (AES affine transform via rejection sampling)
+ * [x] XOR-based diffusion layer
+ * [x] Reference implementation — src/cipher/feistel_arx.rs
+ * [x] Known-answer test vectors — docs/tables/kat_vectors_v02.txt
+ * [x] S-box DDT and LAT computation (verified against acceptance criteria)
+ * [x] Preliminary linear analysis
+ * [x] Preliminary avalanche analysis
+ * [x] Reduced-round evaluation
+ * [x] Reduced-round attack tooling
+ * [x] Constant-time S-box implementation — src/cipher/sbox_ct.rs
+ * [x] Key-schedule independence tests (formalized with 100k samples)
+ * [x] Meet-in-the-middle hull analysis tooling
+ * [x] Formal specification — v0.2 draft (S-box and round function frozen)
+ * [x] Full-cipher statistical analysis (1M sample avalanche/SAC verified)
 
+In Progress / Active Development
+[~] Full-cipher cryptanalysis (8-round 4+4 hull active, trail search in progress)
+[~] SIMD implementation (Partial: AVX2 diffusion benchmark exists; S-box gather/bitslicing research)
+[~] Performance benchmarks (Preliminary: S-box CT, AVX2 diffusion; systematic suite pending)
+[~] Normative serialization specification (Fixing endianness for interoperability)
+
+Pending
 * [ ] AEAD construction
 * [ ] Independent cryptanalysis
 * [ ] Independent implementation
 * [ ] Public security review
 
-The `[~]` state indicates work that is actively being developed or evaluated.
+Legend:
+* [x] : Completed
+* [~] : Work in progress / Actively being evaluated
+* [ ] : Planned / Pending
 
 ---
 

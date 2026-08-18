@@ -159,6 +159,16 @@ Large-sample run `examples/statistical_full_cipher_large.rs` with 1,000,000 samp
 
 Observations are consistent with expected avalanche behavior under the tested sampling methodology. No statistical anomaly detected within the tested sample size.
 
+Observation: Tool Complexity Boundary
+
+Effective Search Depth: The hull_meet_in_middle tool is currently limited to finding hulls with probabilities
+≥2sq-25.
+Pruning Sensitivity: A threshold of −20.0 - -24.0 is too aggressive for the Herringfish v0.2 branching factor, causing total path loss (Probability Conservation Failure).
+Complexity Wall: The state-space explosion occurs rapidly beyond cumulative probability, indicating that the S-box/Diffusion interaction provides high diffusion, making "narrow" differential trails difficult to track without massive memory resources.
+
+Attempted large-scale state-space enumeration with --max-states 250M. The tool hit the safety limit in Round 2 due to exponential branching from
+ΔR = ΔR=1. This confirms high diffusion properties but renders naive MITM expansion computationally infeasible for this construction. Future efforts will focus on targeted differential sampling and automated characteristic searching.
+
 ## Next steps
 * Trail search and hull analysis for 6-8 rounds with increased budget and weight-3 output differences
 * True 32-lane AVX2 S-box gather with full index widening completed; systematic Criterion benchmarks pending
