@@ -128,25 +128,18 @@ fn print_ddt_statistics(ddt: &Ddt) {
         }
     }
 
-    println!(
-        "DDT non-zero entries      : {}",
-        nonzero_entries
-    );
+    println!("DDT non-zero entries      : {}", nonzero_entries);
 
     println!(
         "DDT trivial maximum       : {} (Δx = 0, Δy = 0)",
         trivial_max
     );
 
-    println!(
-        "DDT nontrivial maximum    : {}",
-        nontrivial_max
-    );
+    println!("DDT nontrivial maximum    : {}", nontrivial_max);
 
     println!(
         "Maximum transition        : Δx = {:#04x}, Δy = {:#04x}",
-        max_dx,
-        max_dy
+        max_dx, max_dy
     );
 
     println!(
@@ -193,11 +186,7 @@ fn build_byte_transitions(ddt: &Ddt) -> Vec<Vec<ByteTransition>> {
             });
         }
 
-        result[dx].sort_by(|a, b| {
-            a.weight
-                .partial_cmp(&b.weight)
-                .unwrap_or(Ordering::Equal)
-        });
+        result[dx].sort_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap_or(Ordering::Equal));
     }
 
     result
@@ -217,10 +206,7 @@ fn apply_diffusion(diff: u64) -> u64 {
     let mut output = [0u8; 8];
 
     for i in 0..8 {
-        output[i] =
-            input[i]
-                ^ input[(i + 1) % 8]
-                ^ input[(i + 3) % 8];
+        output[i] = input[i] ^ input[(i + 1) % 8] ^ input[(i + 3) % 8];
     }
 
     let mut result = 0u64;
@@ -283,8 +269,7 @@ impl Eq for PartialCombination {}
 
 impl PartialEq for PartialCombination {
     fn eq(&self, other: &Self) -> bool {
-        self.weight == other.weight
-            && self.indices == other.indices
+        self.weight == other.weight && self.indices == other.indices
     }
 }
 
@@ -320,8 +305,7 @@ fn strongest_f_transitions(
     let mut dx = [0usize; 8];
 
     for i in 0..8 {
-        dx[i] =
-            ((input_diff >> (8 * i)) & 0xff) as usize;
+        dx[i] = ((input_diff >> (8 * i)) & 0xff) as usize;
     }
 
     // ---------------------------------------------------------------
@@ -343,8 +327,7 @@ fn strongest_f_transitions(
 
         initial_indices[i] = 0;
 
-        initial_weight +=
-            byte_transitions[dx[i]][0].weight;
+        initial_weight += byte_transitions[dx[i]][0].weight;
     }
 
     // ---------------------------------------------------------------
@@ -358,13 +341,11 @@ fn strongest_f_transitions(
         weight: initial_weight,
     });
 
-    let mut visited =
-        std::collections::HashSet::<[usize; 8]>::new();
+    let mut visited = std::collections::HashSet::<[usize; 8]>::new();
 
     visited.insert(initial_indices);
 
-    let mut result =
-        Vec::<FTransition>::with_capacity(limit.min(256));
+    let mut result = Vec::<FTransition>::with_capacity(limit.min(256));
 
     while let Some(current) = heap.pop() {
         if result.len() >= limit {
@@ -378,15 +359,12 @@ fn strongest_f_transitions(
         let mut sbox_output = 0u64;
 
         for i in 0..8 {
-            let transition =
-                byte_transitions[dx[i]][current.indices[i]];
+            let transition = byte_transitions[dx[i]][current.indices[i]];
 
-            sbox_output |=
-                (transition.dy as u64) << (8 * i);
+            sbox_output |= (transition.dy as u64) << (8 * i);
         }
 
-        let output_diff =
-            apply_diffusion(sbox_output);
+        let output_diff = apply_diffusion(sbox_output);
 
         result.push(FTransition {
             output_diff,
@@ -398,42 +376,27 @@ fn strongest_f_transitions(
         // -----------------------------------------------------------
 
         for byte_index in 0..8 {
-            let old_index =
-                current.indices[byte_index];
+            let old_index = current.indices[byte_index];
 
-            let new_index =
-                old_index + 1;
+            let new_index = old_index + 1;
 
-            if new_index >=
-                byte_transitions[dx[byte_index]].len()
-            {
+            if new_index >= byte_transitions[dx[byte_index]].len() {
                 continue;
             }
 
-            let mut next_indices =
-                current.indices;
+            let mut next_indices = current.indices;
 
-            next_indices[byte_index] =
-                new_index;
+            next_indices[byte_index] = new_index;
 
             if !visited.insert(next_indices) {
                 continue;
             }
 
-            let old_weight =
-                byte_transitions[dx[byte_index]]
-                    [old_index]
-                    .weight;
+            let old_weight = byte_transitions[dx[byte_index]][old_index].weight;
 
-            let new_weight =
-                byte_transitions[dx[byte_index]]
-                    [new_index]
-                    .weight;
+            let new_weight = byte_transitions[dx[byte_index]][new_index].weight;
 
-            let next_weight =
-                current.weight
-                    - old_weight
-                    + new_weight;
+            let next_weight = current.weight - old_weight + new_weight;
 
             heap.push(PartialCombination {
                 indices: next_indices,
@@ -464,9 +427,7 @@ impl Eq for DifferentialState {}
 
 impl PartialEq for DifferentialState {
     fn eq(&self, other: &Self) -> bool {
-        self.dl == other.dl
-            && self.dr == other.dr
-            && self.weight == other.weight
+        self.dl == other.dl && self.dr == other.dr && self.weight == other.weight
     }
 }
 
@@ -480,10 +441,7 @@ impl Ord for DifferentialState {
 }
 
 impl PartialOrd for DifferentialState {
-    fn partial_cmp(
-        &self,
-        other: &Self,
-    ) -> Option<Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
@@ -499,18 +457,13 @@ impl PartialOrd for DifferentialState {
 //
 // Memory usage is therefore bounded by approximately BEAM_WIDTH states.
 
-fn insert_into_beam(
-    heap: &mut BinaryHeap<DifferentialState>,
-    state: DifferentialState,
-) {
+fn insert_into_beam(heap: &mut BinaryHeap<DifferentialState>, state: DifferentialState) {
     if heap.len() < BEAM_WIDTH {
         heap.push(state);
         return;
     }
 
-    let worst =
-        heap.peek()
-            .expect("beam cannot be empty");
+    let worst = heap.peek().expect("beam cannot be empty");
 
     // Because the heap is ordered with the weakest state as the
     // greatest element, replace it when the new state is better.
@@ -524,17 +477,10 @@ fn insert_into_beam(
 // Convert heap into sorted frontier
 // ============================================================================
 
-fn finalize_beam(
-    heap: BinaryHeap<DifferentialState>,
-) -> Vec<DifferentialState> {
-    let mut result =
-        heap.into_vec();
+fn finalize_beam(heap: BinaryHeap<DifferentialState>) -> Vec<DifferentialState> {
+    let mut result = heap.into_vec();
 
-    result.sort_by(|a, b| {
-        a.weight
-            .partial_cmp(&b.weight)
-            .unwrap_or(Ordering::Equal)
-    });
+    result.sort_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap_or(Ordering::Equal));
 
     result
 }
@@ -549,41 +495,20 @@ fn main() {
     println!("============================================================");
     println!();
 
-    println!(
-        "This experiment has NO 2^-35 weight cutoff."
-    );
+    println!("This experiment has NO 2^-35 weight cutoff.");
 
-    println!(
-        "It measures the best observed characteristic"
-    );
+    println!("It measures the best observed characteristic");
 
-    println!(
-        "weight at each round using bounded beam search."
-    );
+    println!("weight at each round using bounded beam search.");
 
     println!();
 
     println!("Rounds           : {}", TOTAL_ROUNDS);
-    println!(
-        "Start ΔL         : {:#018x}",
-        START_DL
-    );
-    println!(
-        "Start ΔR         : {:#018x}",
-        START_DR
-    );
-    println!(
-        "Beam width       : {}",
-        BEAM_WIDTH
-    );
-    println!(
-        "Max F transitions: {}",
-        MAX_F_TRANSITIONS
-    );
-    println!(
-        "Max results      : {}",
-        MAX_RESULTS
-    );
+    println!("Start ΔL         : {:#018x}", START_DL);
+    println!("Start ΔR         : {:#018x}", START_DR);
+    println!("Beam width       : {}", BEAM_WIDTH);
+    println!("Max F transitions: {}", MAX_F_TRANSITIONS);
+    println!("Max results      : {}", MAX_RESULTS);
 
     println!();
 
@@ -593,26 +518,23 @@ fn main() {
 
     println!("Building S-box DDT...");
 
-    let ddt =
-        build_ddt();
+    let ddt = build_ddt();
 
     print_ddt_statistics(&ddt);
 
     println!();
 
-    let byte_transitions =
-        build_byte_transitions(&ddt);
+    let byte_transitions = build_byte_transitions(&ddt);
 
     // ========================================================================
     // Initial state
     // ========================================================================
 
-    let mut frontier =
-        vec![DifferentialState {
-            dl: START_DL,
-            dr: START_DR,
-            weight: 0.0,
-        }];
+    let mut frontier = vec![DifferentialState {
+        dl: START_DL,
+        dr: START_DR,
+        weight: 0.0,
+    }];
 
     // Cache F-transition expansions by input difference.
     //
@@ -621,9 +543,7 @@ fn main() {
     // Without this cache, the same expensive Cartesian-product
     // calculation may be repeated many times.
 
-    let mut f_cache:
-        HashMap<u64, Vec<FTransition>>
-        = HashMap::new();
+    let mut f_cache: HashMap<u64, Vec<FTransition>> = HashMap::new();
 
     // ========================================================================
     // Profile
@@ -632,21 +552,15 @@ fn main() {
     println!();
 
     for round in 0..TOTAL_ROUNDS {
-        println!(
-            "Round {:>2}: frontier = {}",
-            round,
-            frontier.len()
-        );
+        println!("Round {:>2}: frontier = {}", round, frontier.len());
 
         // --------------------------------------------------------------------
         // Global bounded beam.
         // --------------------------------------------------------------------
 
-        let mut next_heap =
-            BinaryHeap::<DifferentialState>::new();
+        let mut next_heap = BinaryHeap::<DifferentialState>::new();
 
-        let mut generated =
-            0usize;
+        let mut generated = 0usize;
 
         // --------------------------------------------------------------------
         // State deduplication.
@@ -655,25 +569,16 @@ fn main() {
         // This prevents thousands of identical states entering the beam.
         // --------------------------------------------------------------------
 
-        let mut best_seen:
-            HashMap<(u64, u64), f64>
-            = HashMap::new();
+        let mut best_seen: HashMap<(u64, u64), f64> = HashMap::new();
 
         for current in frontier.iter() {
             // ---------------------------------------------------------------
             // Retrieve or construct F transitions.
             // ---------------------------------------------------------------
 
-            let f_transitions =
-                f_cache
-                    .entry(current.dr)
-                    .or_insert_with(|| {
-                        strongest_f_transitions(
-                            current.dr,
-                            &byte_transitions,
-                            MAX_F_TRANSITIONS,
-                        )
-                    });
+            let f_transitions = f_cache.entry(current.dr).or_insert_with(|| {
+                strongest_f_transitions(current.dr, &byte_transitions, MAX_F_TRANSITIONS)
+            });
 
             // ---------------------------------------------------------------
             // Feistel differential:
@@ -684,32 +589,21 @@ fn main() {
             // ---------------------------------------------------------------
 
             for f_transition in f_transitions.iter() {
-                let new_weight =
-                    current.weight
-                        + f_transition.weight;
+                let new_weight = current.weight + f_transition.weight;
 
-                let new_dl =
-                    current.dr;
+                let new_dl = current.dr;
 
-                let new_dr =
-                    current.dl
-                        ^ f_transition.output_diff;
+                let new_dr = current.dl ^ f_transition.output_diff;
 
-                let key =
-                    (new_dl, new_dr);
+                let key = (new_dl, new_dr);
 
-                if let Some(old_weight) =
-                    best_seen.get(&key)
-                {
+                if let Some(old_weight) = best_seen.get(&key) {
                     if *old_weight <= new_weight {
                         continue;
                     }
                 }
 
-                best_seen.insert(
-                    key,
-                    new_weight,
-                );
+                best_seen.insert(key, new_weight);
 
                 generated += 1;
 
@@ -728,56 +622,31 @@ fn main() {
         // Convert bounded heap into sorted frontier.
         // --------------------------------------------------------------------
 
-        let next_frontier =
-            finalize_beam(next_heap);
+        let next_frontier = finalize_beam(next_heap);
 
-        println!(
-            "Round {:>2}: generated = {}",
-            round + 1,
-            generated
-        );
+        println!("Round {:>2}: generated = {}", round + 1, generated);
 
-        if let Some(best) =
-            next_frontier.first()
-        {
-            println!(
-                "         best W   = {:.6}",
-                best.weight
-            );
+        if let Some(best) = next_frontier.first() {
+            println!("         best W   = {:.6}", best.weight);
 
-            println!(
-                "         best P   = {:.12e}",
-                2.0_f64.powf(-best.weight)
-            );
+            println!("         best P   = {:.12e}", 2.0_f64.powf(-best.weight));
 
-            println!(
-                "         best ΔL  = {:#018x}",
-                best.dl
-            );
+            println!("         best ΔL  = {:#018x}", best.dl);
 
-            println!(
-                "         best ΔR  = {:#018x}",
-                best.dr
-            );
+            println!("         best ΔR  = {:#018x}", best.dr);
         }
 
-        println!(
-            "         retained = {}",
-            next_frontier.len()
-        );
+        println!("         retained = {}", next_frontier.len());
 
         println!();
 
         if next_frontier.is_empty() {
-            println!(
-                "Search terminated: no states remain."
-            );
+            println!("Search terminated: no states remain.");
 
             break;
         }
 
-        frontier =
-            next_frontier;
+        frontier = next_frontier;
     }
 
     // ========================================================================
@@ -795,18 +664,11 @@ fn main() {
         return;
     }
 
-    println!(
-        "Top {} final states:",
-        frontier.len().min(MAX_RESULTS)
-    );
+    println!("Top {} final states:", frontier.len().min(MAX_RESULTS));
 
     println!();
 
-    for (index, state) in frontier
-        .iter()
-        .take(MAX_RESULTS)
-        .enumerate()
-    {
+    for (index, state) in frontier.iter().take(MAX_RESULTS).enumerate() {
         println!(
             "#{:<3} W = {:>10.6}   P = {:>14.8e}",
             index + 1,
@@ -814,15 +676,9 @@ fn main() {
             2.0_f64.powf(-state.weight)
         );
 
-        println!(
-            "      ΔL = {:#018x}",
-            state.dl
-        );
+        println!("      ΔL = {:#018x}", state.dl);
 
-        println!(
-            "      ΔR = {:#018x}",
-            state.dr
-        );
+        println!("      ΔR = {:#018x}", state.dr);
 
         println!();
     }
@@ -832,25 +688,15 @@ fn main() {
     println!("============================================================");
     println!();
 
-    println!(
-        "The reported weights are the best characteristics"
-    );
+    println!("The reported weights are the best characteristics");
 
-    println!(
-        "observed by this bounded beam search."
-    );
+    println!("observed by this bounded beam search.");
 
     println!();
 
-    println!(
-        "They are NOT differential-hull probabilities."
-    );
+    println!("They are NOT differential-hull probabilities.");
 
-    println!(
-        "Increasing BEAM_WIDTH and MAX_F_TRANSITIONS can"
-    );
+    println!("Increasing BEAM_WIDTH and MAX_F_TRANSITIONS can");
 
-    println!(
-        "improve coverage, but also increases runtime."
-    );
+    println!("improve coverage, but also increases runtime.");
 }

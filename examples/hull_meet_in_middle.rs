@@ -69,7 +69,6 @@ impl Config {
                 // ------------------------------------------------
                 // Help
                 // ------------------------------------------------
-
                 "--help" | "-h" => {
                     print_usage();
                     std::process::exit(0);
@@ -78,7 +77,6 @@ impl Config {
                 // ------------------------------------------------
                 // Explicit options
                 // ------------------------------------------------
-
                 "--rounds" => {
                     i += 1;
 
@@ -88,97 +86,62 @@ impl Config {
 
                     config.total_rounds = args[i]
                         .parse::<usize>()
-                        .map_err(|_| {
-                            format!(
-                                "Invalid --rounds value: {}",
-                                args[i]
-                            )
-                        })?;
+                        .map_err(|_| format!("Invalid --rounds value: {}", args[i]))?;
                 }
 
                 "--forward" => {
                     i += 1;
 
                     if i >= args.len() {
-                        return Err(
-                            "--forward requires a value".to_string()
-                        );
+                        return Err("--forward requires a value".to_string());
                     }
 
                     config.forward_rounds = args[i]
                         .parse::<usize>()
-                        .map_err(|_| {
-                            format!(
-                                "Invalid --forward value: {}",
-                                args[i]
-                            )
-                        })?;
+                        .map_err(|_| format!("Invalid --forward value: {}", args[i]))?;
                 }
 
                 "--backward" => {
                     i += 1;
 
                     if i >= args.len() {
-                        return Err(
-                            "--backward requires a value".to_string()
-                        );
+                        return Err("--backward requires a value".to_string());
                     }
 
                     config.backward_rounds = args[i]
                         .parse::<usize>()
-                        .map_err(|_| {
-                            format!(
-                                "Invalid --backward value: {}",
-                                args[i]
-                            )
-                        })?;
+                        .map_err(|_| format!("Invalid --backward value: {}", args[i]))?;
                 }
 
                 "--top" => {
                     i += 1;
 
                     if i >= args.len() {
-                        return Err(
-                            "--top requires a value".to_string()
-                        );
+                        return Err("--top requires a value".to_string());
                     }
 
                     config.top_outputs = args[i]
                         .parse::<usize>()
-                        .map_err(|_| {
-                            format!(
-                                "Invalid --top value: {}",
-                                args[i]
-                            )
-                        })?;
+                        .map_err(|_| format!("Invalid --top value: {}", args[i]))?;
                 }
 
                 "--max-states" => {
                     i += 1;
 
                     if i >= args.len() {
-                        return Err(
-                            "--max-states requires a value".to_string()
-                        );
+                        return Err("--max-states requires a value".to_string());
                     }
 
                     config.max_states = args[i]
                         .parse::<usize>()
-                        .map_err(|_| {
-                            format!(
-                                "Invalid --max-states value: {}",
-                                args[i]
-                            )
-                        })?;
+                        .map_err(|_| format!("Invalid --max-states value: {}", args[i]))?;
                 }
 
                 "--dl" => {
                     i += 1;
 
                     if i >= args.len() {
-                        return Err(
-                            "--dl requires a value".to_string()
-                        );
+                        return Err("--dl requires a value".to_string());
                     }
 
                     config.input_dl = parse_u64(&args[i])?;
@@ -188,9 +151,7 @@ impl Config {
                     i += 1;
 
                     if i >= args.len() {
-                        return Err(
-                            "--dr requires a value".to_string()
-                        );
+                        return Err("--dr requires a value".to_string());
                     }
 
                     config.input_dr = parse_u64(&args[i])?;
@@ -217,12 +178,8 @@ impl Config {
                 // ------------------------------------------------
                 // Unknown option
                 // ------------------------------------------------
-
                 _ if arg.starts_with("--") => {
-                    return Err(format!(
-                        "Unknown argument: {}",
-                        arg
-                    ));
+                    return Err(format!("Unknown argument: {}", arg));
                 }
 
                 // ------------------------------------------------
@@ -230,46 +187,30 @@ impl Config {
                 //
                 // TOTAL FORWARD BACKWARD
                 // ------------------------------------------------
-
                 _ => {
                     match positional_count {
                         0 => {
-                            config.total_rounds = arg
-                                .parse::<usize>()
-                                .map_err(|_| {
-                                    format!(
-                                        "Invalid positional total-round count: {}",
-                                        arg
-                                    )
-                                })?;
+                            config.total_rounds = arg.parse::<usize>().map_err(|_| {
+                                format!("Invalid positional total-round count: {}", arg)
+                            })?;
                         }
 
                         1 => {
-                            config.forward_rounds = arg
-                                .parse::<usize>()
-                                .map_err(|_| {
-                                    format!(
-                                        "Invalid positional forward-round count: {}",
-                                        arg
-                                    )
-                                })?;
+                            config.forward_rounds = arg.parse::<usize>().map_err(|_| {
+                                format!("Invalid positional forward-round count: {}", arg)
+                            })?;
                         }
 
                         2 => {
-                            config.backward_rounds = arg
-                                .parse::<usize>()
-                                .map_err(|_| {
-                                    format!(
-                                        "Invalid positional backward-round count: {}",
-                                        arg
-                                    )
-                                })?;
+                            config.backward_rounds = arg.parse::<usize>().map_err(|_| {
+                                format!("Invalid positional backward-round count: {}", arg)
+                            })?;
                         }
 
                         _ => {
                             return Err(
                                 "Too many positional arguments. Expected: TOTAL FORWARD BACKWARD"
-                                    .to_string()
+                                    .to_string(),
                             );
                         }
                     }
@@ -286,33 +227,22 @@ impl Config {
         // --------------------------------------------------------
 
         if config.total_rounds == 0 {
-            return Err(
-                "Total rounds must be greater than zero"
-                    .to_string()
-            );
+            return Err("Total rounds must be greater than zero".to_string());
         }
 
-        if config.forward_rounds + config.backward_rounds
-            != config.total_rounds
-        {
+        if config.forward_rounds + config.backward_rounds != config.total_rounds {
             return Err(format!(
                 "Invalid MITM configuration: forward ({}) + backward ({}) != total ({})",
-                config.forward_rounds,
-                config.backward_rounds,
-                config.total_rounds
+                config.forward_rounds, config.backward_rounds, config.total_rounds
             ));
         }
 
         if config.top_outputs == 0 {
-            return Err(
-                "--top must be greater than zero".to_string()
-            );
+            return Err("--top must be greater than zero".to_string());
         }
 
         if config.max_states == 0 {
-            return Err(
-                "--max-states must be greater than zero".to_string()
-            );
+            return Err("--max-states must be greater than zero".to_string());
         }
 
         Ok(config)
@@ -323,11 +253,9 @@ fn parse_u64(value: &str) -> Result<u64, String> {
     let value = value.trim();
 
     if let Some(hex) = value.strip_prefix("0x") {
-        u64::from_str_radix(hex, 16)
-            .map_err(|_| format!("Invalid hexadecimal value: {value}"))
+        u64::from_str_radix(hex, 16).map_err(|_| format!("Invalid hexadecimal value: {value}"))
     } else if let Some(hex) = value.strip_prefix("0X") {
-        u64::from_str_radix(hex, 16)
-            .map_err(|_| format!("Invalid hexadecimal value: {value}"))
+        u64::from_str_radix(hex, 16).map_err(|_| format!("Invalid hexadecimal value: {value}"))
     } else {
         value
             .parse::<u64>()
@@ -426,13 +354,9 @@ impl Dyadic {
         }
 
         Self {
-            numerator: self
-                .numerator
-                .saturating_mul(rhs.numerator),
+            numerator: self.numerator.saturating_mul(rhs.numerator),
 
-            denominator_bits: self
-                .denominator_bits
-                .saturating_add(rhs.denominator_bits),
+            denominator_bits: self.denominator_bits.saturating_add(rhs.denominator_bits),
         }
     }
 
@@ -447,25 +371,20 @@ impl Dyadic {
 
         if self.denominator_bits == rhs.denominator_bits {
             return Self {
-                numerator: self
-                    .numerator
-                    .saturating_add(rhs.numerator),
+                numerator: self.numerator.saturating_add(rhs.numerator),
 
                 denominator_bits: self.denominator_bits,
             };
         }
 
         if self.denominator_bits > rhs.denominator_bits {
-            let shift =
-                self.denominator_bits - rhs.denominator_bits;
+            let shift = self.denominator_bits - rhs.denominator_bits;
 
             let shifted = rhs.numerator.checked_shl(shift);
 
             return Self {
                 numerator: match shifted {
-                    Some(value) => {
-                        self.numerator.saturating_add(value)
-                    }
+                    Some(value) => self.numerator.saturating_add(value),
                     None => u128::MAX,
                 },
 
@@ -473,16 +392,13 @@ impl Dyadic {
             };
         }
 
-        let shift =
-            rhs.denominator_bits - self.denominator_bits;
+        let shift = rhs.denominator_bits - self.denominator_bits;
 
         let shifted = self.numerator.checked_shl(shift);
 
         Self {
             numerator: match shifted {
-                Some(value) => {
-                    value.saturating_add(rhs.numerator)
-                }
+                Some(value) => value.saturating_add(rhs.numerator),
                 None => u128::MAX,
             },
 
@@ -495,8 +411,7 @@ impl Dyadic {
             return 0.0;
         }
 
-        (self.numerator as f64)
-            / 2f64.powi(self.denominator_bits as i32)
+        (self.numerator as f64) / 2f64.powi(self.denominator_bits as i32)
     }
 
     fn log2_probability(self) -> f64 {
@@ -504,8 +419,7 @@ impl Dyadic {
             return f64::NEG_INFINITY;
         }
 
-        (self.numerator as f64).log2()
-            - self.denominator_bits as f64
+        (self.numerator as f64).log2() - self.denominator_bits as f64
     }
 }
 
@@ -541,21 +455,11 @@ impl ExpansionError {
                 eprintln!("Round                  : {round}");
                 eprintln!("Current states         : {current_states}");
                 eprintln!("Maximum states         : {max_states}");
-                eprintln!(
-                    "Source ΔL              : 0x{:016x}",
-                    source_state.0
-                );
-                eprintln!(
-                    "Source ΔR              : 0x{:016x}",
-                    source_state.1
-                );
+                eprintln!("Source ΔL              : 0x{:016x}", source_state.0);
+                eprintln!("Source ΔR              : 0x{:016x}", source_state.1);
                 eprintln!();
-                eprintln!(
-                    "Expansion stopped BEFORE inserting another unique state."
-                );
-                eprintln!(
-                    "No unbounded HashMap allocation was attempted."
-                );
+                eprintln!("Expansion stopped BEFORE inserting another unique state.");
+                eprintln!("No unbounded HashMap allocation was attempted.");
                 eprintln!();
             }
         }
@@ -569,26 +473,14 @@ impl ExpansionError {
 fn table_paths() -> Vec<(&'static str, &'static str)> {
     vec![
         ("ddt_matrix.txt", "docs/tables/ddt_matrix.txt"),
-        (
-            "sbox_accepted.txt",
-            "docs/tables/sbox_accepted.txt",
-        ),
+        ("sbox_accepted.txt", "docs/tables/sbox_accepted.txt"),
         (
             "kat_reduced_rounds_v02.txt",
             "docs/tables/kat_reduced_rounds_v02.txt",
         ),
-        (
-            "kat_reduced_all.txt",
-            "docs/tables/kat_reduced_all.txt",
-        ),
-        (
-            "kat_expanded_v02.txt",
-            "docs/tables/kat_expanded_v02.txt",
-        ),
-        (
-            "kat_vectors_v02.txt",
-            "docs/tables/kat_vectors_v02.txt",
-        ),
+        ("kat_reduced_all.txt", "docs/tables/kat_reduced_all.txt"),
+        ("kat_expanded_v02.txt", "docs/tables/kat_expanded_v02.txt"),
+        ("kat_vectors_v02.txt", "docs/tables/kat_vectors_v02.txt"),
         ("lat_matrix.txt", "docs/tables/lat_matrix.txt"),
     ]
 }
@@ -604,8 +496,7 @@ fn build_ddt_from_sbox() -> Ddt {
 
     for dx in 0..256 {
         for x in 0..256 {
-            let dy = HERRINGFISH_SBOX_V02[x ^ dx]
-                ^ HERRINGFISH_SBOX_V02[x];
+            let dy = HERRINGFISH_SBOX_V02[x ^ dx] ^ HERRINGFISH_SBOX_V02[x];
 
             ddt[dx][dy as usize] += 1;
         }
@@ -615,13 +506,8 @@ fn build_ddt_from_sbox() -> Ddt {
 }
 
 fn parse_ddt_file(path: &Path) -> Result<Ddt, String> {
-    let text = fs::read_to_string(path)
-        .map_err(|e| {
-            format!(
-                "Failed to read {}: {e}",
-                path.display()
-            )
-        })?;
+    let text =
+        fs::read_to_string(path).map_err(|e| format!("Failed to read {}: {e}", path.display()))?;
 
     let mut rows: Vec<Vec<u16>> = Vec::new();
 
@@ -635,10 +521,7 @@ fn parse_ddt_file(path: &Path) -> Result<Ddt, String> {
         let values: Vec<u16> = line
             .split_whitespace()
             .filter_map(|token| {
-                let token =
-                    token.trim_matches(|c: char| {
-                        !c.is_ascii_hexdigit()
-                    });
+                let token = token.trim_matches(|c: char| !c.is_ascii_hexdigit());
 
                 if token.is_empty() {
                     return None;
@@ -648,11 +531,8 @@ fn parse_ddt_file(path: &Path) -> Result<Ddt, String> {
                     return Some(value);
                 }
 
-                if let Some(hex) =
-                    token.strip_prefix("0x")
-                {
-                    return u16::from_str_radix(hex, 16)
-                        .ok();
+                if let Some(hex) = token.strip_prefix("0x") {
+                    return u16::from_str_radix(hex, 16).ok();
                 }
 
                 None
@@ -696,13 +576,10 @@ fn load_exact_ddt(path: &Path) -> Result<Ddt, String> {
 
 fn validate_ddt_rows(ddt: &Ddt) -> Result<(), String> {
     for dx in 0..256 {
-        let sum: u32 =
-            ddt[dx].iter().map(|&v| v as u32).sum();
+        let sum: u32 = ddt[dx].iter().map(|&v| v as u32).sum();
 
         if sum != 256 {
-            return Err(format!(
-                "DDT row dx=0x{dx:02x} sums to {sum}, expected 256"
-            ));
+            return Err(format!("DDT row dx=0x{dx:02x} sums to {sum}, expected 256"));
         }
     }
 
@@ -717,8 +594,7 @@ fn validate_ddt_against_sbox(ddt: &Ddt) -> bool {
             if ddt[dx][dy] != reference[dx][dy] {
                 println!(
                     "Mismatch at dx=0x{dx:02x}, dy=0x{dy:02x}: file={}, S-box={}",
-                    ddt[dx][dy],
-                    reference[dx][dy]
+                    ddt[dx][dy], reference[dx][dy]
                 );
 
                 return false;
@@ -734,34 +610,24 @@ fn print_ddt_validation(ddt: &Ddt, dx: usize) {
     println!("DDT VALIDATION");
     println!("------------------------------------------------------------");
 
-    let non_zero =
-        ddt[dx].iter().filter(|&&v| v != 0).count();
+    let non_zero = ddt[dx].iter().filter(|&&v| v != 0).count();
 
-    let max_count =
-        *ddt[dx].iter().max().unwrap_or(&0);
+    let max_count = *ddt[dx].iter().max().unwrap_or(&0);
 
-    let max_probability =
-        max_count as f64 / 256.0;
+    let max_probability = max_count as f64 / 256.0;
 
-    let max_weight =
-        if max_probability > 0.0 {
-            -max_probability.log2()
-        } else {
-            f64::INFINITY
-        };
+    let max_weight = if max_probability > 0.0 {
+        -max_probability.log2()
+    } else {
+        f64::INFINITY
+    };
 
     println!("S-box size: 256 × 256");
     println!("Examining dx = 0x{dx:02x}");
     println!("Non-zero transitions: {non_zero}");
     println!("Maximum differential count: {max_count}");
-    println!(
-        "Maximum probability: {:.6e}",
-        max_probability
-    );
-    println!(
-        "Maximum -log2(P): {:.4}",
-        max_weight
-    );
+    println!("Maximum probability: {:.6e}", max_probability);
+    println!("Maximum -log2(P): {:.4}", max_weight);
 
     let mut entries: Vec<(usize, u16)> = ddt[dx]
         .iter()
@@ -770,19 +636,13 @@ fn print_ddt_validation(ddt: &Ddt, dx: usize) {
         .map(|(dy, count)| (dy, *count))
         .collect();
 
-    entries.sort_by(|a, b| {
-        b.1.cmp(&a.1)
-            .then_with(|| a.0.cmp(&b.0))
-    });
+    entries.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
 
     println!();
     println!("Top DDT transitions:");
 
-    for (rank, &(dy, count)) in
-        entries.iter().take(10).enumerate()
-    {
-        let probability =
-            count as f64 / 256.0;
+    for (rank, &(dy, count)) in entries.iter().take(10).enumerate() {
+        let probability = count as f64 / 256.0;
 
         println!(
             "#{:2} dx=0x{:02x} dy=0x{:02x} count={:3} P={:.6e}",
@@ -794,8 +654,7 @@ fn print_ddt_validation(ddt: &Ddt, dx: usize) {
         );
     }
 
-    let sum: u32 =
-        ddt[dx].iter().map(|&v| v as u32).sum();
+    let sum: u32 = ddt[dx].iter().map(|&v| v as u32).sum();
 
     println!();
     println!("DDT row count sum: {sum} / 256");
@@ -813,24 +672,19 @@ fn diffuse(value: u64) -> u64 {
     let mut bytes = [0u8; 8];
 
     for i in 0..8 {
-        bytes[i] =
-            ((value >> (8 * i)) & 0xff) as u8;
+        bytes[i] = ((value >> (8 * i)) & 0xff) as u8;
     }
 
     let mut output = [0u8; 8];
 
     for i in 0..8 {
-        output[i] =
-            bytes[i]
-                ^ bytes[(i + 1) % 8]
-                ^ bytes[(i + 3) % 8];
+        output[i] = bytes[i] ^ bytes[(i + 1) % 8] ^ bytes[(i + 3) % 8];
     }
 
     let mut result = 0u64;
 
     for i in 0..8 {
-        result |=
-            (output[i] as u64) << (8 * i);
+        result |= (output[i] as u64) << (8 * i);
     }
 
     result
@@ -852,10 +706,7 @@ fn active_byte_indices(value: u64) -> Vec<usize> {
     result
 }
 
-fn enumerate_byte_transitions(
-    ddt: &Ddt,
-    dx: u8,
-) -> Vec<(u8, u16)> {
+fn enumerate_byte_transitions(ddt: &Ddt, dx: u8) -> Vec<(u8, u16)> {
     let mut result = Vec::new();
 
     for dy in 0..256 {
@@ -888,14 +739,12 @@ fn add_state_checked(
 
     if output.len() >= config.max_states {
         if config.strict_state_limit {
-            return Err(
-                ExpansionError::StateLimitExceeded {
-                    round,
-                    current_states: output.len(),
-                    max_states: config.max_states,
-                    source_state,
-                },
-            );
+            return Err(ExpansionError::StateLimitExceeded {
+                round,
+                current_states: output.len(),
+                max_states: config.max_states,
+                source_state,
+            });
         }
 
         // Non-strict mode:
@@ -948,45 +797,29 @@ fn enumerate_combinations(
     if index == active.len() {
         let f_out = diffuse(t_value);
 
-        let next_state = (
-            dr,
-            dl ^ f_out,
-        );
+        let next_state = (dr, dl ^ f_out);
 
         let transition_probability = Dyadic {
             numerator: path_count,
             denominator_bits: (active.len() * 8) as u32,
         };
 
-        let contribution =
-            probability.multiply(transition_probability);
+        let contribution = probability.multiply(transition_probability);
 
-        if prune
-            && contribution.log2_probability() < config.prune_threshold
-        {
+        if prune && contribution.log2_probability() < config.prune_threshold {
             return Ok(());
         }
 
-        return add_state_checked(
-            output,
-            next_state,
-            contribution,
-            round,
-            (dl, dr),
-            config,
-        );
+        return add_state_checked(output, next_state, contribution, round, (dl, dr), config);
     }
 
     let byte_index = active[index];
     let transitions = &choices[index];
 
     for &(dy, count) in transitions {
-        let next_t_value =
-            t_value
-                | ((dy as u64) << (8 * byte_index));
+        let next_t_value = t_value | ((dy as u64) << (8 * byte_index));
 
-        let next_path_count =
-            path_count.saturating_mul(count as u128);
+        let next_path_count = path_count.saturating_mul(count as u128);
 
         enumerate_combinations(
             ddt,
@@ -1018,18 +851,15 @@ fn expand_round(
     config: &Config,
     round: usize,
 ) -> Result<HashMap<State, Dyadic>, ExpansionError> {
-    let capacity =
-        input.len().min(config.max_states);
+    let capacity = input.len().min(config.max_states);
 
-    let mut output =
-        HashMap::with_capacity(capacity);
+    let mut output = HashMap::with_capacity(capacity);
 
     for (&state, &probability) in input {
         let dl = state.0;
         let dr = state.1;
 
-        let active =
-            active_byte_indices(dr);
+        let active = active_byte_indices(dr);
 
         // ----------------------------------------------------
         // F(0) = 0
@@ -1038,14 +868,7 @@ fn expand_round(
         if active.is_empty() {
             let next_state = (dr, dl);
 
-            add_state_checked(
-                &mut output,
-                next_state,
-                probability,
-                round,
-                state,
-                config,
-            )?;
+            add_state_checked(&mut output, next_state, probability, round, state, config)?;
 
             continue;
         }
@@ -1057,20 +880,12 @@ fn expand_round(
         // It is NOT the state space.
         // ----------------------------------------------------
 
-        let mut choices =
-            Vec::with_capacity(active.len());
+        let mut choices = Vec::with_capacity(active.len());
 
         for &byte_index in &active {
-            let dx =
-                ((dr >> (8 * byte_index)) & 0xff)
-                    as u8;
+            let dx = ((dr >> (8 * byte_index)) & 0xff) as u8;
 
-            choices.push(
-                enumerate_byte_transitions(
-                    ddt,
-                    dx,
-                ),
-            );
+            choices.push(enumerate_byte_transitions(ddt, dx));
         }
 
         enumerate_combinations(
@@ -1122,8 +937,7 @@ fn enumerate_backward_combinations(
             denominator_bits: (active.len() * 8) as u32,
         };
 
-        let contribution =
-            probability.multiply(transition_probability);
+        let contribution = probability.multiply(transition_probability);
 
         add_state_checked(
             output,
@@ -1140,12 +954,9 @@ fn enumerate_backward_combinations(
     let byte_index = active[index];
 
     for &(dy, count) in &choices[index] {
-        let next_t_value =
-            t_value
-                | ((dy as u64) << (8 * byte_index));
+        let next_t_value = t_value | ((dy as u64) << (8 * byte_index));
 
-        let next_path_count =
-            path_count.saturating_mul(count as u128);
+        let next_path_count = path_count.saturating_mul(count as u128);
 
         enumerate_backward_combinations(
             ddt,
@@ -1172,11 +983,9 @@ fn expand_backward(
     config: &Config,
     round: usize,
 ) -> Result<HashMap<State, Dyadic>, ExpansionError> {
-    let capacity =
-        input.len().min(config.max_states);
+    let capacity = input.len().min(config.max_states);
 
-    let mut output =
-        HashMap::with_capacity(capacity);
+    let mut output = HashMap::with_capacity(capacity);
 
     for (&state, &probability) in input {
         let dl_out = state.0;
@@ -1194,8 +1003,7 @@ fn expand_backward(
 
         let dr_prev = dl_out;
 
-        let active =
-            active_byte_indices(dr_prev);
+        let active = active_byte_indices(dr_prev);
 
         if active.is_empty() {
             let dl_prev = dr_out;
@@ -1212,20 +1020,12 @@ fn expand_backward(
             continue;
         }
 
-        let mut choices =
-            Vec::with_capacity(active.len());
+        let mut choices = Vec::with_capacity(active.len());
 
         for &byte_index in &active {
-            let dx =
-                ((dr_prev >> (8 * byte_index)) & 0xff)
-                    as u8;
+            let dx = ((dr_prev >> (8 * byte_index)) & 0xff) as u8;
 
-            choices.push(
-                enumerate_byte_transitions(
-                    ddt,
-                    dx,
-                ),
-            );
+            choices.push(enumerate_byte_transitions(ddt, dx));
         }
 
         enumerate_backward_combinations(
@@ -1251,9 +1051,7 @@ fn expand_backward(
 // Probability mass
 // ============================================================
 
-fn sum_probability_mass(
-    map: &HashMap<State, Dyadic>,
-) -> Dyadic {
+fn sum_probability_mass(map: &HashMap<State, Dyadic>) -> Dyadic {
     let mut total = Dyadic::zero();
 
     for &probability in map.values() {
@@ -1263,65 +1061,36 @@ fn sum_probability_mass(
     total
 }
 
-fn print_probability_mass(
-    label: &str,
-    map: &HashMap<State, Dyadic>,
-) {
-    let total =
-        sum_probability_mass(map);
+fn print_probability_mass(label: &str, map: &HashMap<State, Dyadic>) {
+    let total = sum_probability_mass(map);
 
     println!("{label}:");
-    println!(
-        "  Numerator        : {}",
-        total.numerator
-    );
-    println!(
-        "  Denominator bits : {}",
-        total.denominator_bits
-    );
-    println!(
-        "  Probability      : {:.20e}",
-        total.probability_f64()
-    );
-    println!(
-        "  -log2(P)         : {:.12}",
-        -total.log2_probability()
-    );
+    println!("  Numerator        : {}", total.numerator);
+    println!("  Denominator bits : {}", total.denominator_bits);
+    println!("  Probability      : {:.20e}", total.probability_f64());
+    println!("  -log2(P)         : {:.12}", -total.log2_probability());
 }
 
 // ============================================================
 // Top-N
 // ============================================================
 
-fn top_states(
-    map: &HashMap<State, Dyadic>,
-    count: usize,
-) -> Vec<(State, Dyadic)> {
+fn top_states(map: &HashMap<State, Dyadic>, count: usize) -> Vec<(State, Dyadic)> {
     if count == 0 || map.is_empty() {
         return Vec::new();
     }
 
-    let mut best:
-        Vec<(State, Dyadic)> =
-        Vec::with_capacity(count.min(map.len()));
+    let mut best: Vec<(State, Dyadic)> = Vec::with_capacity(count.min(map.len()));
 
     for (&state, &probability) in map {
         best.push((state, probability));
 
         best.sort_unstable_by(|a, b| {
             b.1.log2_probability()
-                .partial_cmp(
-                    &a.1.log2_probability(),
-                )
-                .unwrap_or(
-                    std::cmp::Ordering::Equal,
-                )
-                .then_with(|| {
-                    a.0.0.cmp(&b.0.0)
-                })
-                .then_with(|| {
-                    a.0.1.cmp(&b.0.1)
-                })
+                .partial_cmp(&a.1.log2_probability())
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then_with(|| a.0.0.cmp(&b.0.0))
+                .then_with(|| a.0.1.cmp(&b.0.1))
         });
 
         if best.len() > count {
@@ -1332,11 +1101,7 @@ fn top_states(
     best
 }
 
-fn print_top_states(
-    title: &str,
-    map: &HashMap<State, Dyadic>,
-    count: usize,
-) {
+fn print_top_states(title: &str, map: &HashMap<State, Dyadic>, count: usize) {
     println!();
     println!("------------------------------------------------------------");
     println!("{title}");
@@ -1344,18 +1109,10 @@ fn print_top_states(
 
     println!(
         "{:<6} {:18} {:18} {:20} {:12}",
-        "#",
-        "ΔL",
-        "ΔR",
-        "Probability",
-        "-log2(P)"
+        "#", "ΔL", "ΔR", "Probability", "-log2(P)"
     );
 
-    for (rank, (state, probability)) in
-        top_states(map, count)
-            .into_iter()
-            .enumerate()
-    {
+    for (rank, (state, probability)) in top_states(map, count).into_iter().enumerate() {
         println!(
             "{:<6} 0x{:016x} 0x{:016x} {:.10e} {:12.6}",
             rank + 1,
@@ -1375,31 +1132,21 @@ fn calculate_mitm_hull(
     forward: &HashMap<State, Dyadic>,
     backward: &HashMap<State, Dyadic>,
 ) -> HashMap<State, Dyadic> {
-    let capacity =
-        forward.len().min(backward.len());
+    let capacity = forward.len().min(backward.len());
 
-    let mut result =
-        HashMap::with_capacity(capacity);
+    let mut result = HashMap::with_capacity(capacity);
 
-    let (smaller, larger) =
-        if forward.len() <= backward.len() {
-            (forward, backward)
-        } else {
-            (backward, forward)
-        };
+    let (smaller, larger) = if forward.len() <= backward.len() {
+        (forward, backward)
+    } else {
+        (backward, forward)
+    };
 
     for (&middle, &small_probability) in smaller {
-        if let Some(&large_probability) =
-            larger.get(&middle)
-        {
-            let contribution =
-                small_probability
-                    .multiply(large_probability);
+        if let Some(&large_probability) = larger.get(&middle) {
+            let contribution = small_probability.multiply(large_probability);
 
-            result.insert(
-                middle,
-                contribution,
-            );
+            result.insert(middle, contribution);
         }
     }
 
@@ -1411,17 +1158,16 @@ fn calculate_mitm_hull(
 // ============================================================
 
 fn main() {
-    let config =
-        match Config::from_args() {
-            Ok(config) => config,
+    let config = match Config::from_args() {
+        Ok(config) => config,
 
-            Err(error) => {
-                eprintln!("ERROR: {error}");
-                eprintln!();
-                print_usage();
-                std::process::exit(2);
-            }
-        };
+        Err(error) => {
+            eprintln!("ERROR: {error}");
+            eprintln!();
+            print_usage();
+            std::process::exit(2);
+        }
+    };
 
     println!("============================================================");
     println!("HERRINGFISH EXACT DIFFERENTIAL HULL / MITM ANALYSIS");
@@ -1429,34 +1175,15 @@ fn main() {
     println!();
 
     println!("Configuration:");
-    println!(
-        "  Total rounds          : {}",
-        config.total_rounds
-    );
-    println!(
-        "  Forward rounds        : {}",
-        config.forward_rounds
-    );
-    println!(
-        "  Backward rounds       : {}",
-        config.backward_rounds
-    );
-    println!(
-        "  Top outputs           : {}",
-        config.top_outputs
-    );
+    println!("  Total rounds          : {}", config.total_rounds);
+    println!("  Forward rounds        : {}", config.forward_rounds);
+    println!("  Backward rounds       : {}", config.backward_rounds);
+    println!("  Top outputs           : {}", config.top_outputs);
     println!(
         "  State pruning         : {}",
-        if config.prune {
-            "ENABLED"
-        } else {
-            "DISABLED"
-        }
+        if config.prune { "ENABLED" } else { "DISABLED" }
     );
-    println!(
-        "  Maximum states        : {}",
-        config.max_states
-    );
+    println!("  Maximum states        : {}", config.max_states);
     println!(
         "  Strict state limit    : {}",
         if config.strict_state_limit {
@@ -1465,14 +1192,8 @@ fn main() {
             "DISABLED"
         }
     );
-    println!(
-        "  Input ΔL              : 0x{:016x}",
-        config.input_dl
-    );
-    println!(
-        "  Input ΔR              : 0x{:016x}",
-        config.input_dr
-    );
+    println!("  Input ΔL              : 0x{:016x}", config.input_dl);
+    println!("  Input ΔR              : 0x{:016x}", config.input_dr);
 
     // ========================================================
     // Reference tables
@@ -1484,56 +1205,40 @@ fn main() {
     println!("------------------------------------------------------------");
 
     for (name, path) in table_paths() {
-        let status =
-            if Path::new(path).exists() {
-                "FOUND"
-            } else {
-                "MISSING"
-            };
+        let status = if Path::new(path).exists() {
+            "FOUND"
+        } else {
+            "MISSING"
+        };
 
-        println!(
-            "  {:<32} {} ({})",
-            name,
-            status,
-            path
-        );
+        println!("  {:<32} {} ({})", name, status, path);
     }
 
     // ========================================================
     // DDT
     // ========================================================
 
-    let ddt_path =
-        "docs/tables/ddt_matrix.txt";
+    let ddt_path = "docs/tables/ddt_matrix.txt";
 
     println!();
     println!("------------------------------------------------------------");
     println!("LOADING EXACT DDT");
     println!("------------------------------------------------------------");
 
-    let ddt =
-        match load_exact_ddt(
-            Path::new(ddt_path),
-        ) {
-            Ok(ddt) => {
-                println!(
-                    "DDT construction/loading: COMPLETE"
-                );
-                ddt
-            }
+    let ddt = match load_exact_ddt(Path::new(ddt_path)) {
+        Ok(ddt) => {
+            println!("DDT construction/loading: COMPLETE");
+            ddt
+        }
 
-            Err(error) => {
-                eprintln!("ERROR: {error}");
-                std::process::exit(1);
-            }
-        };
+        Err(error) => {
+            eprintln!("ERROR: {error}");
+            std::process::exit(1);
+        }
+    };
 
-    if let Err(error) =
-        validate_ddt_rows(&ddt)
-    {
-        eprintln!(
-            "DDT row validation: FAIL"
-        );
+    if let Err(error) = validate_ddt_rows(&ddt) {
+        eprintln!("DDT row validation: FAIL");
         eprintln!("{error}");
         std::process::exit(1);
     }
@@ -1546,22 +1251,15 @@ fn main() {
     println!("------------------------------------------------------------");
 
     if !validate_ddt_against_sbox(&ddt) {
-        eprintln!(
-            "DDT file does not match HERRINGFISH_SBOX_V02."
-        );
+        eprintln!("DDT file does not match HERRINGFISH_SBOX_V02.");
         std::process::exit(1);
     }
 
-    println!(
-        "DDT file matches HERRINGFISH_SBOX_V02: PASS"
-    );
+    println!("DDT file matches HERRINGFISH_SBOX_V02: PASS");
 
     println!();
 
-    print_ddt_validation(
-        &ddt,
-        0x01,
-    );
+    print_ddt_validation(&ddt, 0x01);
 
     // ========================================================
     // Forward half
@@ -1572,33 +1270,17 @@ fn main() {
     println!("FORWARD HALF");
     println!("============================================================");
 
-    let mut forward =
-        HashMap::with_capacity(1);
+    let mut forward = HashMap::with_capacity(1);
 
-    forward.insert(
-        (
-            config.input_dl,
-            config.input_dr,
-        ),
-        Dyadic::one(),
-    );
+    forward.insert((config.input_dl, config.input_dr), Dyadic::one());
 
     let mut forward_complete = true;
 
     for round in 1..=config.forward_rounds {
         println!();
-        println!(
-            "Forward round {} input states : {}",
-            round,
-            forward.len()
-        );
+        println!("Forward round {} input states : {}", round, forward.len());
 
-        match expand_round(
-            &ddt,
-            &forward,
-            &config,
-            round,
-        ) {
+        match expand_round(&ddt, &forward, &config, round) {
             Ok(next) => {
                 forward = next;
             }
@@ -1610,16 +1292,9 @@ fn main() {
             }
         }
 
-        println!(
-            "Forward round {} output states: {}",
-            round,
-            forward.len()
-        );
+        println!("Forward round {} output states: {}", round, forward.len());
 
-        print_probability_mass(
-            "Forward probability mass",
-            &forward,
-        );
+        print_probability_mass("Forward probability mass", &forward);
     }
 
     if !forward_complete {
@@ -1627,28 +1302,15 @@ fn main() {
         println!("============================================================");
         println!("ANALYSIS STOPPED SAFELY");
         println!("============================================================");
-        println!(
-            "The forward differential state space exceeded the"
-        );
-        println!(
-            "configured limit of {} states.",
-            config.max_states
-        );
+        println!("The forward differential state space exceeded the");
+        println!("configured limit of {} states.", config.max_states);
         println!();
-        println!(
-            "The state map was bounded during expansion."
-        );
-        println!(
-            "No 260-million-entry HashMap was constructed."
-        );
+        println!("The state map was bounded during expansion.");
+        println!("No 260-million-entry HashMap was constructed.");
         return;
     }
 
-    print_top_states(
-        "TOP FORWARD MIDDLE STATES",
-        &forward,
-        config.top_outputs,
-    );
+    print_top_states("TOP FORWARD MIDDLE STATES", &forward, config.top_outputs);
 
     // ========================================================
     // Direct full output enumeration
@@ -1656,39 +1318,20 @@ fn main() {
 
     println!();
     println!("============================================================");
-    println!(
-        "EXACT {}-ROUND OUTPUT ENUMERATION",
-        config.total_rounds
-    );
+    println!("EXACT {}-ROUND OUTPUT ENUMERATION", config.total_rounds);
     println!("============================================================");
 
-    let mut outputs =
-        HashMap::with_capacity(1);
+    let mut outputs = HashMap::with_capacity(1);
 
-    outputs.insert(
-        (
-            config.input_dl,
-            config.input_dr,
-        ),
-        Dyadic::one(),
-    );
+    outputs.insert((config.input_dl, config.input_dr), Dyadic::one());
 
     let mut direct_complete = true;
 
     for round in 1..=config.total_rounds {
         println!();
-        println!(
-            "Round {} input states : {}",
-            round,
-            outputs.len()
-        );
+        println!("Round {} input states : {}", round, outputs.len());
 
-        match expand_round(
-            &ddt,
-            &outputs,
-            &config,
-            round,
-        ) {
+        match expand_round(&ddt, &outputs, &config, round) {
             Ok(next) => {
                 outputs = next;
             }
@@ -1700,19 +1343,9 @@ fn main() {
             }
         }
 
-        println!(
-            "Round {} output states: {}",
-            round,
-            outputs.len()
-        );
+        println!("Round {} output states: {}", round, outputs.len());
 
-        print_probability_mass(
-            &format!(
-                "Round {} probability mass",
-                round
-            ),
-            &outputs,
-        );
+        print_probability_mass(&format!("Round {} probability mass", round), &outputs);
     }
 
     if !direct_complete {
@@ -1721,25 +1354,15 @@ fn main() {
         println!("DIRECT ENUMERATION INCOMPLETE");
         println!("============================================================");
         println!(
-            "The complete {}-round distribution could not fit"
-            ,
+            "The complete {}-round distribution could not fit",
             config.total_rounds
         );
-        println!(
-            "within --max-states={}.",
-            config.max_states
-        );
+        println!("within --max-states={}.", config.max_states);
         println!();
-        println!(
-            "This is a bounded analytical result, not a crash."
-        );
+        println!("This is a bounded analytical result, not a crash.");
         println!();
-        println!(
-            "For larger round counts, use a targeted MITM/hull"
-        );
-        println!(
-            "search rather than full output enumeration."
-        );
+        println!("For larger round counts, use a targeted MITM/hull");
+        println!("search rather than full output enumeration.");
         return;
     }
 
@@ -1747,55 +1370,34 @@ fn main() {
     // Direct statistics
     // ========================================================
 
-    let direct_hull_probability =
-        sum_probability_mass(&outputs);
+    let direct_hull_probability = sum_probability_mass(&outputs);
 
     println!();
     println!("------------------------------------------------------------");
-    println!(
-        "{}-ROUND OUTPUT STATISTICS",
-        config.total_rounds
-    );
+    println!("{}-ROUND OUTPUT STATISTICS", config.total_rounds);
     println!("------------------------------------------------------------");
 
-    println!(
-        "Unique output states : {}",
-        outputs.len()
-    );
+    println!("Unique output states : {}", outputs.len());
 
     println!(
         "Total probability    : {:.20e}",
-        direct_hull_probability
-            .probability_f64()
+        direct_hull_probability.probability_f64()
     );
 
     println!(
         "-log2(P)             : {:.12}",
-        -direct_hull_probability
-            .log2_probability()
+        -direct_hull_probability.log2_probability()
     );
 
-    let conservation =
-        (direct_hull_probability
-            .probability_f64()
-            - 1.0)
-            .abs()
-            < 1e-12;
+    let conservation = (direct_hull_probability.probability_f64() - 1.0).abs() < 1e-12;
 
     println!(
         "Probability conservation: {}",
-        if conservation {
-            "PASS"
-        } else {
-            "FAIL"
-        }
+        if conservation { "PASS" } else { "FAIL" }
     );
 
     print_top_states(
-        &format!(
-            "TOP {}-ROUND OUTPUT HULLS",
-            config.total_rounds
-        ),
+        &format!("TOP {}-ROUND OUTPUT HULLS", config.total_rounds),
         &outputs,
         config.top_outputs,
     );
@@ -1804,20 +1406,10 @@ fn main() {
     // Best output
     // ========================================================
 
-    let best_output =
-        top_states(
-            &outputs,
-            1,
-        )
-        .into_iter()
-        .next();
+    let best_output = top_states(&outputs, 1).into_iter().next();
 
-    let Some((target_output, direct_best_probability)) =
-        best_output
-    else {
-        println!(
-            "No output states were generated."
-        );
+    let Some((target_output, direct_best_probability)) = best_output else {
+        println!("No output states were generated.");
         return;
     };
 
@@ -1826,26 +1418,18 @@ fn main() {
     println!("BEST DIFFERENTIAL");
     println!("------------------------------------------------------------");
 
-    println!(
-        "Output ΔL         : 0x{:016x}",
-        target_output.0
-    );
+    println!("Output ΔL         : 0x{:016x}", target_output.0);
 
-    println!(
-        "Output ΔR         : 0x{:016x}",
-        target_output.1
-    );
+    println!("Output ΔR         : 0x{:016x}", target_output.1);
 
     println!(
         "Hull probability  : {:.20e}",
-        direct_best_probability
-            .probability_f64()
+        direct_best_probability.probability_f64()
     );
 
     println!(
         "-log2(P)          : {:.12}",
-        -direct_best_probability
-            .log2_probability()
+        -direct_best_probability.log2_probability()
     );
 
     // ========================================================
@@ -1857,40 +1441,21 @@ fn main() {
     println!("BACKWARD HALF / MITM VALIDATION");
     println!("============================================================");
 
-    println!(
-        "Target ΔL = 0x{:016x}",
-        target_output.0
-    );
+    println!("Target ΔL = 0x{:016x}", target_output.0);
 
-    println!(
-        "Target ΔR = 0x{:016x}",
-        target_output.1
-    );
+    println!("Target ΔR = 0x{:016x}", target_output.1);
 
-    let mut backward =
-        HashMap::with_capacity(1);
+    let mut backward = HashMap::with_capacity(1);
 
-    backward.insert(
-        target_output,
-        Dyadic::one(),
-    );
+    backward.insert(target_output, Dyadic::one());
 
     let mut backward_complete = true;
 
     for round in 1..=config.backward_rounds {
         println!();
-        println!(
-            "Backward round {} input states : {}",
-            round,
-            backward.len()
-        );
+        println!("Backward round {} input states : {}", round, backward.len());
 
-        match expand_backward(
-            &ddt,
-            &backward,
-            &config,
-            round,
-        ) {
+        match expand_backward(&ddt, &backward, &config, round) {
             Ok(next) => {
                 backward = next;
             }
@@ -1902,16 +1467,9 @@ fn main() {
             }
         }
 
-        println!(
-            "Backward round {} output states: {}",
-            round,
-            backward.len()
-        );
+        println!("Backward round {} output states: {}", round, backward.len());
 
-        print_probability_mass(
-            "Backward probability mass",
-            &backward,
-        );
+        print_probability_mass("Backward probability mass", &backward);
     }
 
     if !backward_complete {
@@ -1919,12 +1477,8 @@ fn main() {
         println!("============================================================");
         println!("BACKWARD MITM INCOMPLETE");
         println!("============================================================");
-        println!(
-            "Backward expansion exceeded the configured state limit."
-        );
-        println!(
-            "No unbounded allocation was attempted."
-        );
+        println!("Backward expansion exceeded the configured state limit.");
+        println!("No unbounded allocation was attempted.");
         return;
     }
 
@@ -1932,107 +1486,56 @@ fn main() {
     // MITM intersection
     // ========================================================
 
-    let mitm_hull =
-        calculate_mitm_hull(
-            &forward,
-            &backward,
-        );
+    let mitm_hull = calculate_mitm_hull(&forward, &backward);
 
-    let mitm_probability =
-        sum_probability_mass(
-            &mitm_hull,
-        );
+    let mitm_probability = sum_probability_mass(&mitm_hull);
 
     println!();
     println!("------------------------------------------------------------");
     println!("MITM INTERSECTION");
     println!("------------------------------------------------------------");
 
-    println!(
-        "Forward states  : {}",
-        forward.len()
-    );
+    println!("Forward states  : {}", forward.len());
 
-    println!(
-        "Backward states : {}",
-        backward.len()
-    );
+    println!("Backward states : {}", backward.len());
 
-    println!(
-        "Matching states : {}",
-        mitm_hull.len()
-    );
+    println!("Matching states : {}", mitm_hull.len());
 
     println!();
 
     println!(
         "MITM probability : {:.20e}",
-        mitm_probability
-            .probability_f64()
+        mitm_probability.probability_f64()
     );
 
     println!(
         "MITM -log2(P)    : {:.12}",
-        -mitm_probability
-            .log2_probability()
+        -mitm_probability.log2_probability()
     );
 
-    if let Some((middle, contribution)) =
-        top_states(
-            &mitm_hull,
-            1,
-        )
-        .into_iter()
-        .next()
-    {
+    if let Some((middle, contribution)) = top_states(&mitm_hull, 1).into_iter().next() {
         println!();
-        println!(
-            "Strongest matching middle:"
-        );
+        println!("Strongest matching middle:");
 
-        println!(
-            "  ΔL = 0x{:016x}",
-            middle.0
-        );
+        println!("  ΔL = 0x{:016x}", middle.0);
 
-        println!(
-            "  ΔR = 0x{:016x}",
-            middle.1
-        );
+        println!("  ΔR = 0x{:016x}", middle.1);
 
-        let forward_probability =
-            forward
-                .get(&middle)
-                .copied()
-                .unwrap_or_else(
-                    Dyadic::zero
-                );
+        let forward_probability = forward.get(&middle).copied().unwrap_or_else(Dyadic::zero);
 
-        let backward_probability =
-            backward
-                .get(&middle)
-                .copied()
-                .unwrap_or_else(
-                    Dyadic::zero
-                );
+        let backward_probability = backward.get(&middle).copied().unwrap_or_else(Dyadic::zero);
 
         println!(
             "  Forward  P = {:.20e}",
-            forward_probability
-                .probability_f64()
+            forward_probability.probability_f64()
         );
 
         println!(
             "  Backward P = {:.20e}",
-            backward_probability
-                .probability_f64()
+            backward_probability.probability_f64()
         );
 
-        println!(
-            "  Contribution = {:.20e}",
-            contribution
-                .probability_f64()
-        );
+        println!("  Contribution = {:.20e}", contribution.probability_f64());
     }
 
     // ========================================================
@@ -2046,22 +1549,16 @@ fn main() {
 
     println!(
         "Direct best-output probability : {:.20e}",
-        direct_best_probability
-            .probability_f64()
+        direct_best_probability.probability_f64()
     );
 
     println!(
         "MITM reconstructed probability : {:.20e}",
-        mitm_probability
-            .probability_f64()
+        mitm_probability.probability_f64()
     );
 
     let absolute_difference =
-        (direct_best_probability
-            .probability_f64()
-            - mitm_probability
-                .probability_f64())
-        .abs();
+        (direct_best_probability.probability_f64() - mitm_probability.probability_f64()).abs();
 
     println!(
         "Absolute difference            : {:.20e}",
@@ -2075,17 +1572,11 @@ fn main() {
     // probability of that specific output, NOT the total probability
     // mass of the entire output distribution.
 
-    let relative_difference =
-        if direct_best_probability
-            .probability_f64()
-            != 0.0
-        {
-            absolute_difference
-                / direct_best_probability
-                    .probability_f64()
-        } else {
-            absolute_difference
-        };
+    let relative_difference = if direct_best_probability.probability_f64() != 0.0 {
+        absolute_difference / direct_best_probability.probability_f64()
+    } else {
+        absolute_difference
+    };
 
     println!(
         "Relative difference            : {:.20e}",
@@ -2110,75 +1601,37 @@ fn main() {
     println!("FINAL REPORT");
     println!("============================================================");
 
-    println!(
-        "Rounds                 : {}",
-        config.total_rounds
-    );
+    println!("Rounds                 : {}", config.total_rounds);
 
-    println!(
-        "Forward split          : {}",
-        config.forward_rounds
-    );
+    println!("Forward split          : {}", config.forward_rounds);
 
-    println!(
-        "Backward split         : {}",
-        config.backward_rounds
-    );
+    println!("Backward split         : {}", config.backward_rounds);
 
-    println!(
-        "Direct output states   : {}",
-        outputs.len()
-    );
+    println!("Direct output states   : {}", outputs.len());
 
-    println!(
-        "Forward middle states  : {}",
-        forward.len()
-    );
+    println!("Forward middle states  : {}", forward.len());
 
-    println!(
-        "Backward middle states : {}",
-        backward.len()
-    );
+    println!("Backward middle states : {}", backward.len());
 
-    println!(
-        "MITM matching states   : {}",
-        mitm_hull.len()
-    );
+    println!("MITM matching states   : {}", mitm_hull.len());
 
-    println!(
-        "State limit            : {}",
-        config.max_states
-    );
+    println!("State limit            : {}", config.max_states);
 
     println!();
-    println!(
-        "State expansion is bounded during generation."
-    );
+    println!("State expansion is bounded during generation.");
 
-    println!(
-        "No giant combination list is constructed."
-    );
+    println!("No giant combination list is constructed.");
 
-    println!(
-        "No 260-million-entry HashMap is intentionally created."
-    );
+    println!("No 260-million-entry HashMap is intentionally created.");
 
     println!();
-    println!(
-        "IMPORTANT:"
-    );
+    println!("IMPORTANT:");
 
-    println!(
-        "This remains an analytical differential model."
-    );
+    println!("This remains an analytical differential model.");
 
-    println!(
-        "It should still be validated against the actual"
-    );
+    println!("It should still be validated against the actual");
 
-    println!(
-        "Herringfish round implementation and KAT vectors."
-    );
+    println!("Herringfish round implementation and KAT vectors.");
 
     println!();
     println!("============================================================");

@@ -139,15 +139,11 @@ fn print_ddt_statistics(ddt: &Ddt) {
         trivial_max
     );
 
-    println!(
-        "DDT nontrivial maximum    : {}",
-        nontrivial_max
-    );
+    println!("DDT nontrivial maximum    : {}", nontrivial_max);
 
     println!(
         "Maximum transition        : Δx = {:#04x}, Δy = {:#04x}",
-        max_dx,
-        max_dy
+        max_dx, max_dy
     );
 
     println!(
@@ -195,11 +191,7 @@ fn build_byte_transitions(ddt: &Ddt) -> Vec<Vec<ByteTransition>> {
         }
 
         // Strongest transitions first.
-        result[dx].sort_by(|a, b| {
-            a.weight
-                .partial_cmp(&b.weight)
-                .unwrap_or(Ordering::Equal)
-        });
+        result[dx].sort_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap_or(Ordering::Equal));
     }
 
     result
@@ -224,10 +216,7 @@ fn apply_diffusion(diff: u64) -> u64 {
     let mut output = [0u8; 8];
 
     for i in 0..8 {
-        output[i] =
-            input[i]
-            ^ input[(i + 1) % 8]
-            ^ input[(i + 3) % 8];
+        output[i] = input[i] ^ input[(i + 1) % 8] ^ input[(i + 3) % 8];
     }
 
     let mut result = 0u64;
@@ -283,11 +272,7 @@ fn expand_f_difference(
     // The Cartesian product can still become large.
     //
     // Keep only the strongest F transitions.
-    candidates.sort_by(|a, b| {
-        a.weight
-            .partial_cmp(&b.weight)
-            .unwrap_or(Ordering::Equal)
-    });
+    candidates.sort_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap_or(Ordering::Equal));
 
     candidates.truncate(MAX_F_TRANSITIONS);
 
@@ -316,12 +301,10 @@ fn enumerate_sbox_layer(
         return;
     }
 
-    let dx =
-        ((input_diff >> (byte_index * 8)) & 0xff) as usize;
+    let dx = ((input_diff >> (byte_index * 8)) & 0xff) as usize;
 
     for transition in &byte_transitions[dx] {
-        let new_weight =
-            current_weight + transition.weight;
+        let new_weight = current_weight + transition.weight;
 
         if new_weight > max_weight {
             continue;
@@ -329,9 +312,7 @@ fn enumerate_sbox_layer(
 
         let mask = !(0xffu64 << (byte_index * 8));
 
-        let new_output =
-            (output_diff & mask)
-            | ((transition.dy as u64) << (byte_index * 8));
+        let new_output = (output_diff & mask) | ((transition.dy as u64) << (byte_index * 8));
 
         enumerate_sbox_layer(
             byte_index + 1,
@@ -403,8 +384,7 @@ fn main() {
 
     println!();
 
-    let byte_transitions =
-        build_byte_transitions(&ddt);
+    let byte_transitions = build_byte_transitions(&ddt);
 
     // ------------------------------------------------------------------------
     // Initial state
@@ -418,10 +398,7 @@ fn main() {
         path: vec![(START_DL, START_DR)],
     }];
 
-    let mut visited: HashMap<
-        (usize, u64, u64),
-        f64,
-    > = HashMap::new();
+    let mut visited: HashMap<(usize, u64, u64), f64> = HashMap::new();
 
     let mut final_results = Vec::<Characteristic>::new();
 
@@ -433,11 +410,7 @@ fn main() {
     // ------------------------------------------------------------------------
 
     for round in 0..TOTAL_ROUNDS {
-        println!(
-            "Round {:>2}: frontier = {}",
-            round,
-            frontier.len()
-        );
+        println!("Round {:>2}: frontier = {}", round, frontier.len());
 
         /*
          * IMPORTANT OWNERSHIP FIX
@@ -452,11 +425,9 @@ fn main() {
          *
          * This avoids cloning potentially millions of states.
          */
-        let current_frontier =
-            std::mem::take(&mut frontier);
+        let current_frontier = std::mem::take(&mut frontier);
 
-        let mut next_frontier =
-            Vec::<DifferentialState>::new();
+        let mut next_frontier = Vec::<DifferentialState>::new();
 
         for current in current_frontier {
             total_expanded += 1;
@@ -473,20 +444,13 @@ fn main() {
             //     ΔR' = ΔL XOR ΔF
             // ---------------------------------------------------------------
 
-            let remaining_weight =
-                MAX_WEIGHT - current.weight;
+            let remaining_weight = MAX_WEIGHT - current.weight;
 
             let f_transitions =
-                expand_f_difference(
-                    current.dr,
-                    &byte_transitions,
-                    remaining_weight,
-                );
+                expand_f_difference(current.dr, &byte_transitions, remaining_weight);
 
             for f_transition in f_transitions {
-                let new_weight =
-                    current.weight
-                    + f_transition.weight;
+                let new_weight = current.weight + f_transition.weight;
 
                 if new_weight > MAX_WEIGHT {
                     continue;
@@ -494,20 +458,15 @@ fn main() {
 
                 let new_dl = current.dr;
 
-                let new_dr =
-                    current.dl
-                    ^ f_transition.output_diff;
+                let new_dr = current.dl ^ f_transition.output_diff;
 
                 let new_round = round + 1;
 
-                let key =
-                    (new_round, new_dl, new_dr);
+                let key = (new_round, new_dl, new_dr);
 
                 // Keep only the best path to an identical
                 // differential state.
-                if let Some(&old_weight) =
-                    visited.get(&key)
-                {
+                if let Some(&old_weight) = visited.get(&key) {
                     if old_weight <= new_weight {
                         continue;
                     }
@@ -515,20 +474,17 @@ fn main() {
 
                 visited.insert(key, new_weight);
 
-                let mut path =
-                    current.path.clone();
+                let mut path = current.path.clone();
 
                 path.push((new_dl, new_dr));
 
-                next_frontier.push(
-                    DifferentialState {
-                        round: new_round,
-                        dl: new_dl,
-                        dr: new_dr,
-                        weight: new_weight,
-                        path,
-                    },
-                );
+                next_frontier.push(DifferentialState {
+                    round: new_round,
+                    dl: new_dl,
+                    dr: new_dr,
+                    weight: new_weight,
+                    path,
+                });
 
                 total_generated += 1;
             }
@@ -538,11 +494,7 @@ fn main() {
         // Keep only the strongest states.
         // --------------------------------------------------------------------
 
-        next_frontier.sort_by(|a, b| {
-            a.weight
-                .partial_cmp(&b.weight)
-                .unwrap_or(Ordering::Equal)
-        });
+        next_frontier.sort_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap_or(Ordering::Equal));
 
         if next_frontier.len() > BEAM_WIDTH {
             next_frontier.truncate(BEAM_WIDTH);
@@ -554,18 +506,10 @@ fn main() {
             next_frontier.len()
         );
 
-        if let Some(best) =
-            next_frontier.first()
-        {
-            println!(
-                "         best W   = {:.4}",
-                best.weight
-            );
+        if let Some(best) = next_frontier.first() {
+            println!("         best W   = {:.4}", best.weight);
 
-            println!(
-                "         best P   = {:.6e}",
-                2.0_f64.powf(-best.weight)
-            );
+            println!("         best P   = {:.6e}", 2.0_f64.powf(-best.weight));
         }
 
         println!();
@@ -573,21 +517,17 @@ fn main() {
         // If this is the final round, collect results.
         if round + 1 == TOTAL_ROUNDS {
             for state in &next_frontier {
-                final_results.push(
-                    Characteristic {
-                        weight: state.weight,
-                        path: state.path.clone(),
-                    },
-                );
+                final_results.push(Characteristic {
+                    weight: state.weight,
+                    path: state.path.clone(),
+                });
             }
         }
 
         frontier = next_frontier;
 
         if frontier.is_empty() {
-            println!(
-                "Search terminated: no states remain."
-            );
+            println!("Search terminated: no states remain.");
 
             break;
         }
@@ -597,11 +537,7 @@ fn main() {
     // Sort final characteristics
     // ------------------------------------------------------------------------
 
-    final_results.sort_by(|a, b| {
-        a.weight
-            .partial_cmp(&b.weight)
-            .unwrap_or(Ordering::Equal)
-    });
+    final_results.sort_by(|a, b| a.weight.partial_cmp(&b.weight).unwrap_or(Ordering::Equal));
 
     // ------------------------------------------------------------------------
     // Results
@@ -611,25 +547,13 @@ fn main() {
     println!("SEARCH COMPLETE");
     println!("============================================================");
 
-    println!(
-        "States expanded  : {}",
-        total_expanded
-    );
+    println!("States expanded  : {}", total_expanded);
 
-    println!(
-        "States generated : {}",
-        total_generated
-    );
+    println!("States generated : {}", total_generated);
 
-    println!(
-        "Visited states   : {}",
-        visited.len()
-    );
+    println!("Visited states   : {}", visited.len());
 
-    println!(
-        "Final candidates : {}",
-        final_results.len()
-    );
+    println!("Final candidates : {}", final_results.len());
 
     println!();
 
@@ -640,19 +564,12 @@ fn main() {
 
     println!(
         "Top {} characteristics:",
-        final_results
-            .len()
-            .min(MAX_RESULTS)
+        final_results.len().min(MAX_RESULTS)
     );
 
     println!();
 
-    for (index, characteristic) in
-        final_results
-            .iter()
-            .take(MAX_RESULTS)
-            .enumerate()
-    {
+    for (index, characteristic) in final_results.iter().take(MAX_RESULTS).enumerate() {
         println!(
             "#{:<3} W = {:>8.4}   P = {:>12.6e}",
             index + 1,
@@ -660,15 +577,8 @@ fn main() {
             characteristic.probability()
         );
 
-        for (round, &(dl, dr)) in
-            characteristic.path.iter().enumerate()
-        {
-            println!(
-                "      r{:>2}: ΔL = {:#018x}  ΔR = {:#018x}",
-                round,
-                dl,
-                dr
-            );
+        for (round, &(dl, dr)) in characteristic.path.iter().enumerate() {
+            println!("      r{:>2}: ΔL = {:#018x}  ΔR = {:#018x}", round, dl, dr);
         }
 
         println!();

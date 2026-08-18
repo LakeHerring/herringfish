@@ -69,29 +69,21 @@ use std::path::{Path, PathBuf};
 
 const TABLE_DIR: &str = "docs/tables";
 
-const KAT_REDUCED_ROUNDS: &str =
-    "docs/tables/kat_reduced_rounds_v02.txt";
+const KAT_REDUCED_ROUNDS: &str = "docs/tables/kat_reduced_rounds_v02.txt";
 
-const KAT_REDUCED_ALL: &str =
-    "docs/tables/kat_reduced_all.txt";
+const KAT_REDUCED_ALL: &str = "docs/tables/kat_reduced_all.txt";
 
-const KAT_EXPANDED_V02: &str =
-    "docs/tables/kat_expanded_v02.txt";
+const KAT_EXPANDED_V02: &str = "docs/tables/kat_expanded_v02.txt";
 
-const KAT_VECTORS_V02: &str =
-    "docs/tables/kat_vectors_v02.txt";
+const KAT_VECTORS_V02: &str = "docs/tables/kat_vectors_v02.txt";
 
-const LAT_MATRIX: &str =
-    "docs/tables/lat_matrix.txt";
+const LAT_MATRIX: &str = "docs/tables/lat_matrix.txt";
 
-const DDT_MATRIX: &str =
-    "docs/tables/ddt_matrix.txt";
+const DDT_MATRIX: &str = "docs/tables/ddt_matrix.txt";
 
-const SBOX_ACCEPTED: &str =
-    "docs/tables/sbox_accepted.txt";
+const SBOX_ACCEPTED: &str = "docs/tables/sbox_accepted.txt";
 
-const SBOX_DDT_LAT: &str =
-    "docs/tables/sbox_ddt_lat.md";
+const SBOX_DDT_LAT: &str = "docs/tables/sbox_ddt_lat.md";
 
 // ============================================================
 // Configuration
@@ -154,8 +146,7 @@ impl Config {
     fn from_args() -> Result<Self, String> {
         let mut config = Self::default();
 
-        let args: Vec<String> =
-            std::env::args().skip(1).collect();
+        let args: Vec<String> = std::env::args().skip(1).collect();
 
         let mut positional_count = 0usize;
         let mut i = 0usize;
@@ -171,84 +162,57 @@ impl Config {
 
                 "--rounds" => {
                     i += 1;
-                    config.total_rounds =
-                        parse_usize(&args, i, "--rounds")?;
+                    config.total_rounds = parse_usize(&args, i, "--rounds")?;
                 }
 
                 "--forward" => {
                     i += 1;
-                    config.forward_rounds =
-                        parse_usize(&args, i, "--forward")?;
+                    config.forward_rounds = parse_usize(&args, i, "--forward")?;
                 }
 
                 "--backward" => {
                     i += 1;
-                    config.backward_rounds =
-                        parse_usize(&args, i, "--backward")?;
+                    config.backward_rounds = parse_usize(&args, i, "--backward")?;
                 }
 
                 "--dl" => {
                     i += 1;
-                    config.input_dl =
-                        parse_u64(&args, i, "--dl")?;
+                    config.input_dl = parse_u64(&args, i, "--dl")?;
                 }
 
                 "--dr" => {
                     i += 1;
-                    config.input_dr =
-                        parse_u64(&args, i, "--dr")?;
+                    config.input_dr = parse_u64(&args, i, "--dr")?;
                 }
 
                 "--tdl" => {
                     i += 1;
-                    config.target_dl =
-                        parse_u64(&args, i, "--tdl")?;
+                    config.target_dl = parse_u64(&args, i, "--tdl")?;
                 }
 
                 "--tdr" => {
                     i += 1;
-                    config.target_dr =
-                        parse_u64(&args, i, "--tdr")?;
+                    config.target_dr = parse_u64(&args, i, "--tdr")?;
                 }
 
                 "--samples" => {
                     i += 1;
-                    config.samples =
-                        parse_u64_required(
-                            &args,
-                            i,
-                            "--samples",
-                        )?;
+                    config.samples = parse_u64_required(&args, i, "--samples")?;
                 }
 
                 "--batch-size" => {
                     i += 1;
-                    config.batch_size =
-                        parse_u64_required(
-                            &args,
-                            i,
-                            "--batch-size",
-                        )?;
+                    config.batch_size = parse_u64_required(&args, i, "--batch-size")?;
                 }
 
                 "--seed" => {
                     i += 1;
-                    config.seed =
-                        parse_u64_required(
-                            &args,
-                            i,
-                            "--seed",
-                        )?;
+                    config.seed = parse_u64_required(&args, i, "--seed")?;
                 }
 
                 "--progress" => {
                     i += 1;
-                    config.progress =
-                        parse_u64_required(
-                            &args,
-                            i,
-                            "--progress",
-                        )?;
+                    config.progress = parse_u64_required(&args, i, "--progress")?;
                 }
 
                 "--no-exact" => {
@@ -264,43 +228,31 @@ impl Config {
                 }
 
                 _ if arg.starts_with("--") => {
-                    return Err(format!(
-                        "Unknown argument: {}",
-                        arg
-                    ));
+                    return Err(format!("Unknown argument: {}", arg));
                 }
 
                 _ => {
                     match positional_count {
                         0 => {
-                            config.total_rounds =
-                                arg.parse().map_err(|_| {
-                                    "Invalid total-round count"
-                                        .to_string()
-                                })?;
+                            config.total_rounds = arg
+                                .parse()
+                                .map_err(|_| "Invalid total-round count".to_string())?;
                         }
 
                         1 => {
-                            config.forward_rounds =
-                                arg.parse().map_err(|_| {
-                                    "Invalid forward-round count"
-                                        .to_string()
-                                })?;
+                            config.forward_rounds = arg
+                                .parse()
+                                .map_err(|_| "Invalid forward-round count".to_string())?;
                         }
 
                         2 => {
-                            config.backward_rounds =
-                                arg.parse().map_err(|_| {
-                                    "Invalid backward-round count"
-                                        .to_string()
-                                })?;
+                            config.backward_rounds = arg
+                                .parse()
+                                .map_err(|_| "Invalid backward-round count".to_string())?;
                         }
 
                         _ => {
-                            return Err(
-                                "Too many positional arguments"
-                                    .to_string()
-                            );
+                            return Err("Too many positional arguments".to_string());
                         }
                     }
 
@@ -311,46 +263,28 @@ impl Config {
             i += 1;
         }
 
-        if config.forward_rounds
-            + config.backward_rounds
-            != config.total_rounds
-        {
+        if config.forward_rounds + config.backward_rounds != config.total_rounds {
             return Err(format!(
                 "Invalid configuration: forward ({}) + backward ({}) != total ({})",
-                config.forward_rounds,
-                config.backward_rounds,
-                config.total_rounds
+                config.forward_rounds, config.backward_rounds, config.total_rounds
             ));
         }
 
         if config.samples == 0 {
-            return Err(
-                "--samples must be greater than zero"
-                    .to_string()
-            );
+            return Err("--samples must be greater than zero".to_string());
         }
 
         if config.batch_size == 0 {
-            return Err(
-                "--batch-size must be greater than zero"
-                    .to_string()
-            );
+            return Err("--batch-size must be greater than zero".to_string());
         }
 
         Ok(config)
     }
 }
 
-fn parse_usize(
-    args: &[String],
-    index: usize,
-    name: &str,
-) -> Result<usize, String> {
+fn parse_usize(args: &[String], index: usize, name: &str) -> Result<usize, String> {
     if index >= args.len() {
-        return Err(format!(
-            "Missing value for {}",
-            name
-        ));
+        return Err(format!("Missing value for {}", name));
     }
 
     args[index]
@@ -358,64 +292,29 @@ fn parse_usize(
         .map_err(|_| format!("Invalid value for {}", name))
 }
 
-fn parse_u64_required(
-    args: &[String],
-    index: usize,
-    name: &str,
-) -> Result<u64, String> {
+fn parse_u64_required(args: &[String], index: usize, name: &str) -> Result<u64, String> {
     if index >= args.len() {
-        return Err(format!(
-            "Missing value for {}",
-            name
-        ));
+        return Err(format!("Missing value for {}", name));
     }
 
-    parse_u64_string(&args[index])
-        .map_err(|e| format!("{}: {}", name, e))
+    parse_u64_string(&args[index]).map_err(|e| format!("{}: {}", name, e))
 }
 
-fn parse_u64(
-    args: &[String],
-    index: usize,
-    name: &str,
-) -> Result<u64, String> {
+fn parse_u64(args: &[String], index: usize, name: &str) -> Result<u64, String> {
     parse_u64_required(args, index, name)
 }
 
-fn parse_u64_string(
-    value: &str,
-) -> Result<u64, String> {
+fn parse_u64_string(value: &str) -> Result<u64, String> {
     let value = value.trim();
 
-    if let Some(hex) =
-        value.strip_prefix("0x")
-    {
-        u64::from_str_radix(hex, 16)
-            .map_err(|_| {
-                format!(
-                    "Invalid hexadecimal value: {}",
-                    value
-                )
-            })
-    } else if let Some(hex) =
-        value.strip_prefix("0X")
-    {
-        u64::from_str_radix(hex, 16)
-            .map_err(|_| {
-                format!(
-                    "Invalid hexadecimal value: {}",
-                    value
-                )
-            })
+    if let Some(hex) = value.strip_prefix("0x") {
+        u64::from_str_radix(hex, 16).map_err(|_| format!("Invalid hexadecimal value: {}", value))
+    } else if let Some(hex) = value.strip_prefix("0X") {
+        u64::from_str_radix(hex, 16).map_err(|_| format!("Invalid hexadecimal value: {}", value))
     } else {
         value
             .parse::<u64>()
-            .map_err(|_| {
-                format!(
-                    "Invalid integer: {}",
-                    value
-                )
-            })
+            .map_err(|_| format!("Invalid integer: {}", value))
     }
 }
 
@@ -515,109 +414,34 @@ impl ProjectTables {
         }
 
         Ok(Self {
-            kat_reduced_rounds:
-                fs::read_to_string(
-                    KAT_REDUCED_ROUNDS
-                )
-                .map_err(|e| {
-                    format!(
-                        "Unable to read {}: {}",
-                        KAT_REDUCED_ROUNDS,
-                        e
-                    )
-                })?,
+            kat_reduced_rounds: fs::read_to_string(KAT_REDUCED_ROUNDS)
+                .map_err(|e| format!("Unable to read {}: {}", KAT_REDUCED_ROUNDS, e))?,
 
-            kat_reduced_all:
-                fs::read_to_string(
-                    KAT_REDUCED_ALL
-                )
-                .map_err(|e| {
-                    format!(
-                        "Unable to read {}: {}",
-                        KAT_REDUCED_ALL,
-                        e
-                    )
-                })?,
+            kat_reduced_all: fs::read_to_string(KAT_REDUCED_ALL)
+                .map_err(|e| format!("Unable to read {}: {}", KAT_REDUCED_ALL, e))?,
 
-            kat_expanded_v02:
-                fs::read_to_string(
-                    KAT_EXPANDED_V02
-                )
-                .map_err(|e| {
-                    format!(
-                        "Unable to read {}: {}",
-                        KAT_EXPANDED_V02,
-                        e
-                    )
-                })?,
+            kat_expanded_v02: fs::read_to_string(KAT_EXPANDED_V02)
+                .map_err(|e| format!("Unable to read {}: {}", KAT_EXPANDED_V02, e))?,
 
-            kat_vectors_v02:
-                fs::read_to_string(
-                    KAT_VECTORS_V02
-                )
-                .map_err(|e| {
-                    format!(
-                        "Unable to read {}: {}",
-                        KAT_VECTORS_V02,
-                        e
-                    )
-                })?,
+            kat_vectors_v02: fs::read_to_string(KAT_VECTORS_V02)
+                .map_err(|e| format!("Unable to read {}: {}", KAT_VECTORS_V02, e))?,
 
-            lat_matrix:
-                fs::read_to_string(
-                    LAT_MATRIX
-                )
-                .map_err(|e| {
-                    format!(
-                        "Unable to read {}: {}",
-                        LAT_MATRIX,
-                        e
-                    )
-                })?,
+            lat_matrix: fs::read_to_string(LAT_MATRIX)
+                .map_err(|e| format!("Unable to read {}: {}", LAT_MATRIX, e))?,
 
-            ddt_matrix:
-                fs::read_to_string(
-                    DDT_MATRIX
-                )
-                .map_err(|e| {
-                    format!(
-                        "Unable to read {}: {}",
-                        DDT_MATRIX,
-                        e
-                    )
-                })?,
+            ddt_matrix: fs::read_to_string(DDT_MATRIX)
+                .map_err(|e| format!("Unable to read {}: {}", DDT_MATRIX, e))?,
 
-            sbox_accepted:
-                fs::read_to_string(
-                    SBOX_ACCEPTED
-                )
-                .map_err(|e| {
-                    format!(
-                        "Unable to read {}: {}",
-                        SBOX_ACCEPTED,
-                        e
-                    )
-                })?,
+            sbox_accepted: fs::read_to_string(SBOX_ACCEPTED)
+                .map_err(|e| format!("Unable to read {}: {}", SBOX_ACCEPTED, e))?,
 
-            sbox_ddt_lat:
-                fs::read_to_string(
-                    SBOX_DDT_LAT
-                )
-                .map_err(|e| {
-                    format!(
-                        "Unable to read {}: {}",
-                        SBOX_DDT_LAT,
-                        e
-                    )
-                })?,
+            sbox_ddt_lat: fs::read_to_string(SBOX_DDT_LAT)
+                .map_err(|e| format!("Unable to read {}: {}", SBOX_DDT_LAT, e))?,
         })
     }
 
     fn print_summary(&self) {
-        println!(
-            "Project table directory: {}",
-            TABLE_DIR
-        );
+        println!("Project table directory: {}", TABLE_DIR);
 
         println!(
             "  {:<28} {:>8} bytes",
@@ -694,8 +518,7 @@ fn parse_ddt_text(text: &str) -> Result<Ddt, String> {
         //     DDT (Differential Distribution Table)
         //
         // contain no numeric matrix data and are ignored.
-        let tokens: Vec<&str> =
-            line.split_whitespace().collect();
+        let tokens: Vec<&str> = line.split_whitespace().collect();
 
         if tokens.is_empty() {
             continue;
@@ -714,8 +537,7 @@ fn parse_ddt_text(text: &str) -> Result<Ddt, String> {
         let mut numeric = Vec::<u16>::new();
 
         for token in &tokens {
-            let cleaned =
-                token.trim_end_matches(':');
+            let cleaned = token.trim_end_matches(':');
 
             match cleaned.parse::<u16>() {
                 Ok(value) => {
@@ -750,10 +572,7 @@ fn parse_ddt_text(text: &str) -> Result<Ddt, String> {
 
         if !saw_column_header
             && numeric.len() == 256
-            && numeric
-                .iter()
-                .enumerate()
-                .all(|(i, &v)| v as usize == i)
+            && numeric.iter().enumerate().all(|(i, &v)| v as usize == i)
         {
             saw_column_header = true;
             continue;
@@ -785,8 +604,7 @@ fn parse_ddt_text(text: &str) -> Result<Ddt, String> {
                 //
                 // Verify that the row index agrees with the
                 // row we're expecting.
-                let row_index =
-                    numeric[0] as usize;
+                let row_index = numeric[0] as usize;
 
                 if row_index != rows {
                     return Err(format!(
@@ -831,17 +649,12 @@ fn parse_ddt_text(text: &str) -> Result<Ddt, String> {
         }
 
         for column in 0..256 {
-            ddt[rows][column] =
-                values[column];
+            ddt[rows][column] = values[column];
         }
 
         // Every DDT row must contain exactly 256
         // possible S-box output differences.
-        let sum: u32 =
-            ddt[rows]
-                .iter()
-                .map(|&x| x as u32)
-                .sum();
+        let sum: u32 = ddt[rows].iter().map(|&x| x as u32).sum();
 
         if sum != 256 {
             return Err(format!(
@@ -857,10 +670,7 @@ fn parse_ddt_text(text: &str) -> Result<Ddt, String> {
     }
 
     if rows != 256 {
-        return Err(format!(
-            "DDT contains {} matrix rows; expected 256",
-            rows
-        ));
+        return Err(format!("DDT contains {} matrix rows; expected 256", rows));
     }
 
     // --------------------------------------------------------
@@ -868,27 +678,17 @@ fn parse_ddt_text(text: &str) -> Result<Ddt, String> {
     // --------------------------------------------------------
 
     for dx in 0..256 {
-        let sum: u32 =
-            ddt[dx]
-                .iter()
-                .map(|&x| x as u32)
-                .sum();
+        let sum: u32 = ddt[dx].iter().map(|&x| x as u32).sum();
 
         if sum != 256 {
-            return Err(format!(
-                "Invalid DDT row {}: sum={} expected=256",
-                dx,
-                sum
-            ));
+            return Err(format!("Invalid DDT row {}: sum={} expected=256", dx, sum));
         }
     }
 
     Ok(ddt)
 }
 
-fn load_ddt_from_project_tables(
-    tables: &ProjectTables,
-) -> Result<Ddt, String> {
+fn load_ddt_from_project_tables(tables: &ProjectTables) -> Result<Ddt, String> {
     parse_ddt_text(&tables.ddt_matrix)
 }
 
@@ -899,31 +699,23 @@ fn load_ddt_from_project_tables(
 /// Herringfish byte diffusion:
 ///
 ///     y[i] = x[i] XOR x[i+1] XOR x[i+3]
-fn diffuse(
-    value: u64,
-) -> u64 {
+fn diffuse(value: u64) -> u64 {
     let mut bytes = [0u8; 8];
 
     for i in 0..8 {
-        bytes[i] =
-            ((value >> (8 * i)) & 0xff) as u8;
+        bytes[i] = ((value >> (8 * i)) & 0xff) as u8;
     }
 
     let mut output = [0u8; 8];
 
     for i in 0..8 {
-        output[i] =
-            bytes[i]
-            ^ bytes[(i + 1) & 7]
-            ^ bytes[(i + 3) & 7];
+        output[i] = bytes[i] ^ bytes[(i + 1) & 7] ^ bytes[(i + 3) & 7];
     }
 
     let mut result = 0u64;
 
     for i in 0..8 {
-        result |=
-            (output[i] as u64)
-            << (8 * i);
+        result |= (output[i] as u64) << (8 * i);
     }
 
     result
@@ -934,9 +726,7 @@ fn diffuse(
 /// This is performed once and cached by the caller in normal use.
 /// Keeping the reference implementation explicit makes correctness
 /// straightforward to verify.
-fn inverse_diffuse_reference(
-    value: u64,
-) -> u64 {
+fn inverse_diffuse_reference(value: u64) -> u64 {
     // Matrix for:
     //
     //     y_i = x_i ^ x_(i+1) ^ x_(i+3)
@@ -955,8 +745,7 @@ fn inverse_diffuse_reference(
     let mut y = [0u8; 8];
 
     for i in 0..8 {
-        y[i] =
-            ((value >> (8 * i)) & 0xff) as u8;
+        y[i] = ((value >> (8 * i)) & 0xff) as u8;
     }
 
     let x = [
@@ -973,9 +762,7 @@ fn inverse_diffuse_reference(
     let mut result = 0u64;
 
     for i in 0..8 {
-        result |=
-            (x[i] as u64)
-            << (8 * i);
+        result |= (x[i] as u64) << (8 * i);
     }
 
     result
@@ -996,45 +783,34 @@ fn check_diffuse_bijection() -> Result<(), String> {
     for &x in &test_values {
         let y = diffuse(x);
 
-        let recovered =
-            inverse_diffuse_reference(y);
+        let recovered = inverse_diffuse_reference(y);
 
         if recovered != x {
             return Err(format!(
                 "Diffuse inverse failure: \
                  x={:016x}, y={:016x}, recovered={:016x}",
-                x,
-                y,
-                recovered
+                x, y, recovered
             ));
         }
     }
 
     // Additional deterministic coverage.
-    let mut x =
-        0x6a09_e667_f3bc_c908u64;
+    let mut x = 0x6a09_e667_f3bc_c908u64;
 
     for _ in 0..4096 {
         let y = diffuse(x);
 
-        let recovered =
-            inverse_diffuse_reference(y);
+        let recovered = inverse_diffuse_reference(y);
 
         if recovered != x {
             return Err(format!(
                 "Diffuse inverse failure: \
                  x={:016x}, y={:016x}, recovered={:016x}",
-                x,
-                y,
-                recovered
+                x, y, recovered
             ));
         }
 
-        x = x
-            .wrapping_mul(
-                0x9E37_79B9_7F4A_7C15
-            )
-            .rotate_left(17);
+        x = x.wrapping_mul(0x9E37_79B9_7F4A_7C15).rotate_left(17);
     }
 
     Ok(())
@@ -1063,10 +839,7 @@ impl Probability {
             return 0.0;
         }
 
-        (self.numerator as f64)
-            * 2f64.powi(
-                -(self.denominator_bits as i32)
-            )
+        (self.numerator as f64) * 2f64.powi(-(self.denominator_bits as i32))
     }
 
     fn log2_probability(self) -> f64 {
@@ -1074,9 +847,7 @@ impl Probability {
             return f64::NEG_INFINITY;
         }
 
-        (self.numerator as f64)
-            .log2()
-            - self.denominator_bits as f64
+        (self.numerator as f64).log2() - self.denominator_bits as f64
     }
 }
 
@@ -1103,43 +874,29 @@ impl Probability {
 /// The probability is then:
 ///
 ///     Π_i DDT[dx_i][dy_i] / 256
-fn exact_round_probability(
-    ddt: &Ddt,
-    dl: u64,
-    dr: u64,
-    next_dl: u64,
-    next_dr: u64,
-) -> Probability {
+fn exact_round_probability(ddt: &Ddt, dl: u64, dr: u64, next_dl: u64, next_dr: u64) -> Probability {
     if next_dl != dr {
         return Probability::zero();
     }
 
-    let delta_f =
-        dl ^ next_dr;
+    let delta_f = dl ^ next_dr;
 
-    let delta_sbox =
-        inverse_diffuse_reference(delta_f);
+    let delta_sbox = inverse_diffuse_reference(delta_f);
 
     let mut numerator = 1u128;
 
     for i in 0..8 {
-        let dx =
-            ((dr >> (8 * i)) & 0xff)
-            as usize;
+        let dx = ((dr >> (8 * i)) & 0xff) as usize;
 
-        let dy =
-            ((delta_sbox >> (8 * i)) & 0xff)
-            as usize;
+        let dy = ((delta_sbox >> (8 * i)) & 0xff) as usize;
 
-        let count =
-            ddt[dx][dy] as u128;
+        let count = ddt[dx][dy] as u128;
 
         if count == 0 {
             return Probability::zero();
         }
 
-        numerator =
-            numerator.saturating_mul(count);
+        numerator = numerator.saturating_mul(count);
     }
 
     Probability {
@@ -1162,12 +919,11 @@ struct Rng {
 
 impl Rng {
     fn new(seed: u64) -> Self {
-        let state =
-            if seed == 0 {
-                0xA409_3822_299F_31D0
-            } else {
-                seed
-            };
+        let state = if seed == 0 {
+            0xA409_3822_299F_31D0
+        } else {
+            seed
+        };
 
         Self { state }
     }
@@ -1182,33 +938,22 @@ impl Rng {
 
         self.state = x;
 
-        x.wrapping_mul(
-            0x2545_F491_4F6C_DD1D
-        )
+        x.wrapping_mul(0x2545_F491_4F6C_DD1D)
     }
 
     #[inline]
-    fn uniform_below(
-        &mut self,
-        upper: u32,
-    ) -> u32 {
+    fn uniform_below(&mut self, upper: u32) -> u32 {
         debug_assert!(upper > 0);
 
-        let upper64 =
-            upper as u64;
+        let upper64 = upper as u64;
 
-        let limit =
-            u64::MAX
-                - (u64::MAX % upper64);
+        let limit = u64::MAX - (u64::MAX % upper64);
 
         loop {
-            let value =
-                self.next_u64();
+            let value = self.next_u64();
 
             if value < limit {
-                return
-                    (value % upper64)
-                    as u32;
+                return (value % upper64) as u32;
             }
         }
     }
@@ -1219,57 +964,34 @@ impl Rng {
 // ============================================================
 
 #[inline]
-fn sample_ddt_row(
-    ddt: &Ddt,
-    dx: u8,
-    rng: &mut Rng,
-) -> u8 {
-    let row =
-        &ddt[dx as usize];
+fn sample_ddt_row(ddt: &Ddt, dx: u8, rng: &mut Rng) -> u8 {
+    let row = &ddt[dx as usize];
 
-    let random =
-        rng.uniform_below(256);
+    let random = rng.uniform_below(256);
 
     let mut cumulative = 0u32;
 
     for dy in 0..256 {
-        cumulative +=
-            row[dy] as u32;
+        cumulative += row[dy] as u32;
 
         if random < cumulative {
             return dy as u8;
         }
     }
 
-    unreachable!(
-        "valid DDT row must sum to 256"
-    );
+    unreachable!("valid DDT row must sum to 256");
 }
 
 #[inline]
-fn sample_sbox_difference(
-    ddt: &Ddt,
-    input_difference: u64,
-    rng: &mut Rng,
-) -> u64 {
+fn sample_sbox_difference(ddt: &Ddt, input_difference: u64, rng: &mut Rng) -> u64 {
     let mut output = 0u64;
 
     for i in 0..8 {
-        let dx =
-            ((input_difference
-                >> (8 * i))
-                & 0xff) as u8;
+        let dx = ((input_difference >> (8 * i)) & 0xff) as u8;
 
-        let dy =
-            sample_ddt_row(
-                ddt,
-                dx,
-                rng,
-            );
+        let dy = sample_ddt_row(ddt, dx, rng);
 
-        output |=
-            (dy as u64)
-            << (8 * i);
+        output |= (dy as u64) << (8 * i);
     }
 
     output
@@ -1280,25 +1002,13 @@ fn sample_sbox_difference(
 // ============================================================
 
 #[inline]
-fn sample_round(
-    ddt: &Ddt,
-    dl: u64,
-    dr: u64,
-    rng: &mut Rng,
-) -> (u64, u64) {
-    let delta_sbox =
-        sample_sbox_difference(
-            ddt,
-            dr,
-            rng,
-        );
+fn sample_round(ddt: &Ddt, dl: u64, dr: u64, rng: &mut Rng) -> (u64, u64) {
+    let delta_sbox = sample_sbox_difference(ddt, dr, rng);
 
-    let delta_f =
-        diffuse(delta_sbox);
+    let delta_f = diffuse(delta_sbox);
 
     let next_dl = dr;
-    let next_dr =
-        dl ^ delta_f;
+    let next_dr = dl ^ delta_f;
 
     (next_dl, next_dr)
 }
@@ -1315,13 +1025,11 @@ struct VerificationResult {
 
 impl VerificationResult {
     fn probability(self) -> f64 {
-        self.hits as f64
-            / self.samples as f64
+        self.hits as f64 / self.samples as f64
     }
 
     fn log2_probability(self) -> f64 {
-        let p =
-            self.probability();
+        let p = self.probability();
 
         if p == 0.0 {
             f64::NEG_INFINITY
@@ -1331,38 +1039,23 @@ impl VerificationResult {
     }
 
     fn standard_error(self) -> f64 {
-        let p =
-            self.probability();
+        let p = self.probability();
 
-        (
-            p * (1.0 - p)
-                / self.samples as f64
-        )
-        .sqrt()
+        (p * (1.0 - p) / self.samples as f64).sqrt()
     }
 
-    fn confidence_interval_95(
-        self,
-    ) -> (f64, f64) {
-        let p =
-            self.probability();
+    fn confidence_interval_95(self) -> (f64, f64) {
+        let p = self.probability();
 
-        let se =
-            self.standard_error();
+        let se = self.standard_error();
 
-        let z =
-            1.959_963_984_540_054;
+        let z = 1.959_963_984_540_054;
 
-        (
-            (p - z * se).max(0.0),
-            (p + z * se).min(1.0),
-        )
+        ((p - z * se).max(0.0), (p + z * se).min(1.0))
     }
 }
 
-fn format_probability(
-    p: f64,
-) -> String {
+fn format_probability(p: f64) -> String {
     if p == 0.0 {
         "0".to_string()
     } else {
@@ -1374,74 +1067,43 @@ fn format_probability(
 // Targeted Monte-Carlo verification
 // ============================================================
 
-fn verify_target(
-    ddt: &Ddt,
-    config: &Config,
-) -> VerificationResult {
-    let mut rng =
-        Rng::new(config.seed);
+fn verify_target(ddt: &Ddt, config: &Config) -> VerificationResult {
+    let mut rng = Rng::new(config.seed);
 
     let mut hits = 0u64;
     let mut completed = 0u64;
 
     while completed < config.samples {
-        let remaining =
-            config.samples
-                - completed;
+        let remaining = config.samples - completed;
 
-        let batch =
-            remaining.min(
-                config.batch_size
-            );
+        let batch = remaining.min(config.batch_size);
 
         for _ in 0..batch {
-            let mut dl =
-                config.input_dl;
+            let mut dl = config.input_dl;
 
-            let mut dr =
-                config.input_dr;
+            let mut dr = config.input_dr;
 
             for _ in 0..config.total_rounds {
-                let next =
-                    sample_round(
-                        ddt,
-                        dl,
-                        dr,
-                        &mut rng,
-                    );
+                let next = sample_round(ddt, dl, dr, &mut rng);
 
                 dl = next.0;
                 dr = next.1;
             }
 
-            if dl == config.target_dl
-                && dr == config.target_dr
-            {
+            if dl == config.target_dl && dr == config.target_dr {
                 hits += 1;
             }
         }
 
         completed += batch;
 
-        if config.progress != 0
-            && (
-                completed
-                    % config.progress
-                    == 0
-                || completed
-                    == config.samples
-            )
+        if config.progress != 0 && (completed % config.progress == 0 || completed == config.samples)
         {
-            let p =
-                hits as f64
-                    / completed as f64;
+            let p = hits as f64 / completed as f64;
 
             println!(
                 "  {:>12}/{:<12}  hits={:<10}  P={:.8e}",
-                completed,
-                config.samples,
-                hits,
-                p
+                completed, config.samples, hits, p
             );
         }
     }
@@ -1457,76 +1119,42 @@ fn verify_target(
 // ============================================================
 
 fn main() {
-    let config =
-        match Config::from_args() {
-            Ok(c) => c,
+    let config = match Config::from_args() {
+        Ok(c) => c,
 
-            Err(e) => {
-                eprintln!(
-                    "ERROR: {}",
-                    e
-                );
+        Err(e) => {
+            eprintln!("ERROR: {}", e);
 
-                eprintln!(
-                    "Use --help for usage."
-                );
+            eprintln!("Use --help for usage.");
 
-                std::process::exit(1);
-            }
-        };
+            std::process::exit(1);
+        }
+    };
 
-    println!(
-        "============================================================"
-    );
+    println!("============================================================");
 
-    println!(
-        "HERRINGFISH TARGETED DIFFERENTIAL VERIFIER"
-    );
+    println!("HERRINGFISH TARGETED DIFFERENTIAL VERIFIER");
 
-    println!(
-        "============================================================"
-    );
+    println!("============================================================");
 
-    println!(
-        "Input  ΔL : 0x{:016x}",
-        config.input_dl
-    );
+    println!("Input  ΔL : 0x{:016x}", config.input_dl);
 
-    println!(
-        "Input  ΔR : 0x{:016x}",
-        config.input_dr
-    );
+    println!("Input  ΔR : 0x{:016x}", config.input_dr);
 
-    println!(
-        "Target ΔL : 0x{:016x}",
-        config.target_dl
-    );
+    println!("Target ΔL : 0x{:016x}", config.target_dl);
 
-    println!(
-        "Target ΔR : 0x{:016x}",
-        config.target_dr
-    );
+    println!("Target ΔR : 0x{:016x}", config.target_dr);
 
-    println!(
-        "Rounds    : {}",
-        config.total_rounds
-    );
+    println!("Rounds    : {}", config.total_rounds);
 
     println!(
         "MITM split: {} forward + {} backward",
-        config.forward_rounds,
-        config.backward_rounds
+        config.forward_rounds, config.backward_rounds
     );
 
-    println!(
-        "Samples   : {}",
-        config.samples
-    );
+    println!("Samples   : {}", config.samples);
 
-    println!(
-        "Seed      : 0x{:016x}",
-        config.seed
-    );
+    println!("Seed      : 0x{:016x}", config.seed);
 
     println!();
 
@@ -1534,40 +1162,26 @@ fn main() {
     // Project root / paths
     // --------------------------------------------------------
 
-    let cwd =
-        match std::env::current_dir() {
-            Ok(path) => path,
+    let cwd = match std::env::current_dir() {
+        Ok(path) => path,
 
-            Err(e) => {
-                eprintln!(
-                    "ERROR: unable to determine current directory: {}",
-                    e
-                );
+        Err(e) => {
+            eprintln!("ERROR: unable to determine current directory: {}", e);
 
-                std::process::exit(1);
-            }
-        };
+            std::process::exit(1);
+        }
+    };
 
-    println!(
-        "Project working directory:"
-    );
+    println!("Project working directory:");
 
-    println!(
-        "  {}",
-        cwd.display()
-    );
+    println!("  {}", cwd.display());
 
     println!();
 
     if !Path::new(TABLE_DIR).is_dir() {
-        eprintln!(
-            "ERROR: '{}' does not exist.",
-            TABLE_DIR
-        );
+        eprintln!("ERROR: '{}' does not exist.", TABLE_DIR);
 
-        eprintln!(
-            "Run this example from the Herringfish project root."
-        );
+        eprintln!("Run this example from the Herringfish project root.");
 
         std::process::exit(1);
     }
@@ -1576,128 +1190,88 @@ fn main() {
     // Load project tables
     // --------------------------------------------------------
 
-    let tables =
-        if config.load_project_tables {
-            match ProjectTables::load() {
-                Ok(tables) => {
-                    println!(
-                        "Project tables: OK"
-                    );
+    let tables = if config.load_project_tables {
+        match ProjectTables::load() {
+            Ok(tables) => {
+                println!("Project tables: OK");
 
-                    tables.print_summary();
+                tables.print_summary();
 
-                    println!();
+                println!();
 
-                    Some(tables)
-                }
-
-                Err(e) => {
-                    eprintln!(
-                        "ERROR loading project tables:"
-                    );
-
-                    eprintln!(
-                        "{}",
-                        e
-                    );
-
-                    eprintln!();
-                    eprintln!(
-                        "Use --no-project-tables if you intentionally want to bypass project-table validation."
-                    );
-
-                    std::process::exit(1);
-                }
+                Some(tables)
             }
-        } else {
-            println!(
-                "Project-table loading disabled."
-            );
 
-            println!();
+            Err(e) => {
+                eprintln!("ERROR loading project tables:");
 
-            None
-        };
+                eprintln!("{}", e);
+
+                eprintln!();
+                eprintln!(
+                    "Use --no-project-tables if you intentionally want to bypass project-table validation."
+                );
+
+                std::process::exit(1);
+            }
+        }
+    } else {
+        println!("Project-table loading disabled.");
+
+        println!();
+
+        None
+    };
 
     // --------------------------------------------------------
     // DDT
     // --------------------------------------------------------
 
-    let ddt =
-        if let Some(ref tables) = tables {
-            match load_ddt_from_project_tables(
-                tables
-            ) {
+    let ddt = if let Some(ref tables) = tables {
+        match load_ddt_from_project_tables(tables) {
+            Ok(ddt) => ddt,
+
+            Err(e) => {
+                eprintln!("ERROR parsing {}:", DDT_MATRIX);
+
+                eprintln!("{}", e);
+
+                std::process::exit(1);
+            }
+        }
+    } else {
+        match fs::read_to_string(DDT_MATRIX) {
+            Ok(text) => match parse_ddt_text(&text) {
                 Ok(ddt) => ddt,
 
                 Err(e) => {
-                    eprintln!(
-                        "ERROR parsing {}:",
-                        DDT_MATRIX
-                    );
-
-                    eprintln!(
-                        "{}",
-                        e
-                    );
+                    eprintln!("ERROR parsing {}: {}", DDT_MATRIX, e);
 
                     std::process::exit(1);
                 }
+            },
+
+            Err(e) => {
+                eprintln!("ERROR reading {}: {}", DDT_MATRIX, e);
+
+                std::process::exit(1);
             }
-        } else {
-            match fs::read_to_string(
-                DDT_MATRIX
-            ) {
-                Ok(text) => {
-                    match parse_ddt_text(&text) {
-                        Ok(ddt) => ddt,
+        }
+    };
 
-                        Err(e) => {
-                            eprintln!(
-                                "ERROR parsing {}: {}",
-                                DDT_MATRIX,
-                                e
-                            );
-
-                            std::process::exit(1);
-                        }
-                    }
-                }
-
-                Err(e) => {
-                    eprintln!(
-                        "ERROR reading {}: {}",
-                        DDT_MATRIX,
-                        e
-                    );
-
-                    std::process::exit(1);
-                }
-            }
-        };
-
-    println!(
-        "DDT: validated 256 x 256"
-    );
+    println!("DDT: validated 256 x 256");
 
     // --------------------------------------------------------
     // Diffusion
     // --------------------------------------------------------
 
     if config.check_diffuse {
-        print!(
-            "Diffuse bijection: "
-        );
+        print!("Diffuse bijection: ");
 
-        if let Err(e) =
-            check_diffuse_bijection()
-        {
+        if let Err(e) = check_diffuse_bijection() {
             println!("FAILED");
 
-            eprintln!(
-                "ERROR: {}",
-                e
-            );
+            eprintln!("ERROR: {}", e);
 
             std::process::exit(1);
         }
@@ -1711,65 +1285,41 @@ fn main() {
 
     if config.exact {
         println!();
-        println!(
-            "============================================================"
-        );
+        println!("============================================================");
 
-        println!(
-            "EXACT TARGETED ROUND CHECK"
-        );
+        println!("EXACT TARGETED ROUND CHECK");
 
-        println!(
-            "============================================================"
-        );
+        println!("============================================================");
 
         if config.total_rounds == 1 {
-            let exact =
-                exact_round_probability(
-                    &ddt,
-                    config.input_dl,
-                    config.input_dr,
-                    config.target_dl,
-                    config.target_dr,
-                );
-
-            let p =
-                exact.probability_f64();
-
-            println!(
-                "Probability : {}",
-                format_probability(p)
+            let exact = exact_round_probability(
+                &ddt,
+                config.input_dl,
+                config.input_dr,
+                config.target_dl,
+                config.target_dr,
             );
+
+            let p = exact.probability_f64();
+
+            println!("Probability : {}", format_probability(p));
 
             if p == 0.0 {
-                println!(
-                    "-log2(P)   : ∞"
-                );
+                println!("-log2(P)   : ∞");
             } else {
-                println!(
-                    "-log2(P)   : {:.8}",
-                    -exact.log2_probability()
-                );
+                println!("-log2(P)   : {:.8}", -exact.log2_probability());
             }
 
-            println!(
-                "Numerator   : {}",
-                exact.numerator
-            );
+            println!("Numerator   : {}", exact.numerator);
 
-            println!(
-                "Denominator : 2^{}",
-                exact.denominator_bits
-            );
+            println!("Denominator : 2^{}", exact.denominator_bits);
         } else {
             println!(
                 "Exact single-round check is not applicable to the complete {}-round target.",
                 config.total_rounds
             );
 
-            println!(
-                "The multi-round result below is obtained by targeted sampling."
-            );
+            println!("The multi-round result below is obtained by targeted sampling.");
         }
     }
 
@@ -1778,71 +1328,38 @@ fn main() {
     // --------------------------------------------------------
 
     println!();
-    println!(
-        "============================================================"
-    );
+    println!("============================================================");
 
-    println!(
-        "TARGETED VERIFICATION"
-    );
+    println!("TARGETED VERIFICATION");
 
-    println!(
-        "============================================================"
-    );
+    println!("============================================================");
 
-    println!(
-        "No differential hull is being constructed."
-    );
+    println!("No differential hull is being constructed.");
 
-    println!(
-        "No intermediate-state HashMap is being constructed."
-    );
+    println!("No intermediate-state HashMap is being constructed.");
 
-    println!(
-        "Only the requested Δin → Δout hypothesis is measured."
-    );
+    println!("Only the requested Δin → Δout hypothesis is measured.");
 
     println!();
 
-    let result =
-        verify_target(
-            &ddt,
-            &config,
-        );
+    let result = verify_target(&ddt, &config);
 
-    let p =
-        result.probability();
+    let p = result.probability();
 
-    let (ci_low, ci_high) =
-        result.confidence_interval_95();
+    let (ci_low, ci_high) = result.confidence_interval_95();
 
     println!();
-    println!(
-        "------------------------------------------------------------"
-    );
+    println!("------------------------------------------------------------");
 
-    println!(
-        "RESULT"
-    );
+    println!("RESULT");
 
-    println!(
-        "------------------------------------------------------------"
-    );
+    println!("------------------------------------------------------------");
 
-    println!(
-        "Samples        : {}",
-        result.samples
-    );
+    println!("Samples        : {}", result.samples);
 
-    println!(
-        "Target hits    : {}",
-        result.hits
-    );
+    println!("Target hits    : {}", result.hits);
 
-    println!(
-        "Estimated P    : {}",
-        format_probability(p)
-    );
+    println!("Estimated P    : {}", format_probability(p));
 
     if p == 0.0 {
         println!(
@@ -1850,73 +1367,40 @@ fn main() {
             (result.samples as f64).log2()
         );
     } else {
-        println!(
-            "Estimated -log2(P): {:.6}",
-            -result.log2_probability()
-        );
+        println!("Estimated -log2(P): {:.6}", -result.log2_probability());
     }
 
-    println!(
-        "Standard error : {:.8e}",
-        result.standard_error()
-    );
+    println!("Standard error : {:.8e}", result.standard_error());
 
-    println!(
-        "Approx. 95% CI : [{:.8e}, {:.8e}]",
-        ci_low,
-        ci_high
-    );
+    println!("Approx. 95% CI : [{:.8e}, {:.8e}]", ci_low, ci_high);
 
     // --------------------------------------------------------
     // Interpretation
     // --------------------------------------------------------
 
     println!();
-    println!(
-        "------------------------------------------------------------"
-    );
+    println!("------------------------------------------------------------");
 
-    println!(
-        "INTERPRETATION"
-    );
+    println!("INTERPRETATION");
 
-    println!(
-        "------------------------------------------------------------"
-    );
+    println!("------------------------------------------------------------");
 
     if result.hits == 0 {
-        println!(
-            "No target hits were observed."
-        );
+        println!("No target hits were observed.");
 
-        println!(
-            "This does NOT establish P = 0."
-        );
+        println!("This does NOT establish P = 0.");
 
-        println!(
-            "The empirical resolution is approximately 1/N:"
-        );
+        println!("The empirical resolution is approximately 1/N:");
 
-        println!(
-            "    1/N = {:.8e}",
-            1.0 / result.samples as f64
-        );
+        println!("    1/N = {:.8e}", 1.0 / result.samples as f64);
 
-        println!(
-            "Increase --samples if a smaller probability must be resolved."
-        );
+        println!("Increase --samples if a smaller probability must be resolved.");
     } else {
-        println!(
-            "The requested target differential was observed."
-        );
+        println!("The requested target differential was observed.");
 
-        println!(
-            "The measured frequency estimates:"
-        );
+        println!("The measured frequency estimates:");
 
-        println!(
-            "    P[Δout | Δin]"
-        );
+        println!("    P[Δout | Δin]");
 
         println!(
             "for the requested {}-round differential.",
@@ -1925,15 +1409,9 @@ fn main() {
     }
 
     println!();
-    println!(
-        "============================================================"
-    );
+    println!("============================================================");
 
-    println!(
-        "Targeted verification complete."
-    );
+    println!("Targeted verification complete.");
 
-    println!(
-        "============================================================"
-    );
+    println!("============================================================");
 }
