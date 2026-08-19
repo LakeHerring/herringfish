@@ -62,13 +62,51 @@ Herringfish Feistel ARX v0.2 is an experimental research block cipher. Side-chan
 * `docs/side_channel_review.md` – general review
 * `docs/side_channel_shake_review.md` – SHAKE review
 
-## Test Coverage
-* Unit tests: 25 tests in `src/cipher/feistel_arx.rs` including constant-time equivalence
-* Integration tests: `tests/roundtrip.rs`, `tests/shake_schedule.rs`
-* Known-answer tests: `docs/tables/kat_vectors_v02.txt`
-* Statistical tests: `examples/statistical_full_cipher_large.rs` 1M samples
-* Performance tests: `examples/bench_sbox_ct.rs`, `examples/simd_benchmark.rs`
-* Cryptanalysis tests: differential/linear hull tools, reduced-round analysis
+## Test Results – v0.2.6
+
+**Test run:** `cargo test --all` on 2026-08-19  
+**Compiler:** rustc 1.97.1 2026-07-14  
+**OS:** Windows_NT 10.0.26200 / MSYS2  
+**CPU:** x86_64 AMD Ryzen 9 7950X 16-Core
+
+### Unit tests `src/lib.rs` – 25 passed
+* `cipher::feistel_arx::tests::diffusion_zero` – ok
+* `cipher::feistel_arx::tests::round_key_stream_prefix_property` – ok
+* `cipher::feistel_arx::tests::diffusion_is_deterministic` – ok
+* `cipher::feistel_arx::tests::round_key_derivation_changes_with_key` – ok
+* `cipher::feistel_arx::tests::diffusion_is_invertible_as_byte_linear_map` – ok
+* `cipher::feistel_arx::tests::round_key_derivation_is_deterministic` – ok
+* `cipher::feistel_arx::tests::roundtrip` – ok
+* `cipher::feistel_arx::tests::sbox_is_permutation` – ok
+* `cipher::feistel_arx::tests::zero_input_difference_produces_zero_output_difference` – ok
+* `simd::avx2::tests::test_diffusion_avx2_stability` – ok
+* `cipher::feistel_arx::tests::nonzero_sbox_input_difference_cannot_produce_zero_for_permutation` – ok
+* `cipher::feistel_arx::tests::sbox_ddt_row_is_key_independent` – ok
+* `cipher::feistel_arx::tests::roundtrip_constant_time` – ok
+* `cipher::sbox_ct::tests::test_sbox_ct_correctness` – ok
+* `cipher::feistel_arx::tests::sbox_constant_time_matches_reference` – ok
+* `cipher::feistel_arx::tests::differential_feistel_relation_is_correct` – ok
+* `cipher::feistel_arx::tests::round_function_matches_definition` – ok
+* `cipher::feistel_arx::tests::differential_key_cancellation_is_real` – ok
+* `cipher::feistel_arx::tests::related_key_analysis` – ok, Average Hamming distance per round key: 32.0445
+* `cipher::feistel_arx::tests::actual_round_matches_differential_model` – ok
+* `cipher::sbox_ct::tests::test_sbox_apply_ct_correctness` – ok
+* `cipher::feistel_arx::tests::random_roundtrip_many_round_counts` – ok
+* `cipher::feistel_arx::tests::f_function_constant_time_matches_reference` – ok
+* `cipher::feistel_arx::tests::normal_and_constant_time_match` – ok
+* `cipher::feistel_arx::tests::normal_and_constant_time_decryption_match` – ok
+
+### Integration tests
+* `tests/roundtrip.rs` – 2 passed: `roundtrip_all_zero`, `roundtrip_random`
+* `tests/shake_schedule.rs` – 2 passed: `shake_key_schedule_deterministic`, `shake_key_schedule_differs`
+
+All 29 tests passed, 0 failed.
+
+### Research tests referenced
+* Known-answer tests: `docs/tables/kat_vectors_v02.txt` – 16-round KAT verified
+* Statistical analysis: `examples/statistical_full_cipher_large.rs` 1M samples, avg Hamming 64.00 bits, bit flip 0.5000, SAC 0.0004
+* S-box validation: DDT_max=4, LAT_max bias=32, bijectivity verified
+* Key schedule independence: 100k samples, avg round-key Hamming ~64 bits for 1-bit master key diff
 
 ## Recommendations
 * Keep reference and CT variants clearly separated and documented
