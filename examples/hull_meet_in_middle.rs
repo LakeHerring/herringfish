@@ -1,4 +1,4 @@
-use herringfish::cipher::feistel_arx::{diffuse, HERRINGFISH_SBOX_V02};
+use herringfish::cipher::feistel_arx::{HERRINGFISH_SBOX_V02, diffuse};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
@@ -75,27 +75,30 @@ impl Config {
                 // Explicit options
                 // ------------------------------------------------
                 "--rounds" => {
-                    config.total_rounds = parse_usize_flag("--rounds", &take_value(&args, &mut i, "--rounds")?)?;
+                    config.total_rounds =
+                        parse_usize_flag("--rounds", &take_value(&args, &mut i, "--rounds")?)?;
                 }
 
                 "--forward" => {
-                    config.forward_rounds = parse_usize_flag("--forward", &take_value(&args, &mut i, "--forward")?)?;
+                    config.forward_rounds =
+                        parse_usize_flag("--forward", &take_value(&args, &mut i, "--forward")?)?;
                 }
 
                 "--backward" => {
-                    config.backward_rounds = parse_usize_flag(
-                        "--backward",
-                        &take_value(&args, &mut i, "--backward")?,
-                    )?;
+                    config.backward_rounds =
+                        parse_usize_flag("--backward", &take_value(&args, &mut i, "--backward")?)?;
                 }
 
                 "--top" => {
-                    config.top_outputs = parse_usize_flag("--top", &take_value(&args, &mut i, "--top")?)?;
+                    config.top_outputs =
+                        parse_usize_flag("--top", &take_value(&args, &mut i, "--top")?)?;
                 }
 
                 "--max-states" => {
-                    config.max_states =
-                        parse_usize_flag("--max-states", &take_value(&args, &mut i, "--max-states")?)?;
+                    config.max_states = parse_usize_flag(
+                        "--max-states",
+                        &take_value(&args, &mut i, "--max-states")?,
+                    )?;
                 }
 
                 "--dl" => {
@@ -112,9 +115,9 @@ impl Config {
 
                 "--prune-threshold" => {
                     let raw = take_value(&args, &mut i, "--prune-threshold")?;
-                    config.prune_threshold = raw.parse::<f64>().map_err(|_| {
-                        format!("Invalid --prune-threshold value: {raw}")
-                    })?;
+                    config.prune_threshold = raw
+                        .parse::<f64>()
+                        .map_err(|_| format!("Invalid --prune-threshold value: {raw}"))?;
                 }
 
                 "--no-strict-limit" => {
@@ -198,7 +201,9 @@ impl Config {
 fn take_value(args: &[String], i: &mut usize, flag: &'static str) -> Result<String, String> {
     *i += 1;
 
-    args.get(*i).cloned().ok_or_else(|| format!("{flag} requires a value"))
+    args.get(*i)
+        .cloned()
+        .ok_or_else(|| format!("{flag} requires a value"))
 }
 
 /// Parse an unsigned integer option value with a flag-specific error message.
@@ -213,7 +218,10 @@ fn parse_usize_flag(flag: &'static str, value: &str) -> Result<usize, String> {
 fn parse_u64(value: &str) -> Result<u64, String> {
     let value = value.trim();
 
-    if let Some(hex) = value.strip_prefix("0x").or_else(|| value.strip_prefix("0X")) {
+    if let Some(hex) = value
+        .strip_prefix("0x")
+        .or_else(|| value.strip_prefix("0X"))
+    {
         u64::from_str_radix(hex, 16).map_err(|_| format!("Invalid hexadecimal value: {value}"))
     } else {
         value
@@ -447,7 +455,10 @@ fn parse_ddt_token(token: &str) -> Option<u16> {
     }
 
     // Explicit hex prefix (0x / 0X).
-    if let Some(hex) = token.strip_prefix("0x").or_else(|| token.strip_prefix("0X")) {
+    if let Some(hex) = token
+        .strip_prefix("0x")
+        .or_else(|| token.strip_prefix("0X"))
+    {
         return u16::from_str_radix(hex, 16).ok();
     }
 
@@ -458,11 +469,7 @@ fn parse_ddt_token(token: &str) -> Option<u16> {
 
     // Bare hex — only when a letter is present so decimal tokens are
     // never misread as hexadecimal.
-    if token
-        .bytes()
-        .all(|b| b.is_ascii_hexdigit())
-        && token.bytes().any(|b| !b.is_ascii_digit())
-    {
+    if token.bytes().all(|b| b.is_ascii_hexdigit()) && token.bytes().any(|b| !b.is_ascii_digit()) {
         return u16::from_str_radix(token, 16).ok();
     }
 
@@ -482,7 +489,10 @@ fn parse_ddt_file(path: &Path) -> Result<Ddt, String> {
             continue;
         }
 
-        let values: Vec<u16> = line.split_whitespace().filter_map(parse_ddt_token).collect();
+        let values: Vec<u16> = line
+            .split_whitespace()
+            .filter_map(parse_ddt_token)
+            .collect();
 
         if values.len() >= 256 {
             rows.push(values);
@@ -800,7 +810,14 @@ fn expand_round(
         // ----------------------------------------------------
 
         if active.is_empty() {
-            add_state_checked(&mut output, direction.step(state, 0), probability, round, state, config)?;
+            add_state_checked(
+                &mut output,
+                direction.step(state, 0),
+                probability,
+                round,
+                state,
+                config,
+            )?;
 
             continue;
         }
@@ -843,7 +860,9 @@ fn expand_round(
 // ============================================================
 
 fn sum_probability_mass(map: &HashMap<State, Dyadic>) -> Dyadic {
-    map.values().copied().fold(Dyadic::zero(), |total, probability| total.add(probability))
+    map.values()
+        .copied()
+        .fold(Dyadic::zero(), |total, probability| total.add(probability))
 }
 
 fn print_probability_mass(label: &str, map: &HashMap<State, Dyadic>) {
@@ -1334,10 +1353,7 @@ fn main() {
 
     let direct_best_f64 = direct_best_probability.probability_f64();
 
-    println!(
-        "Direct best-output probability : {:.20e}",
-        direct_best_f64
-    );
+    println!("Direct best-output probability : {:.20e}", direct_best_f64);
 
     println!(
         "MITM reconstructed probability : {:.20e}",
@@ -1380,7 +1396,10 @@ fn main() {
         relative_difference <= 1e-9
     };
 
-    println!("MITM consistency: {}", if consistent { "PASS" } else { "FAIL" });
+    println!(
+        "MITM consistency: {}",
+        if consistent { "PASS" } else { "FAIL" }
+    );
 
     // ========================================================
     // Final report
