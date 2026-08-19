@@ -1,64 +1,64 @@
 #![allow(clippy::all)]
 #![allow(dead_code)]
 
-//! Targeted differential verification for Herringfish.
-//!
-//! This tool answers one specific question:
-//!
-//!     P[Δout | Δin]
-//!
-//! It intentionally does NOT construct the complete differential hull.
-//!
-//! Project-relative table paths:
-//!
-//!     docs/tables/kat_reduced_rounds_v02.txt
-//!     docs/tables/kat_reduced_all.txt
-//!     docs/tables/kat_expanded_v02.txt
-//!     docs/tables/kat_vectors_v02.txt
-//!     docs/tables/lat_matrix.txt
-//!     docs/tables/ddt_matrix.txt
-//!     docs/tables/sbox_accepted.txt
-//!     docs/tables/sbox_ddt_lat.md
-//!
-//! The DDT is required for differential sampling.
-//! The other files are loaded as project-table metadata/reference material.
-//!
-//! For one round, the target probability can be calculated exactly:
-//!
-//!     ΔL' = ΔR
-//!     ΔR' = ΔL XOR Diffuse(ΔSBox)
-//!
-//! Therefore:
-//!
-//!     ΔSBox = Diffuse^-1(ΔL XOR ΔR')
-//!
-//! is uniquely determined.
-//!
-//! For multiple rounds, exhaustive enumeration becomes expensive very
-//! quickly. The targeted verifier instead samples the exact DDT transition
-//! distribution and estimates the probability of the requested final
-//! differential.
-//!
-//! This makes the tool suitable for testing hypotheses at substantially
-//! higher round counts than the exhaustive hull analyzer.
-//!
-//! Usage:
-//!
-//!     cargo run --release --example targeted_mitm -- 8 4 4 \
-//!         --dl 0x0000000000000000 \
-//!         --dr 0x0000000000000001 \
-//!         --tdl 0x0000000000000000 \
-//!         --tdr 0x0000000000000000 \
-//!         --samples 10000000
-//!
-//! Notes:
-//!
-//! The positional FORWARD/BACKWARD values are retained for compatibility
-//! with the previous targeted MITM interface. They are informational here.
-//!
-//! This program verifies the differential model represented by the DDT.
-//! It does not replace direct plaintext/key verification of the actual
-//! FeistelArx implementation.
+// Targeted differential verification for Herringfish.
+//
+// This tool answers one specific question:
+//
+//     P[Δout | Δin]
+//
+// It intentionally does NOT construct the complete differential hull.
+//
+// Project-relative table paths:
+//
+//     docs/tables/kat_reduced_rounds_v02.txt
+//     docs/tables/kat_reduced_all.txt
+//     docs/tables/kat_expanded_v02.txt
+//     docs/tables/kat_vectors_v02.txt
+//     docs/tables/lat_matrix.txt
+//     docs/tables/ddt_matrix.txt
+//     docs/tables/sbox_accepted.txt
+//     docs/tables/sbox_ddt_lat.md
+//
+// The DDT is required for differential sampling.
+// The other files are loaded as project-table metadata/reference material.
+//
+// For one round, the target probability can be calculated exactly:
+//
+//     ΔL' = ΔR
+//     ΔR' = ΔL XOR Diffuse(ΔSBox)
+//
+// Therefore:
+//
+//     ΔSBox = Diffuse^-1(ΔL XOR ΔR')
+//
+// is uniquely determined.
+//
+// For multiple rounds, exhaustive enumeration becomes expensive very
+// quickly. The targeted verifier instead samples the exact DDT transition
+// distribution and estimates the probability of the requested final
+// differential.
+//
+// This makes the tool suitable for testing hypotheses at substantially
+// higher round counts than the exhaustive hull analyzer.
+//
+// Usage:
+//
+//     cargo run --release --example targeted_mitm -- 8 4 4 \
+//         --dl 0x0000000000000000 \
+//         --dr 0x0000000000000001 \
+//         --tdl 0x0000000000000000 \
+//         --tdr 0x0000000000000000 \
+//         --samples 10000000
+//
+// Notes:
+//
+// The positional FORWARD/BACKWARD values are retained for compatibility
+// with the previous targeted MITM interface. They are informational here.
+//
+// This program verifies the differential model represented by the DDT.
+// It does not replace direct plaintext/key verification of the actual
+// FeistelArx implementation.
 
 use std::fs;
 use std::path::Path;
@@ -100,6 +100,7 @@ struct Config {
 
     target_dl: u64,
     target_dr: u64,
+    target_weight: Option<u32>,
 
     samples: u64,
     batch_size: u64,
@@ -126,6 +127,7 @@ impl Default for Config {
 
             target_dl: 0,
             target_dr: 0,
+            target_weight: None,
 
             samples: 1_000_000,
             batch_size: 65_536,
@@ -193,6 +195,11 @@ impl Config {
                 "--tdr" => {
                     i += 1;
                     config.target_dr = parse_u64(&args, i, "--tdr")?;
+                }
+
+                "--weight" => {
+                    i += 1;
+                    config.target_weight = Some(parse_u32_required(&args, i, "--weight")?);
                 }
 
                 "--samples" => {
@@ -300,6 +307,16 @@ fn parse_u64_required(args: &[String], index: usize, name: &str) -> Result<u64, 
     parse_u64_string(&args[index]).map_err(|e| format!("{}: {}", name, e))
 }
 
+fn parse_u32_required(args: &[String], index: usize, name: &str) -> Result<u32, String> {
+    if index >= args.len() {
+        return Err(format!("Missing value for {}", name));
+    }
+
+    args[index]
+        .parse::<u32>()
+        .map_err(|_| format!("Invalid integer: {}", name))
+}
+
 fn parse_u64(args: &[String], index: usize, name: &str) -> Result<u64, String> {
     parse_u64_required(args, index, name)
 }
@@ -339,6 +356,7 @@ Differential:
     --dr VALUE
     --tdl VALUE
     --tdr VALUE
+    --weight VALUE
 
 Verification:
     --samples N
@@ -1067,6 +1085,25 @@ fn format_probability(p: f64) -> String {
 // Targeted Monte-Carlo verification
 // ============================================================
 
+#[inline]
+fn sample_round_with_weight(ddt: &Ddt, dl: u64, dr: u64, rng: &mut Rng) -> (u64, u64, u32) {
+    let delta_sbox = sample_sbox_difference(ddt, dr, rng);
+
+    let mut weight = 0;
+    for i in 0..8 {
+        if ((delta_sbox >> (i * 8)) & 0xff) != 0 {
+            weight += 1;
+        }
+    }
+
+    let delta_f = diffuse(delta_sbox);
+
+    let next_dl = dr;
+    let next_dr = dl ^ delta_f;
+
+    (next_dl, next_dr, weight)
+}
+
 fn verify_target(ddt: &Ddt, config: &Config) -> VerificationResult {
     let mut rng = Rng::new(config.seed);
 
@@ -1082,16 +1119,24 @@ fn verify_target(ddt: &Ddt, config: &Config) -> VerificationResult {
             let mut dl = config.input_dl;
 
             let mut dr = config.input_dr;
+            let mut total_weight = 0u32;
 
             for _ in 0..config.total_rounds {
-                let next = sample_round(ddt, dl, dr, &mut rng);
+                let (next_dl, next_dr, weight) = sample_round_with_weight(ddt, dl, dr, &mut rng);
 
-                dl = next.0;
-                dr = next.1;
+                dl = next_dl;
+                dr = next_dr;
+                total_weight += weight;
             }
 
             if dl == config.target_dl && dr == config.target_dr {
-                hits += 1;
+                if let Some(target) = config.target_weight {
+                    if total_weight == target {
+                        hits += 1;
+                    }
+                } else {
+                    hits += 1;
+                }
             }
         }
 
