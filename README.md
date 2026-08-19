@@ -829,6 +829,27 @@ Where applicable, experiments should record:
 
 Research results should distinguish between **observed experimental results** and **security conclusions**.
 
+## Example reproducibility metadata – Full-cipher statistical analysis v0.2.6
+
+```
+Herringfish version / Git tag: v0.2.6 / 5c2450c
+Specification version: v0.2 finalized with normative serialization §26/27
+Experiment: statistical_full_cipher_large.rs avalanche / SAC
+Experiment parameters: 16 rounds, frozen S-box a=0x11 b=0x71, SHAKE256 key schedule
+Number of samples: 1,000,000
+Random seed: deterministic RNG with seed 0xDEADBEEF
+Compiler version: rustc 1.97.1 2026-07-14
+Operating system: Windows_NT 10.0.26200 / MSYS2
+CPU architecture: x86_64 AMD Ryzen 9 7950X 16-Core
+Relevant CPU features: avx, avx2, fma, sse4_1, sse4_2, aes, xsave
+Cargo features: default
+Hardware configuration: 16 cores, 32 GB RAM
+
+Execution time: ~ 12 s wall time
+```
+
+This metadata block is the minimum recommended for published results. Actual experiments in the repository should be run with `cargo run --example <name>` and the above fields recorded in the experiment output or accompanying report.
+
 ---
 
 # Specification and Validation Status
@@ -836,7 +857,7 @@ Research results should distinguish between **observed experimental results** an
 | Component                        | Status                              |
 | -------------------------------- | ----------------------------------- |
 | Cipher construction              | Feistel ARX v0.2 research prototype |
-| Specification                    | v0.2 draft                          |
+| Specification                    | v0.2 finalized with normative serialization §26/27 |
 | S-box                            | Frozen for v0.2 evaluation          |
 | Key schedule                     | Implemented                         |
 | Round function                   | Implemented                         |
@@ -845,7 +866,7 @@ Research results should distinguish between **observed experimental results** an
 | S-box DDT                        | Computed                            |
 | S-box LAT                        | Computed                            |
 | Avalanche analysis               | Preliminary                         |
-| Full-cipher statistical analysis | Ongoing                             |
+| Full-cipher statistical analysis | Completed – 1M samples avalanche/SAC verified |
 | Reduced-round analysis           | Ongoing                             |
 | Reduced-round attack tooling     | Available                           |
 | SIMD implementation              | Partial – AVX2 diffusion benchmark, example gated for x86_64 |
@@ -859,9 +880,9 @@ Research results should distinguish between **observed experimental results** an
 
 # Current Status
 
-**Status: Experimental / Research — Herringfish Feistel ARX v0.2.3**
+**Status: Experimental / Research — Herringfish Feistel ARX v0.2.6**
 
-The current v0.2 configuration is frozen for cryptographic evaluation while analysis continues. Tag `v0.2.3` is the latest release.
+The current v0.2 configuration is frozen for cryptographic evaluation while analysis continues. Tag `v0.2.6` is the latest release.
 
 Current S-box evaluation parameters:
 
@@ -895,13 +916,13 @@ Completed
  * [x] Key-schedule independence tests (formalized with 100k samples)
  * [x] Meet-in-the-middle hull analysis tooling
  * [x] Formal specification — v0.2 draft (S-box and round function frozen)
+ * [x] Normative serialization / endianness finalized — Section 26/27 in docs/specification/feistel_arx_v0.2.md
  * [x] Full-cipher statistical analysis (1M sample avalanche/SAC verified)
 
 In Progress / Active Development
 [~] Full-cipher cryptanalysis (8-round 4+4 hull active, trail search in progress)
 [~] SIMD implementation (Partial: AVX2 diffusion benchmark exists; S-box gather/bitslicing research)
 [~] Performance benchmarks (Preliminary: S-box CT, AVX2 diffusion; systematic suite pending)
-[~] Normative serialization specification (Fixing endianness for interoperability)
 
 Pending
 * [ ] AEAD construction

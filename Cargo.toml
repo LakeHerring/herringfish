@@ -1,9 +1,9 @@
 [package]
 name = "herringfish"
-version = "0.2.3"
+version = "0.2.6"
 edition = "2024"
 license = "MIT"
-description = "Cross-platform cryptography toolkit for Windows, macOS, and Linux"
+description = "Experimental symmetric-key cryptography research project"
 repository = "https://github.com/LakeHerring/herringfish"
 keywords = ["cryptography", "security", "cross-platform"]
 categories = ["cryptography"]
