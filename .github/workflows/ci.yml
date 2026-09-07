@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Format check
+        run: cargo fmt -- --check
+      - name: Clippy
+        run: cargo clippy --lib -- -D warnings
+      - name: Build
+        run: cargo build --release
+      - name: Test
+        run: cargo test --lib
+      - name: Spec validation
+        run: cargo run --release --example spec_validation
+      - name: KAT roundtrip
+        run: cargo run --release --example kat_roundtrip_check

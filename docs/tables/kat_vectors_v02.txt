@@ -1,0 +1,39 @@
+# Herringfish Feistel ARX v0.2 KAT vectors
+S-box: HERRINGFISH_SBOX_V02, a=0x11, b=0x71, rounds=16
+
+Key: 0000000000000000000000000000000000000000000000000000000000000000
+Plaintext: 00000000000000000000000000000000
+Ciphertext: 6a9dc7f139a2599780596d8f2f9ca7bc
+
+Key: 0000000000000000000000000000000000000000000000000000000000000000
+Plaintext: ffffffffffffffffffffffffffffffff
+Ciphertext: 328052f08a632802d587504550a183c4
+
+Key: 0000000000000000000000000000000000000000000000000000000000000000
+Plaintext: 00112233445566778899aabbccddeeff
+Ciphertext: 1dbfabf50d276ddec5cbe7b1aa1deb3c
+
+Key: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+Plaintext: 00000000000000000000000000000000
+Ciphertext: e57e91159380a43c057d4f75946256f5
+
+Key: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+Plaintext: ffffffffffffffffffffffffffffffff
+Ciphertext: d26c09d823400599c5441aab53692ebb
+
+Key: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+Plaintext: 00112233445566778899aabbccddeeff
+Ciphertext: 575122313810de837ca9977cf81cfd1c
+
+Key: 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+Plaintext: 00000000000000000000000000000000
+Ciphertext: 64ae5ef3aa84af5c7d2c6555f91fa67c
+
+Key: 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+Plaintext: ffffffffffffffffffffffffffffffff
+Ciphertext: c3fdcbb099c627c5aaa4bab0968ebed5
+
+Key: 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+Plaintext: 00112233445566778899aabbccddeeff
+Ciphertext: 1fbd6b5f647f8de7ef4a259ffdd9123e
+

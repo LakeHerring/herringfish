@@ -1,0 +1,11 @@
+//! Herringfish - experimental symmetric cipher research
+//!
+//! This crate provides a reference implementation of the Herringfish prototype.
+//! Current design: Feistel ARX, 128-bit block, 256-bit key, 16 rounds.
+//!
+//! WARNING: Experimental. Not for production use.
+
+pub mod cipher;
+pub mod simd;
+
+pub use cipher::{Cipher, Key};
