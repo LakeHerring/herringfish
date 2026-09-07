@@ -1,8 +1,15 @@
 # Side-Channel Review – SHAKE Expansion and S-box Lookups
 
+> **Scope note (solo-arx branch):** this review covers the SHAKE256-based key
+> schedule of the canonical v0.2 specification. On the solo-arx branch all
+> SHAKE/SHA-3 dependencies have been removed; round-key derivation is the
+> self-contained ARX expansion in `src/cipher/arx_key_schedule.rs`. The
+> SHAKE-specific findings below no longer apply to this branch; the S-box
+> lookup findings are unchanged.
+
 ## Scope
 
-Herringfish Feistel ARX v0.2 uses SHAKE256 XOF for round-key derivation with domain separation `HERRINGFISH-FEISTEL-KEY`. The S-box is frozen and currently implemented via table lookup in the reference implementation, with a constant-time selection variant available for research.
+Herringfish Feistel ARX v0.2 (canonical spec) uses SHAKE256 XOF for round-key derivation with domain separation `HERRINGFISH-FEISTEL-KEY`. The S-box is frozen and currently implemented via table lookup in the reference implementation, with a constant-time selection variant available for research.
 
 ## SHAKE256 expansion
 

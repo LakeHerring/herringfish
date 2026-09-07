@@ -1,9 +1,15 @@
 # Implementation Hardening – Herringfish Feistel ARX v0.2
 
+> **Scope note (solo-arx branch):** the SHAKE-expansion items below apply to
+> the canonical v0.2 specification. On the solo-arx branch the key schedule is
+> the self-contained ARX expansion (`src/cipher/arx_key_schedule.rs`), which
+> is branch-free and uses no external primitives; the S-box lookup and
+> branching items are unchanged.
+
 ## Current risks
 
 * **Secret-dependent S-box lookup**: `sbox[(x_byte ^ k_byte) as usize]` accesses memory based on secret key material.
-* **SHAKE expansion**: key schedule runs once, but `finalize_xof_into` must be constant-time w.r.t. output length.
+* **SHAKE expansion (canonical spec only; replaced on solo-arx branch)**: key schedule runs once, but `finalize_xof_into` must be constant-time w.r.t. output length.
 * **Branching**: current reference implementation contains no secret-dependent branches, but future optimizations may introduce them.
 
 ## Recommendations

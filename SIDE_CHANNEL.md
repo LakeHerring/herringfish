@@ -11,7 +11,7 @@ Herringfish Feistel ARX v0.2 is an experimental research block cipher. Side-chan
 * Construction: 128-bit balanced Feistel, 256-bit master key, 16 rounds
 * Round function: XOR → 8-bit S-box → linear diffusion `out[i]=in[i]⊕in[i+1]⊕in[i+3]`
 * S-box: frozen `HERRINGFISH_SBOX_V02`, `a=0x11`, `b=0x71`
-* Key schedule: SHAKE256 XOF with domain `HERRINGFISH-FEISTEL-KEY`
+* Key schedule: self-contained ARX expansion (rot/XOR/mod-add + frozen constants) on the solo-arx branch — no SHAKE/SHA-3
 * Normative serialization: little-endian 64-bit halves
 
 ## Implementation Components
@@ -21,7 +21,7 @@ Herringfish Feistel ARX v0.2 is an experimental research block cipher. Side-chan
 * Constant-time variant: `src/cipher/sbox_ct.rs`
   * `sbox_ct_lookup` uses `subtle::ConstantTimeEq` selection over 256 entries
   * `encrypt_block_ct`, `decrypt_block_ct`, `f_function_ct`
-* Key schedule: `src/cipher/shake_key_schedule.rs`, `src/cipher/key_schedule.rs`
+* Key schedule: `src/cipher/arx_key_schedule.rs` (Feistel ARX), `src/cipher/key_schedule.rs` (SPN variant)
 * SIMD: `src/simd/avx2.rs` AVX2 diffusion benchmark
 
 ## Side-Channel Findings
@@ -46,11 +46,11 @@ Herringfish Feistel ARX v0.2 is an experimental research block cipher. Side-chan
 * Not optimized for production; provided for research evaluation
 
 ### Key Schedule
-* SHAKE256 XOF via RustCrypto `shake` crate
-* No secret-dependent branches in derivation
-* Domain separation prevents cross-channel leakage between purposes
-* Test: `tests/shake_schedule.rs` – deterministic derivation, key differentiation
-* 100k sample key schedule independence test: average round-key Hamming distance ~64 bits for 1-bit master key difference
+* Self-contained ARX expansion: rotations, XORs, 64-bit modular additions, frozen constants
+* No secret-dependent branches in derivation; no external primitives
+* Test: `tests/arx_schedule.rs` – deterministic, key differentiation, prefix property, no-zero stream, size invariants
+* Key avalanche: ~32 of 64 bits per round key for 1-bit master key difference; ~64 of 128 bits for SPN round keys
+* The final XOR network is bijective (GF(2) rank 256/256, verified in `tests/arx_schedule.rs`)
 
 ### SIMD / AVX2
 * AVX2 diffusion benchmark exists, ~2.7× speedup
@@ -98,9 +98,9 @@ Herringfish Feistel ARX v0.2 is an experimental research block cipher. Side-chan
 
 ### Integration tests
 * `tests/roundtrip.rs` – 2 passed: `roundtrip_all_zero`, `roundtrip_random`
-* `tests/shake_schedule.rs` – 2 passed: `shake_key_schedule_deterministic`, `shake_key_schedule_differs`
+* `tests/arx_schedule.rs` – 5 passed: deterministic, key differentiation, prefix property, no-zero round-key stream, size invariants
 
-All 29 tests passed, 0 failed.
+All 43 tests passed (36 unit + 7 integration), 0 failed.
 
 ### Research tests referenced
 * Known-answer tests: `docs/tables/kat_vectors_v02.txt` – 16-round KAT verified

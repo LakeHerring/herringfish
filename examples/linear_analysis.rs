@@ -6,23 +6,9 @@
     unused_assignments
 )]
 use rand::{Rng, SeedableRng};
-use sha3::digest::{ExtendableOutput, Update};
-use shake::Shake256;
 
 fn derive_round_keys(key: &[u8; 32], rounds: usize) -> Vec<u64> {
-    const DOMAIN: &[u8] = b"HERRINGFISH-FEISTEL-KEY";
-    let mut hasher = Shake256::default();
-    hasher.update(DOMAIN);
-    hasher.update(key);
-    let mut out = vec![0u8; rounds * 8];
-    hasher.finalize_xof_into(&mut out);
-    (0..rounds)
-        .map(|i| {
-            let mut b = [0u8; 8];
-            b.copy_from_slice(&out[i * 8..i * 8 + 8]);
-            u64::from_le_bytes(b)
-        })
-        .collect()
+    herringfish::cipher::arx_key_schedule::derive_round_keys(key, rounds)
 }
 
 const SBOX: [u8; 256] = [

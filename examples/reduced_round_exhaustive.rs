@@ -5,8 +5,6 @@
     unused_variables,
     unused_assignments
 )]
-use sha3::digest::{ExtendableOutput, Update};
-use shake::Shake256;
 use std::collections::HashMap;
 
 const ROUNDS: usize = 4; // exhaustive feasible
@@ -36,19 +34,7 @@ fn f_function(x: u64, k: u64, sbox: &[u8; 256]) -> u64 {
 }
 
 fn derive_round_keys(key: &[u8; 32]) -> Vec<u64> {
-    const DOMAIN: &[u8] = b"HERRINGFISH-FEISTEL-KEY";
-    let mut hasher = Shake256::default();
-    hasher.update(DOMAIN);
-    hasher.update(key);
-    let mut out = vec![0u8; 16 * 8];
-    hasher.finalize_xof_into(&mut out);
-    (0..16)
-        .map(|i| {
-            let mut b = [0u8; 8];
-            b.copy_from_slice(&out[i * 8..i * 8 + 8]);
-            u64::from_le_bytes(b)
-        })
-        .collect()
+    herringfish::cipher::arx_key_schedule::derive_round_keys(key, 16)
 }
 
 fn feistel_encrypt(pt: u128, rounds: usize, keys: &[u64], sbox: &[u8; 256]) -> u128 {

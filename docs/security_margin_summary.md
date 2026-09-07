@@ -4,7 +4,7 @@
 **Construction:** Feistel ARX v0.2.3
 **Parameters:** 128-bit block, 256-bit master key, 16 rounds (parameterisable 4/6/8/16)
 **F-function:** `S[x⊕k]` with 8-bit S-box + intra-round diffusion `out[i]=in[i]⊕in[i+1]⊕in[i+3]`
-**Key schedule:** SHAKE256 XOF with domain `HERRINGFISH-FEISTEL-KEY`
+**Key schedule:** self-contained ARX expansion (rot/XOR/mod-add + frozen constants) on the solo-arx branch; the canonical v0.2 spec uses SHAKE256 XOF with domain `HERRINGFISH-FEISTEL-KEY`
 **S-box:** AES reference for baseline experiments
 
 ## Differential sampling
@@ -42,7 +42,7 @@ Baseline AES S-box used for current experiments:
 * DDT max count = 4 → differential uniformity 4 → max probability 1/64 ≈ 0.015625
 * LAT max bias count = 32 → max correlation 0.125
 
-Acceptance criteria for SHAKE-derived S-box per spec:
+Acceptance criteria for the frozen S-box per spec:
 * Bijective permutation of 0..255
 * DDT_max ≤ 4
 * |LAT_bias| ≤ 32
@@ -60,25 +60,23 @@ Affine parameters: `a = 0x11`, `b = 0x71`. Counter = 0.
 
 This construction guarantees bijectivity and inherits AES S-box differential/linear properties: DDT_max = 4, LAT_max bias = 32.
 
-Implementation in `src/cipher/feistel_arx.rs` as `HERRINGFISH_SBOX_V02`. Derivation code remains in `examples/sbox_formalise.rs` for research.
+Implementation in `src/cipher/feistel_arx.rs` as `HERRINGFISH_SBOX_V02`. The S-box is frozen (a=0x11, b=0x71, counter 0); no runtime derivation is performed. (The former SHAKE-based derivation example `examples/sbox_formalise.rs` was removed on the solo-arx branch.)
 
 ## Key schedule documentation
 
-RustCrypto crate mapping:
-* `shake` crate → SHAKE256 for key expansion and S-box generation
-* `sha3` crate → fixed-length SHA-3 digests only
+On the solo-arx branch the key schedule is self-contained — no SHAKE, SHA-3, or other external primitive is linked. Round keys are derived from a 4×64-bit ARX register seeded with the master key:
 
-Domain separation:
-* Round-key derivation: `HERRINGFISH-FEISTEL-KEY`
-* S-box derivation: `HERRINGFISH-FEISTEL-SBOX`
-* SPN key schedule: `HERRINGFISH-SPN-KEY`
-
-Round keys derived as:
 ```
-SHAKE256(domain || master_key) → 1024 bits → K1..K16, each 64 bits
+state = (w0, w1, w2, w3) from the 256-bit master key
+per round key i:  2× full_mix (rot/XOR/mod-add + frozen constants) + 1× bijective rotr-XOR network
+round_key[i] = w0 ^ w1 ^ w2 ^ w3
 ```
 
-Related-key Hamming distance tests on SHAKE schedule show ~64 bits average Hamming distance for 1-bit master key differences, consistent with pseudorandom behaviour. No exploitable correlation observed in sampled tests.
+* Implementation: `src/cipher/arx_key_schedule.rs` (Feistel) and `src/cipher/key_schedule.rs` (SPN variant, same expansion)
+* Design rationale, constant provenance, and literature comparison: `docs/solo_arx_key_schedule.md`
+* Measured key avalanche: mean 31.86 of 64 bits per round key for the worst single-bit master-key flip (32.06 with random-base keys); final XOR network is bijective (GF(2) rank 256/256)
+
+Related-key Hamming distance tests show ~32 bits average Hamming distance per 64-bit round key (and ~64 of 128 bits for SPN round keys) for 1-bit master key differences, consistent with pseudorandom behaviour. No exploitable correlation observed in sampled tests.
 
 ## Security margin statement
 

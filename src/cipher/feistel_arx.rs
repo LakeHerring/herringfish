@@ -10,7 +10,8 @@
 // R' = L XOR F(R, k)
 // ```
 //
-// Round keys are derived from SHAKE256 with domain separation.
+// Round keys are derived from the master key using the self-contained
+// ARX key schedule (see arx_key_schedule.rs). No SHAKE/SHA-3 is used.
 // The S-box is the fixed HERRINGFISH_SBOX_V02 construction.
 //
 // # Important research note
@@ -50,9 +51,8 @@
 #![allow(clippy::needless_range_loop)]
 #![allow(dead_code)]
 
+use crate::cipher::arx_key_schedule;
 use crate::cipher::sbox_ct::sbox_ct_lookup;
-use sha3::digest::{ExtendableOutput, Update, XofReader};
-use shake::Shake256;
 
 pub const BLOCK_SIZE: usize = 16;
 pub const KEY_SIZE: usize = 32;
@@ -60,8 +60,6 @@ pub const NUM_ROUNDS: usize = 16;
 
 const HALF_SIZE: usize = BLOCK_SIZE / 2;
 const WORD_BYTES: usize = core::mem::size_of::<u64>();
-
-const DOMAIN_FEISTEL_KEY: &[u8] = b"HERRINGFISH-FEISTEL-KEY";
 
 // Fixed Herringfish S-box version 0.2.
 //
@@ -119,33 +117,15 @@ impl FeistelArx {
         }
     }
 
-    // Derive round keys from the master key using SHAKE256.
-    //
-    // Each invocation consumes exactly eight bytes from the XOF.
+    // Derive round keys from the master key using the self-contained
+    // ARX key schedule (rotation, XOR, modular addition, frozen
+    // constants). No SHAKE/SHA-3 is used on the solo branch.
     //
     // The output stream is deterministic for a given key and round
     // count and changing the master key changes the resulting stream.
     pub(crate) fn derive_round_keys(key: &[u8; KEY_SIZE], rounds: usize) -> Vec<u64> {
         assert!(rounds > 0, "Cannot derive round keys for zero rounds");
-
-        let mut hasher = Shake256::default();
-
-        hasher.update(DOMAIN_FEISTEL_KEY);
-        hasher.update(key);
-
-        let mut reader = hasher.finalize_xof();
-
-        let mut keys = Vec::with_capacity(rounds);
-
-        for _ in 0..rounds {
-            let mut bytes = [0u8; WORD_BYTES];
-
-            reader.read(&mut bytes);
-
-            keys.push(u64::from_le_bytes(bytes));
-        }
-
-        keys
+        arx_key_schedule::derive_round_keys(key, rounds)
     }
 
     #[inline]
@@ -960,7 +940,8 @@ mod tests {
     fn round_key_stream_prefix_property() {
         //
         // Deriving N keys and deriving M > N keys must produce
-        // identical first N keys because SHAKE is an XOF.
+        // identical first N keys because the ARX schedule is a pure
+        // streaming iteration (prefix property).
         //
 
         let key = [0xA5u8; KEY_SIZE];

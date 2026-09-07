@@ -62,12 +62,14 @@ fn main() {
     }
     println!("  LAT max bias count: {}", lat_max);
 
-    // 2. Key schedule domain separation
+    // 2. Key schedule
     println!("\n2. Key schedule");
-    println!("  Domain separator: HERRINGFISH-FEISTEL-KEY");
-    println!("  SHAKE256 XOF used for round key derivation");
+    println!("  Self-contained ARX expansion (rot/XOR/mod-add + frozen constants)");
+    println!("  No SHAKE/SHA-3 or other external primitives (solo-arx branch)");
     println!("  Round key size: 64 bits");
     println!("  Number of rounds: 16");
+    println!("  Note: the frozen v0.2 specification documents the SHAKE-based variant;");
+    println!("  this branch differs only in the key schedule.");
 
     // 3. Cipher parameters
     println!("\n3. Cipher parameters");

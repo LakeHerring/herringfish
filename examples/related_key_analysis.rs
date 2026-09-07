@@ -67,8 +67,9 @@ fn main() {
             trials += 1;
         }
         println!(
-            "Hamming weight {} key diff -> avg round key Hamming distance {:.2}/128 bits",
+            "Hamming weight {} key diff -> avg round key Hamming distance {:.1} of 128 bits (normalized {:.2})",
             w,
+            total / trials as f64 * 128.0,
             total / trials as f64
         );
     }
@@ -86,7 +87,8 @@ fn main() {
         sum += avg;
     }
     println!(
-        "Random key pairs avg round key Hamming distance {:.2}/128 bits",
+        "Random key pairs avg round key Hamming distance {:.1} of 128 bits (normalized {:.2})",
+        sum / 1000.0 * 128.0,
         sum / 1000.0
     );
 }

@@ -5,29 +5,11 @@
     unused_variables,
     unused_assignments
 )]
-use herringfish::cipher::feistel_arx::FeistelArx;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 
 fn derive_round_keys(key: &[u8; 32]) -> Vec<u64> {
-    let _cipher = FeistelArx::new(key);
-    // Access private round keys via reflection? Can't.
-    // We'll re-derive using same method as FeistelArx
-    use sha3::digest::{ExtendableOutput, Update};
-    use shake::Shake256;
-    const DOMAIN: &[u8] = b"HERRINGFISH-FEISTEL-KEY";
-    let mut hasher = Shake256::default();
-    hasher.update(DOMAIN);
-    hasher.update(key);
-    let mut out = vec![0u8; 16 * 8];
-    hasher.finalize_xof_into(&mut out);
-    (0..16)
-        .map(|i| {
-            let mut b = [0u8; 8];
-            b.copy_from_slice(&out[i * 8..i * 8 + 8]);
-            u64::from_le_bytes(b)
-        })
-        .collect()
+    herringfish::cipher::arx_key_schedule::derive_round_keys(key, 16)
 }
 
 fn hamming_distance(a: &[u64], b: &[u64]) -> usize {
@@ -90,5 +72,5 @@ fn main() {
     );
     println!("Related-key 1-bit diff:");
     println!("  mean = {:.2} bits, std = {:.2}", mean_rel, var_rel.sqrt());
-    println!("Expected ~64 bits for independent 64-bit keys per round, total 1024 bits");
+    println!("Expected ~512 bits total for independent 64-bit round keys (~32 bits per round, 16 rounds)");
 }

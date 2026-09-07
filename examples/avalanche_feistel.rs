@@ -39,22 +39,7 @@ fn encrypt_trace(_key: &[u8; 32], pt: &[u8; 16], round_keys: &[u64]) -> Vec<[u8;
 }
 
 fn derive_round_keys(key: &[u8; 32]) -> Vec<u64> {
-    let mut keys = Vec::new();
-    // replicate derivation from FeistelArx
-    use sha3::digest::{ExtendableOutput, Update};
-    use shake::Shake256;
-    const DOMAIN_FEISTEL_KEY: &[u8] = b"HERRINGFISH-FEISTEL-KEY";
-    let mut hasher = Shake256::default();
-    hasher.update(DOMAIN_FEISTEL_KEY);
-    hasher.update(key);
-    let mut out = vec![0u8; NUM_ROUNDS * 8];
-    hasher.finalize_xof_into(&mut out);
-    for i in 0..NUM_ROUNDS {
-        let mut bytes = [0u8; 8];
-        bytes.copy_from_slice(&out[i * 8..i * 8 + 8]);
-        keys.push(u64::from_le_bytes(bytes));
-    }
-    keys
+    herringfish::cipher::arx_key_schedule::derive_round_keys(key, NUM_ROUNDS)
 }
 
 fn hamming_distance(a: &[u8], b: &[u8]) -> usize {

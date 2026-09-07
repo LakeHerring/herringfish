@@ -2,11 +2,11 @@
 
 #![allow(clippy::needless_range_loop)]
 
+pub mod arx_key_schedule;
 pub mod feistel_arx;
 pub mod key_schedule;
 pub mod round;
 pub mod sbox_ct;
-pub mod shake_key_schedule;
 
 use crate::cipher::key_schedule::KeySchedule;
 use crate::cipher::round::{decrypt_round, encrypt_round};

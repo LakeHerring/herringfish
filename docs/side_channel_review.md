@@ -1,7 +1,13 @@
 # Side-Channel Review – Herringfish Feistel ARX v0.2
 
+> **Scope note (solo-arx branch):** the SHAKE-derived key expansion reviewed
+> here belongs to the canonical v0.2 specification. On the solo-arx branch the
+> key schedule is the self-contained ARX expansion
+> (`src/cipher/arx_key_schedule.rs`) — branch-free, no external primitives.
+> S-box lookup findings are unchanged.
+
 ## Scope
-Review of SHAKE-derived key expansion and S-box lookup implementation for timing and cache leakage.
+Review of SHAKE-derived key expansion (canonical v0.2 spec) and S-box lookup implementation for timing and cache leakage.
 
 ## Findings
 

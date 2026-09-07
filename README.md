@@ -10,7 +10,17 @@
 
 **Herringfish** is an experimental symmetric-key cryptography research project focused on the design, implementation, testing, and cryptanalysis of a novel block-cipher construction.
 
-The current construction, **Herringfish Feistel ARX v0.2**, is a 128-bit balanced Feistel network using an 8-bit nonlinear S-box layer, ARX-based processing, XOR-based diffusion, and a SHAKE256-derived key schedule.
+The current construction, **Herringfish Feistel ARX v0.2**, is a 128-bit balanced Feistel network using an 8-bit nonlinear S-box layer, ARX-based processing, XOR-based diffusion, and a self-contained ARX key schedule.
+
+> [!NOTE]
+> **solo-arx branch**
+>
+> On this branch every SHAKE/SHA-3 dependency has been removed. Round-key
+> derivation is a self-contained ARX expansion built from rotations, XORs,
+> modular additions and frozen constants only (`src/cipher/arx_key_schedule.rs`).
+> The frozen v0.2 specification documents the canonical SHAKE-based variant;
+> this branch differs only in the key schedule. See
+> `docs/solo_arx_key_schedule.md` for the design rationale and measurements.
 
 The long-term objective is to develop a complete, independently testable cryptographic primitive with:
 
@@ -75,8 +85,7 @@ The v0.2 construction combines:
 * An 8-bit nonlinear S-box
 * ARX-based processing
 * XOR-based byte diffusion
-* SHAKE256-derived round keys
-* Domain-separated key derivation
+* ARX-derived round keys (rotations, XORs, modular additions, frozen constants)
 
 The current design is documented in:
 
@@ -108,7 +117,7 @@ Freezing parameters for an evaluation version does not imply that the design has
 | Rounds                   | 16                                                  |
 | Nonlinear layer          | 8-bit S-box                                         |
 | Diffusion                | XOR-based byte mixing                               |
-| Key schedule             | SHAKE256 XOF                                        |
+| Key schedule             | ARX expansion (self-contained, no external primitives) |
 | Reference implementation | Rust                                                |
 | SIMD                     | Planned                                             |
 | AEAD                     | Planned                                             |
@@ -749,28 +758,34 @@ Claims regarding complete-cipher diffusion remain subject to continued analysis.
 
 ## Key Schedule
 
-The v0.2 key schedule uses the SHAKE256 extendable-output function with domain separation.
+The key schedule is a self-contained ARX expansion (`src/cipher/arx_key_schedule.rs`). It uses no external primitives — no SHAKE, no SHA-3, no other hash or XOF. Every operation is a rotation, XOR, 64-bit modular addition, or a frozen constant.
 
 Conceptually:
 
 ```text
-SHAKE256(
-    HERRINGFISH-FEISTEL-KEY ||
-    master_key
-)
+state = (w0, w1, w2, w3)          # 4 x 64-bit register from the 256-bit master key
+for i in 0..rounds:
+    full_mix(state, 2i)           # 4-way ARX mixing + constants
+    full_mix(state, 2i + 1)       # 4-way ARX mixing + constants
+    xor_net(state)                # bijective rotr-XOR network (GF(2) rank 256/256)
+    round_key[i] = w0 ^ w1 ^ w2 ^ w3
 ```
 
-The v0.2 construction derives:
+Properties measured for the frozen design:
 
-```text
-1024 bits
-```
+* Deterministic and streaming (prefix property: the first `k` round keys of a
+  longer schedule are unchanged when the schedule is extended)
+* Full key sensitivity: every master-key bit influences every round key
+* Key avalanche: mean round-key Hamming distance 31.86 bits per round key for
+  the worst single-bit master-key flip (32.06 with random-base keys), i.e. a
+  1-bit key change alters about half of every round key
+* The final XOR network is provably bijective (GF(2) rank 256/256, verified
+  programmatically in `tests/arx_schedule.rs`)
 
-of round-key material for 16 rounds.
+The design rationale, constant provenance, and literature comparison are in
+`docs/solo_arx_key_schedule.md`.
 
-The exact encoding, domain-separation string, byte ordering, and round-key extraction procedure are defined in the formal specification.
-
-Preliminary statistical analysis of generated round-key material is used to search for obvious structural behavior. Such testing does not constitute a proof of key-schedule security.
+Statistical analysis of generated round-key material is used to search for obvious structural behavior. Such testing does not constitute a proof of key-schedule security.
 
 ---
 
@@ -835,7 +850,7 @@ Research results should distinguish between **observed experimental results** an
 Herringfish version / Git tag: v0.2.6 / 5c2450c
 Specification version: v0.2 finalized with normative serialization §26/27
 Experiment: statistical_full_cipher_large.rs avalanche / SAC
-Experiment parameters: 16 rounds, frozen S-box a=0x11 b=0x71, SHAKE256 key schedule
+Experiment parameters: 16 rounds, frozen S-box a=0x11 b=0x71, ARX key schedule (solo-arx branch)
 Number of samples: 1,000,000
 Random seed: deterministic RNG with seed 0xDEADBEEF
 Compiler version: rustc 1.97.1 2026-07-14
@@ -901,7 +916,7 @@ Completed
  * [x] 128-bit block design
  * [x] 256-bit master-key design
  * [x] 16-round configuration
- * [x] SHAKE256-derived key schedule with domain separation
+ * [x] Self-contained ARX key schedule (rot/XOR/mod-add + frozen constants, no SHAKE/SHA-3)
  * [x] Round function (XOR → S-box → Linear Diffusion)
  * [x] 8-bit nonlinear S-box (AES affine transform via rejection sampling)
  * [x] XOR-based diffusion layer

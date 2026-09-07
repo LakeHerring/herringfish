@@ -6,8 +6,6 @@
     unused_assignments
 )]
 use rand::{Rng, SeedableRng};
-use sha3::digest::{ExtendableOutput, Update};
-use shake::Shake256;
 use std::collections::HashMap;
 use std::convert::TryInto;
 
@@ -39,19 +37,7 @@ fn f_function(x: u64, k: u64, sbox: &[u8; 256]) -> u64 {
 }
 
 fn derive_round_keys(key: &[u8; 32]) -> Vec<u64> {
-    const DOMAIN: &[u8] = b"HERRINGFISH-FEISTEL-KEY";
-    let mut hasher = Shake256::default();
-    hasher.update(DOMAIN);
-    hasher.update(key);
-    let mut out = vec![0u8; FEISTEL_ROUNDS * 8];
-    hasher.finalize_xof_into(&mut out);
-    (0..FEISTEL_ROUNDS)
-        .map(|i| {
-            let mut b = [0u8; 8];
-            b.copy_from_slice(&out[i * 8..i * 8 + 8]);
-            u64::from_le_bytes(b)
-        })
-        .collect()
+    herringfish::cipher::arx_key_schedule::derive_round_keys(key, FEISTEL_ROUNDS)
 }
 
 fn derive_sbox() -> [u8; 256] {

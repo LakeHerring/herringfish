@@ -1,7 +1,13 @@
 # Herringfish v0.2 Side-Channel Review – Summary
 
+> **Scope note (solo-arx branch):** this review covers the SHAKE256-based key
+> schedule variant documented in the frozen v0.2 specification. On the
+> solo-arx branch the key schedule is a self-contained ARX expansion
+> (`src/cipher/arx_key_schedule.rs`) with no external primitives; the S-box
+> and diffusion findings below are unchanged.
+
 **Date:** 2026-08-15
-**Scope:** Reference implementation in `src/cipher/feistel_arx.rs`, constant-time variant `src/cipher/sbox_ct.rs`, key schedule via SHAKE256.
+**Scope:** Reference implementation in `src/cipher/feistel_arx.rs`, constant-time variant `src/cipher/sbox_ct.rs`, key schedule via SHAKE256 (canonical v0.2 spec; replaced by the ARX expansion on the solo-arx branch).
 
 ## Findings
 

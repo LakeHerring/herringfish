@@ -6,25 +6,11 @@
     unused_assignments
 )]
 use rand::{Rng, SeedableRng};
-use sha3::digest::{ExtendableOutput, Update};
-use shake::Shake256;
 
 const ROUNDS: usize = 16;
-const DOMAIN_KEY: &[u8] = b"HERRINGFISH-FEISTEL-KEY";
 
 fn derive_round_keys(key: &[u8; 32]) -> Vec<u64> {
-    let mut hasher = Shake256::default();
-    hasher.update(DOMAIN_KEY);
-    hasher.update(key);
-    let mut out = vec![0u8; ROUNDS * 8];
-    hasher.finalize_xof_into(&mut out);
-    (0..ROUNDS)
-        .map(|i| {
-            let mut b = [0u8; 8];
-            b.copy_from_slice(&out[i * 8..i * 8 + 8]);
-            u64::from_le_bytes(b)
-        })
-        .collect()
+    herringfish::cipher::arx_key_schedule::derive_round_keys(key, ROUNDS)
 }
 
 fn hamming_distance(a: u64, b: u64) -> u32 {
@@ -83,5 +69,5 @@ fn main() {
         mean,
         var.sqrt()
     );
-    println!("Expected ~64 bits for independent 64-bit keys");
+    println!("Expected ~32 bits per round for independent 64-bit keys");
 }
