@@ -21,7 +21,7 @@ Herringfish Feistel ARX v0.2 is an experimental research block cipher. Side-chan
 * Constant-time variant: `src/cipher/sbox_ct.rs`
   * `sbox_ct_lookup` uses `subtle::ConstantTimeEq` selection over 256 entries
   * `encrypt_block_ct`, `decrypt_block_ct`, `f_function_ct`
-* Key schedule: `src/cipher/arx_key_schedule.rs` (Feistel ARX), `src/cipher/key_schedule.rs` (SPN variant)
+* Key schedule: `src/cipher/arx_key_schedule.rs` (ARX expansion), `src/cipher/key_schedule.rs` (round-key derivation)
 * SIMD: `src/simd/avx2.rs` AVX2 diffusion benchmark
 
 ## Side-Channel Findings

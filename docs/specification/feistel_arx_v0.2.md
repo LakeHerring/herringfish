@@ -1,5 +1,13 @@
 # Herringfish Feistel ARX Prototype v0.2
 
+> [!NOTE]
+> **solo-arx branch:** this document is the canonical v0.2 specification, which
+> uses the SHAKE256-based key schedule. The implementation on the `solo-arx`
+> branch differs only in the key schedule, which is the self-contained ARX
+> expansion documented in `docs/solo_arx_key_schedule.md` (implementation in
+> `src/cipher/arx_key_schedule.rs`). All other sections of this specification
+> apply unchanged to the solo-arx branch.
+
 **Status:** Experimental research prototype
 **Version:** 0.2
 **Construction:** 128-bit balanced Feistel network with S-box and linear-diffusion round function

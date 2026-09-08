@@ -1,4 +1,4 @@
-//! Key schedule for the prototype SPN (solo branch).
+//! Key schedule for Herringfish Feistel ARX v0.2 (solo-arx branch).
 //!
 //! 256-bit master key -> 15 round keys of 128 bits each, expanded via
 //! the self-contained ARX key schedule. No SHAKE/SHA-3 is used.

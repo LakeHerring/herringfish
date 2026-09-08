@@ -1,3 +1,13 @@
+# Investigate: SHA-3/SHAKE in the Herringfish Key Schedule
+
+> [!NOTE]
+> **Historical research note (solo-arx branch).** This document records the
+> investigation of a SHAKE256-based key expansion. Its direction was
+> superseded on the `solo-arx` branch: the SHAKE/SHA-3 dependencies were
+> removed and round-key derivation is now the self-contained ARX expansion
+> (`src/cipher/arx_key_schedule.rs`, design rationale in
+> `docs/solo_arx_key_schedule.md`). Retained for the research record.
+
 Yes — as a research direction, that is actually quite interesting, but I would avoid simply making “Blowfish + SHA-3” a construction by concatenation. The more interesting question is what role the SHA-3/SHAKE machinery plays inside Herringfish.
 
 Blowfish gives you a useful historical starting point: a Feistel cipher with key-dependent S-boxes and a substantial key schedule. SHA-3/SHAKE gives you a very different primitive: the Keccak sponge/permutation.
