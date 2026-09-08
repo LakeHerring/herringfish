@@ -99,7 +99,10 @@ fn hamming_weight(x: u64) -> u32 {
 
 fn main() {
     let ddt = build_ddt();
-    println!("S-box DDT max = {}", ddt.iter().flatten().max().unwrap());
+    // Max over nonzero input differences only (ddt[0][0] == 256 is vacuous
+    // for a bijective S-box).
+    let ddt_max_nz = ddt[1..].iter().flatten().max().unwrap();
+    println!("S-box DDT max (nonzero Δin) = {}", ddt_max_nz);
 
     // Enumerate 1-bit input differences
     let rounds_list = [4usize, 6usize];
@@ -113,6 +116,11 @@ fn main() {
         // Start with ΔL=0, ΔR = 1-bit
         for bit in 0..64 {
             let dr0 = 1u64 << bit;
+            // Best probability over all rounds (the diffusion spreads the
+            // difference to >2 active bytes after round 1, so the final state
+            // set is empty under pruning; the pruned bound is the max over all
+            // surviving states across rounds ≤ N).
+            let mut best_p = 0.0f64;
             // BFS limited
             use std::collections::HashMap;
             let mut cur: HashMap<(u64, u64), f64> = HashMap::new();
@@ -170,12 +178,10 @@ fn main() {
                 if cur.is_empty() {
                     break;
                 }
-            }
-            // Find best probability for this starting diff
-            let mut best_p = 0.0;
-            for &p in cur.values() {
-                if p > best_p {
-                    best_p = p;
+                for &p in cur.values() {
+                    if p > best_p {
+                        best_p = p;
+                    }
                 }
             }
             if best_p > best_prob {

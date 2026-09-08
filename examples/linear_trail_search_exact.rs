@@ -7,19 +7,27 @@
 )]
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 
-/// Build S-box LAT
+/// GF(2) dot product (parity of the bitwise AND)
+fn parity(x: u8) -> bool {
+    x.count_ones() % 2 == 1
+}
+
+/// Build S-box LAT: lat[a][b] = sum_x (-1)^(a·x ^ b·S(x))
+/// Note: the mask predicate is the GF(2) dot product (parity), not
+/// `(x & a) != 0` (nonzero test, which is nonlinear and inflates the
+/// apparent bias).
 fn build_lat() -> [[i32; 256]; 256] {
     let mut lat = [[0i32; 256]; 256];
-    for a in 0usize..256 {
-        for b in 0usize..256 {
+    for a in 0..=255u8 {
+        for b in 0..=255u8 {
             let mut sum = 0i32;
-            for x in 0..256 {
-                let y = HERRINGFISH_SBOX_V02[x];
-                let bit_x = (x & a) != 0;
-                let bit_y = (y as usize & b) != 0;
+            for x in 0..=255u8 {
+                let y = HERRINGFISH_SBOX_V02[x as usize];
+                let bit_x = parity(x & a);
+                let bit_y = parity(y & b);
                 sum += if bit_x == bit_y { 1 } else { -1 };
             }
-            lat[a][b] = sum;
+            lat[a as usize][b as usize] = sum;
         }
     }
     lat
