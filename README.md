@@ -1,7 +1,5 @@
 # Herringfish
 
-[![Latest Release](https://img.shields.io/github/v/release/LakeHerring/herringfish?display_name=tag&sort=semver)](https://github.com/LakeHerring/herringfish/releases/latest)
-[![CI](https://github.com/LakeHerring/herringfish/actions/workflows/rust.yml/badge.svg)](https://github.com/LakeHerring/herringfish/actions/workflows/rust.yml)
 [![License](https://img.shields.io/github/license/LakeHerring/herringfish)](https://github.com/LakeHerring/herringfish/blob/main/LICENSE)
 
 > Experimental symmetric-key cryptography research project...
