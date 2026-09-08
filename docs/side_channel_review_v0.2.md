@@ -26,6 +26,13 @@
 * AVX2 diffusion and S-box gather use data-independent memory access patterns for the gather table.
 * Gather indices are derived from plaintext, so table access is secret-dependent. Mitigation requires bitsliced S-box or pre-computed tables with constant-time access.
 
+### F-function and intermediate-state leakage
+* The round function `F(R, k) = D(S(R ⊕ k))` is a bijection in the round key: the key enters exactly once (per-byte XOR), `S` is a public permutation, and `D` is a public invertible linear map.
+* Consequence: any channel that exposes round-1's F output or the post-round-1 half-state (verbose logging, debug flags, fault injection, an oracle that prints internal state) yields the first round key in a single chosen plaintext, exactly, via `k = R ⊕ S⁻¹(D⁻¹(F_leaked))`. Symmetrically, a leak of the pre-final-round state yields the last round key. This is a generic Feistel result — any round function that is a bijection in the round key hands that round's key to any F-output channel — and it holds for this F without search or carry ambiguity.
+* The reference implementation (and the constant-time variant) emit only the final ciphertext; no intermediate state is printed, logged, or otherwise exposed (verified by source review). The threat is therefore conditional on a deployment introducing such a channel, not on the cipher math.
+* Recovering a single round key (e.g. `rk1`) from a full 16-round instance does not trivially yield the 256-bit master key: the ARX key schedule is a forward-only stream, and schedule inversion is a separate open question.
+* Motivating example: the `leakyFeistel` CTF exploit (NoamAdept/leakyFeistel) breaks a 4-round Feistel whose debug output leaks post-round-1 state and which reuses one key for all rounds; the same single-query key-inversion algebra applies to this F-function, but Herringfish's per-round distinct keys and absence of any debug channel neutralize the attack as implemented.
+
 ### Assumptions and limits
 * Constant-time properties are not assumed for the reference implementation.
 * The CT variant is provided for research evaluation only and is not optimized for production.
@@ -35,3 +42,4 @@
 * Keep reference and CT variants clearly separated.
 * Document that production use requires additional hardening.
 * Consider bitsliced S-box implementation for future versions.
+* Never emit intermediate Feistel states (half-states or F outputs) in any build, debug mode, or logging path: because F is a bijection in the round key, such a channel recovers the corresponding round key in one chosen plaintext.
