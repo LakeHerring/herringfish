@@ -1,6 +1,6 @@
 # Herringfish Concrete Security Margin Quantification – Summary
 
-**Date:** 2026-08-15
+**Date:** 2026-08-15 (differential/linear re-run on solo-arx: 2026-09-08)
 **Construction:** Feistel ARX v0.2.3
 **Parameters:** 128-bit block, 256-bit master key, 16 rounds (parameterisable 4/6/8/16)
 **F-function:** `S[x⊕k]` with 8-bit S-box + intra-round diffusion `out[i]=in[i]⊕in[i+1]⊕in[i+3]`
@@ -118,15 +118,21 @@ Samples per Δ_in = 100 000
 All maxima at sampling floor 1/N. No high-probability concentration detected.
 
 ### Linear sampling
-Samples = 20 000, trials = 20
-* Rounds 4: max observed bias ≈ 0.01085
-* Rounds 6: max observed bias ≈ 0.00975
-* Rounds 8: max observed bias ≈ 0.00740
-Bias decreasing with rounds, within sampling noise.
+Samples = 20 000, trials = 20 (re-run 2026-09-08)
+* Rounds 4: max observed bias ≈ 0.00575
+* Rounds 6: max observed bias ≈ 0.01035
+* Rounds 8: max observed bias ≈ 0.00630
+Bias at or below the preliminary-run level, within sampling noise.
+
+### Re-run notes (2026-09-08, solo-arx)
+* 100k-sample differential run reproduced exactly (all maxima at the 1e-5 floor); no doc change needed.
+* `examples/differential_characteristic_exact_v2.rs` was misreporting: pruning empties the state set after round 1 (diffusion spreads to >2 active bytes), so it printed a vacuous 0.0. Fixed to track the max over all surviving states across rounds; the pruned 1-bit-Δ_in bound is 4/256 = 1.562e-2 (the single-active-byte S-box bound) for 4 and 6 rounds. Its "DDT max = 256" was the vacuous zero-difference entry; the nonzero max is 4, as documented.
+* `examples/linear_trail_search_exact.rs` used `(x & a) != 0` (nonzero test, nonlinear) instead of the GF(2) dot product, inflating the apparent S-box correlation to 0.9844. Fixed to the parity formulation; the S-box LAT max is 32 (correlation 0.125), consistent with this document, and the heuristic 4-round trail bias drops to ≈ 1.26e-29.
 
 ### Key schedule independence
+(re-run 2026-09-08 on the ARX schedule)
 * Average pairwise round-key Hamming distance ≈ 32.00 bits
-* Related-key 1-bit diff: mean round-key Hamming = 32.04 bits, std = 0.97
+* Related-key 1-bit diff: mean round-key Hamming = 31.86 bits, std = 0.96
 Consistent with independent 64-bit keys.
 
 ## Implementation hardening and side-channel review
