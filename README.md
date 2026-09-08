@@ -6,8 +6,6 @@
 
 > Experimental symmetric-key cryptography research project...
 
-# Herringfish
-
 **Herringfish** is an experimental symmetric-key cryptography research project focused on the design, implementation, testing, and cryptanalysis of a novel block-cipher construction.
 
 The current construction, **Herringfish Feistel ARX v0.2**, is a 128-bit balanced Feistel network using an 8-bit nonlinear S-box layer, ARX-based processing, XOR-based diffusion, and a self-contained ARX key schedule.
@@ -18,8 +16,9 @@ The current construction, **Herringfish Feistel ARX v0.2**, is a 128-bit balance
 > On this branch every SHAKE/SHA-3 dependency has been removed. Round-key
 > derivation is a self-contained ARX expansion built from rotations, XORs,
 > modular additions and frozen constants only (`src/cipher/arx_key_schedule.rs`).
-> The frozen v0.2 specification documents the canonical SHAKE-based variant;
-> this branch differs only in the key schedule. See
+> The frozen v0.2 specification documents the canonical SHAKE-based variant
+> (see `main`); this branch differs only in the key schedule and has not
+> yet been cut as a release tag — `v0.2.6` refers to the canonical line. See
 > `docs/solo_arx_key_schedule.md` for the design rationale and measurements.
 
 The long-term objective is to develop a complete, independently testable cryptographic primitive with:
@@ -570,22 +569,30 @@ herringfish/
 ├── src/
 │   ├── cipher/
 │   │   ├── mod.rs
-│   │   └── feistel_arx.rs
+│   │   ├── feistel_arx.rs          # core Feistel construction
+│   │   ├── round.rs                # round function
+│   │   ├── sbox_ct.rs              # constant-time S-box
+│   │   ├── key_schedule.rs         # round-key derivation via ARX expansion
+│   │   └── arx_key_schedule.rs     # self-contained ARX expansion (this branch)
 │   │
-│   ├── cryptanalysis/
-│   ├── math/
 │   ├── simd/
-│   └── lib.rs
+│   │   ├── mod.rs
+│   │   └── avx2.rs
+│   │
+│   ├── lib.rs
+│   └── main.rs
 │
 ├── tests/
-│   └── vectors/
+│   ├── arx_schedule.rs
+│   └── roundtrip.rs
 │
-├── benchmarks/
-├── examples/
+├── benches/
+├── examples/          # cryptanalysis and statistical experiment tooling
 │
 ├── docs/
 │   ├── specification/
-│   └── tables/
+│   ├── tables/
+│   └── solo_arx_key_schedule.md    # branch-specific design rationale
 │
 ├── Cargo.toml
 └── README.md
