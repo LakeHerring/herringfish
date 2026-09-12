@@ -14,8 +14,7 @@ fn encrypt_rounds(key: &[u8; 32], pt: &[u8; 16], rounds: usize) -> [u8; 16] {
     // For simplicity, use the existing FeistelArx but with modified NUM_ROUNDS via a wrapper.
     // Use the canonical ARX key schedule and the frozen HERRINGFISH S-box
     // so this example matches the library cipher exactly.
-    let round_keys =
-        herringfish::cipher::arx_key_schedule::derive_round_keys(key, 16);
+    let round_keys = herringfish::cipher::arx_key_schedule::derive_round_keys(key, 16);
     let sbox = herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 
     let mut left = u64::from_le_bytes(pt[0..8].try_into().unwrap());

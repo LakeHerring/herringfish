@@ -119,32 +119,16 @@ fn full_mix(state: &mut [u64; 4], g: usize) {
     let c3 = ROUND_CONSTANTS[(g + 14) & (NUM_CONSTANTS - 1)];
 
     let n0 = state[0].wrapping_add(
-        state[1]
-            .rotate_left(7)
-            ^ state[2].rotate_left(15)
-            ^ state[3].rotate_left(23)
-            ^ c0,
+        state[1].rotate_left(7) ^ state[2].rotate_left(15) ^ state[3].rotate_left(23) ^ c0,
     );
     let n1 = state[1].wrapping_add(
-        state[0]
-            .rotate_left(19)
-            ^ state[2].rotate_left(29)
-            ^ state[3].rotate_left(41)
-            ^ c1,
+        state[0].rotate_left(19) ^ state[2].rotate_left(29) ^ state[3].rotate_left(41) ^ c1,
     );
     let n2 = state[2].wrapping_add(
-        state[0]
-            .rotate_left(33)
-            ^ state[1].rotate_left(47)
-            ^ state[3].rotate_left(11)
-            ^ c2,
+        state[0].rotate_left(33) ^ state[1].rotate_left(47) ^ state[3].rotate_left(11) ^ c2,
     );
     let n3 = state[3].wrapping_add(
-        state[0]
-            .rotate_left(51)
-            ^ state[1].rotate_left(9)
-            ^ state[2].rotate_left(37)
-            ^ c3,
+        state[0].rotate_left(51) ^ state[1].rotate_left(9) ^ state[2].rotate_left(37) ^ c3,
     );
 
     state[0] = n0;
@@ -216,10 +200,7 @@ mod tests {
         let mut seen = [false; 64];
         for &c in ROUND_CONSTANTS.iter() {
             let bucket = (c % 64) as usize;
-            assert!(
-                !seen[bucket],
-                "constant bucket collision at 0x{c:016x}"
-            );
+            assert!(!seen[bucket], "constant bucket collision at 0x{c:016x}");
             seen[bucket] = true;
         }
     }
@@ -266,7 +247,7 @@ mod tests {
     #[test]
     fn one_bit_key_change_avalanches_round_keys() {
         let mut total = 0u64;
-        let mut a = [0u8; KEY_SIZE];
+        let a = [0u8; KEY_SIZE];
         let mut b = a;
         b[15] ^= 0x80; // last bit of the last byte
         let ra = expand(&a, 16);
@@ -294,10 +275,12 @@ mod tests {
             let mut b = base;
             b[flip / 8] ^= 1 << (flip % 8);
             let rb = expand(&b, 16);
-            let total: u64 = (0..16).map(|i| (zero_stream[i] ^ rb[i]).count_ones() as u64).sum();
+            let total: u64 = (0..16)
+                .map(|i| (zero_stream[i] ^ rb[i]).count_ones() as u64)
+                .sum();
             let avg = total as f64 / 16.0;
             assert!(
-                avg >= 26.0 && avg <= 38.0,
+                (26.0..=38.0).contains(&avg),
                 "flip bit {flip}: round-key avalanche {avg:.2} outside [26, 38]"
             );
         }
@@ -322,18 +305,14 @@ mod tests {
     fn round_keys_are_distinct_and_nonzero() {
         // No round key may repeat within the 16-key stream and none may
         // be all-zero, for a set of representative keys.
-        let keys: Vec<[u8; KEY_SIZE]> = vec![
-            [0u8; KEY_SIZE],
-            [0xABu8; KEY_SIZE],
-            [1u8; KEY_SIZE],
-            {
+        let keys: Vec<[u8; KEY_SIZE]> =
+            vec![[0u8; KEY_SIZE], [0xABu8; KEY_SIZE], [1u8; KEY_SIZE], {
                 let mut k = [0u8; KEY_SIZE];
                 for (i, b) in k.iter_mut().enumerate() {
                     *b = (i * 37 + 11) as u8;
                 }
                 k
-            },
-        ];
+            }];
         for (ki, key) in keys.iter().enumerate() {
             let stream = expand(key, 16);
             for (i, k) in stream.iter().enumerate() {

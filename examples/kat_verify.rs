@@ -6,7 +6,6 @@ fn hex_of(b: &[u8]) -> String {
     b.iter().map(|x| format!("{x:02x}")).collect()
 }
 
-
 fn from_hex16(s: &str) -> [u8; 16] {
     let v: Vec<u8> = (0..s.len())
         .step_by(2)
@@ -25,7 +24,8 @@ fn from_hex32(s: &str) -> [u8; 32] {
 
 fn encrypt(key: &[u8; 32], pt: &[u8; 16], rounds: usize) -> String {
     let mut block = *pt;
-    herringfish::cipher::feistel_arx::FeistelArx::new_with_rounds(key, rounds).encrypt_block(&mut block);
+    herringfish::cipher::feistel_arx::FeistelArx::new_with_rounds(key, rounds)
+        .encrypt_block(&mut block);
     hex_of(&block)
 }
 
@@ -52,7 +52,13 @@ fn check(path: &str, default_rounds: usize) -> (usize, usize) {
         } else if line.starts_with('#') && line.ends_with("rounds KAT") {
             // "# ... N rounds KAT" header style (kat_reduced_all.txt)
             let pos = line.find(" rounds KAT").unwrap();
-            rounds = line[..pos].chars().rev().find(|c| c.is_ascii_digit()).unwrap().to_digit(10).unwrap() as usize;
+            rounds = line[..pos]
+                .chars()
+                .rev()
+                .find(|c| c.is_ascii_digit())
+                .unwrap()
+                .to_digit(10)
+                .unwrap() as usize;
         } else if let Some(v) = line.strip_prefix("Key: ") {
             key = v.to_string();
         } else if let Some(v) = line.strip_prefix("Plaintext: ") {
@@ -63,7 +69,9 @@ fn check(path: &str, default_rounds: usize) -> (usize, usize) {
                 passed += 1;
             } else {
                 failed += 1;
-                eprintln!("MISMATCH {path} rounds={rounds}\n  key {key}\n  pt {pt}\n  got {got}\n  exp {v}");
+                eprintln!(
+                    "MISMATCH {path} rounds={rounds}\n  key {key}\n  pt {pt}\n  got {got}\n  exp {v}"
+                );
             }
         }
     }

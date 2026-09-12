@@ -49,7 +49,11 @@ type Walsh = [[i32; 256]; 256];
 
 /// (-1)^(parity(x)) as i32
 fn parity_sign(x: u16) -> i32 {
-    if (x as u32).count_ones() & 1 == 0 { 1 } else { -1 }
+    if (x as u32).count_ones() & 1 == 0 {
+        1
+    } else {
+        -1
+    }
 }
 
 /// Full Walsh spectrum: W[a][b] = sum_x (-1)^(a.x ^ b.S(x)).
@@ -96,15 +100,13 @@ fn dt_is_bijection() -> bool {
         for r in 0..8usize {
             let out_bit = j * 8 + r;
             for &src in &[j, (j + 7) % 8, (j + 5) % 8] {
-                rows[out_bit] .0 |= 1u64 << (src * 8 + r);
+                rows[out_bit].0 |= 1u64 << (src * 8 + r);
             }
         }
     }
     // Gaussian elimination over GF(2), rank.
     let mut rank = 0usize;
-    let mut m: [u128; 64] = rows.map(|(lo, hi)| {
-        lo as u128 | ((hi as u128) << 64)
-    });
+    let mut m: [u128; 64] = rows.map(|(lo, hi)| lo as u128 | ((hi as u128) << 64));
     for col in 0..64usize {
         let pivot = m[rank..].iter().position(|row| (row >> col) & 1 == 1);
         match pivot {
@@ -212,9 +214,26 @@ fn main() {
             }
         }
     }
-    println!("    W(0,0) = 256, W(0,v!=0) = 0 = W(a!=0,0) : {}", if ok { "PASS" } else { "FAIL" });
-    println!("    Parseval sum W^2 = {} (expect {}): {}", parseval, 1 << 24, if parseval == (1 << 24) as i64 { "PASS" } else { "FAIL" });
-    println!("    Max |W_S| (nontrivial) = {}  (correlation {}/256 = 2^-{})", max_abs, max_abs, (256.0 / max_abs as f64).log2());
+    println!(
+        "    W(0,0) = 256, W(0,v!=0) = 0 = W(a!=0,0) : {}",
+        if ok { "PASS" } else { "FAIL" }
+    );
+    println!(
+        "    Parseval sum W^2 = {} (expect {}): {}",
+        parseval,
+        1 << 24,
+        if parseval == (1 << 24) as i64 {
+            "PASS"
+        } else {
+            "FAIL"
+        }
+    );
+    println!(
+        "    Max |W_S| (nontrivial) = {}  (correlation {}/256 = 2^-{})",
+        max_abs,
+        max_abs,
+        (256.0 / max_abs as f64).log2()
+    );
     println!("    at (a, b) = ({:#04x}, {:#04x})", max_at.0, max_at.1);
     println!("    |W| distribution:");
     for (k, n) in &hist {
@@ -248,13 +267,25 @@ fn main() {
         .unwrap();
 
     let dt_bijective = dt_is_bijection();
-    println!("    D^T byte-level bijection (rank 64 over GF(2)) : {}", if dt_bijective { "PASS" } else { "FAIL" });
+    println!(
+        "    D^T byte-level bijection (rank 64 over GF(2)) : {}",
+        if dt_bijective { "PASS" } else { "FAIL" }
+    );
     if !dt_bijective {
-        eprintln!("    ERROR: D^T not bijective; the independence argument fails. Aborting c_max claim.");
+        eprintln!(
+            "    ERROR: D^T not bijective; the independence argument fails. Aborting c_max claim."
+        );
         return;
     }
-    println!("    g_max = max_v g(v) = {:.4} at v = {:#04x} (a = {:#04x})", g_max, v_star, g_arg[v_star]);
-    println!("    => c_max(F) = g_max^8 = {:.4e} = 2^-{}", g_max.powi(8), (-g_max.powi(8)).log2());
+    println!(
+        "    g_max = max_v g(v) = {:.4} at v = {:#04x} (a = {:#04x})",
+        g_max, v_star, g_arg[v_star]
+    );
+    println!(
+        "    => c_max(F) = g_max^8 = {:.4e} = 2^-{}",
+        g_max.powi(8),
+        (-g_max.powi(8)).log2()
+    );
     println!();
     println!("    Argument: D^T bijective => t = D^T b spans all 8-byte");
     println!("    vectors as b varies, so the per-byte factors g(t_j) are");
@@ -268,9 +299,19 @@ fn main() {
         for j in 0..8 {
             c *= walsh[a_star[j] as usize][t[j] as usize].abs() as f64 / 256.0;
         }
-        println!("    b* = {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}  (F output mask, bytes 0..7)", b_star[0], b_star[1], b_star[2], b_star[3], b_star[4], b_star[5], b_star[6], b_star[7]);
-        println!("    a* = {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}  (F input mask,  bytes 0..7)", a_star[0], a_star[1], a_star[2], a_star[3], a_star[4], a_star[5], a_star[6], a_star[7]);
-        println!("    verified c_F(a*,b*) = {:.4e} (matches g_max^8 = {:.4e})", c, g_max.powi(8));
+        println!(
+            "    b* = {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}  (F output mask, bytes 0..7)",
+            b_star[0], b_star[1], b_star[2], b_star[3], b_star[4], b_star[5], b_star[6], b_star[7]
+        );
+        println!(
+            "    a* = {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}  (F input mask,  bytes 0..7)",
+            a_star[0], a_star[1], a_star[2], a_star[3], a_star[4], a_star[5], a_star[6], a_star[7]
+        );
+        println!(
+            "    verified c_F(a*,b*) = {:.4e} (matches g_max^8 = {:.4e})",
+            c,
+            g_max.powi(8)
+        );
     }
     println!();
 
@@ -298,7 +339,13 @@ fn main() {
             }
         }
     }
-    println!("    wt(b)=1: max |c_F| = {:.4e} = 2^-{}  (byte {}, value {:#04x})", best1.0, (-best1.0).log2(), best1.1, best1.2);
+    println!(
+        "    wt(b)=1: max |c_F| = {:.4e} = 2^-{}  (byte {}, value {:#04x})",
+        best1.0,
+        (-best1.0).log2(),
+        best1.1,
+        best1.2
+    );
     // wt(b) = 2: bytes i < j, values v1, v2.
     let mut best2: (f64, usize, usize, usize, usize) = (0.0, 0, 0, 0, 0);
     for i in 0..8 {
@@ -323,9 +370,20 @@ fn main() {
             }
         }
     }
-    println!("    wt(b)=2: max |c_F| = {:.4e} = 2^-{}  (bytes {}/{} values {:#04x}/{:#04x})", best2.0, (-best2.0).log2(), best2.1, best2.3, best2.2, best2.4);
+    println!(
+        "    wt(b)=2: max |c_F| = {:.4e} = 2^-{}  (bytes {}/{} values {:#04x}/{:#04x})",
+        best2.0,
+        (-best2.0).log2(),
+        best2.1,
+        best2.3,
+        best2.2,
+        best2.4
+    );
     // wt(b) >= 3: t can have all 8 bytes active -> bound g_max^8.
-    println!("    wt(b)>=3: |c_F| <= g_max^8 = 2^-{} (all 8 bytes can be active)", (-g_max.powi(8)).log2());
+    println!(
+        "    wt(b)>=3: |c_F| <= g_max^8 = 2^-{} (all 8 bytes can be active)",
+        (-g_max.powi(8)).log2()
+    );
     println!();
 
     // ------------------------------------------------------------------
@@ -333,12 +391,27 @@ fn main() {
     // ------------------------------------------------------------------
     println!("[4] 16-round classical linear bound");
     let c16 = g_max.powi(8); // 8 F applications, each fully active
-    println!("    Fully-active trail (8 F's, each |c| <= 2^-{}):", (-g_max.powi(8)).log2());
+    println!(
+        "    Fully-active trail (8 F's, each |c| <= 2^-{}):",
+        (-g_max.powi(8)).log2()
+    );
     println!("      |c| <= 2^-{}", (-c16).log2());
-    println!("      Data complexity N >= c^-2 = 2^{}", (-2.0 * c16).log2());
-    println!("    Even with sparse early rounds (2^-{} + 2^-{} + 14 x 2^-{})", (-best1.0).log2(), (-best2.0).log2(), (-g_max.powi(8)).log2());
+    println!(
+        "      Data complexity N >= c^-2 = 2^{}",
+        (-2.0 * c16).log2()
+    );
+    println!(
+        "    Even with sparse early rounds (2^-{} + 2^-{} + 14 x 2^-{})",
+        (-best1.0).log2(),
+        (-best2.0).log2(),
+        (-g_max.powi(8)).log2()
+    );
     let c16_sparse = best1.0 * best2.0 * g_max.powi(8).powf(6.0);
-    println!("      |c| <= 2^-{}  =>  N >= 2^{}", (-c16_sparse).log2(), (-2.0 * c16_sparse).log2());
+    println!(
+        "      |c| <= 2^-{}  =>  N >= 2^{}",
+        (-c16_sparse).log2(),
+        (-2.0 * c16_sparse).log2()
+    );
     println!();
     println!("    NOTE: these are single-trail bounds. The linear HULL");
     println!("    (sum of 2^(16n - 1) trails) can only weaken the bound");

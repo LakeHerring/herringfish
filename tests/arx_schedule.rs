@@ -2,7 +2,7 @@
 //!
 //! Replaces tests/shake_schedule.rs. No SHAKE/SHA-3 is involved.
 
-use herringfish::cipher::{arx_key_schedule, feistel_arx, BLOCK_SIZE, KEY_SIZE};
+use herringfish::cipher::{BLOCK_SIZE, KEY_SIZE, arx_key_schedule, feistel_arx};
 
 /// Round count of the solo-branch Feistel ARX cipher (16), as opposed
 /// to the SPN cipher's `cipher::NUM_ROUNDS` (14).

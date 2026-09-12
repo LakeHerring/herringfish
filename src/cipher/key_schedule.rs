@@ -3,7 +3,7 @@
 //! 256-bit master key -> 15 round keys of 128 bits each, expanded via
 //! the self-contained ARX key schedule. No SHAKE/SHA-3 is used.
 
-use crate::cipher::{arx_key_schedule, BLOCK_SIZE, KEY_SIZE, NUM_ROUNDS};
+use crate::cipher::{BLOCK_SIZE, KEY_SIZE, NUM_ROUNDS, arx_key_schedule};
 
 pub struct KeySchedule;
 

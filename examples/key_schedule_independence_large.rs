@@ -72,5 +72,7 @@ fn main() {
     );
     println!("Related-key 1-bit diff:");
     println!("  mean = {:.2} bits, std = {:.2}", mean_rel, var_rel.sqrt());
-    println!("Expected ~512 bits total for independent 64-bit round keys (~32 bits per round, 16 rounds)");
+    println!(
+        "Expected ~512 bits total for independent 64-bit round keys (~32 bits per round, 16 rounds)"
+    );
 }

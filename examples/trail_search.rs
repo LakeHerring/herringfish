@@ -21,7 +21,7 @@
 // Round counts are explicit in output. Deterministic (no randomness).
 // Run: cargo run --release --example trail_search
 
-use herringfish::cipher::feistel_arx::{diffuse, HERRINGFISH_SBOX_V02};
+use herringfish::cipher::feistel_arx::{HERRINGFISH_SBOX_V02, diffuse};
 
 // ---------- exact S-box DDT / LAT ----------
 
@@ -124,10 +124,7 @@ fn best_byte_diff(ddt: &[[u16; 256]; 256], dx: u8) -> (u8, f64) {
 
 // ---------- differential trail (greedy best) ----------
 
-fn best_diff_trail(
-    ddt: &[[u16; 256]; 256],
-    rounds: usize,
-) -> (f64, u64, u64, u32) {
+fn best_diff_trail(ddt: &[[u16; 256]; 256], rounds: usize) -> (f64, u64, u64, u32) {
     // returns (prob, final_dL, final_dR, active_bytes_at_end)
     let mut best_p = 0.0f64;
     let mut best_dl = 0u64;
@@ -189,10 +186,7 @@ fn best_diff_trail(
 
 // ---------- linear trail (greedy best bias) ----------
 
-fn best_lin_trail(
-    lat: &[[i16; 256]; 256],
-    rounds: usize,
-) -> (f64, u64, u64) {
+fn best_lin_trail(lat: &[[i16; 256]; 256], rounds: usize) -> (f64, u64, u64) {
     // returns (trail_prob_product, final_GL, final_GR)
     // start: Γ on output = single active byte on L (ciphertext left half), 8×255
     let mut best_p = 2.0f64; // want to minimize product (max bias) -> track min
@@ -270,7 +264,10 @@ fn main() {
     println!("Done.\n");
 
     // sanity: DDT max, LAT max
-    let ddt_max = (1..256).flat_map(|in_| (0..256).map(move |out| ddt[in_][out])).max().unwrap();
+    let ddt_max = (1..256)
+        .flat_map(|in_| (0..256).map(move |out| ddt[in_][out]))
+        .max()
+        .unwrap();
     println!("DDT max (in!=0): {}", ddt_max);
     let lat_max = (1..256)
         .flat_map(|a| (1..256).map(move |b| lat[a][b].abs()))
@@ -285,7 +282,11 @@ fn main() {
     println!("\n=== Exact differential trails (greedy best, start: 1 active byte on R, ΔL0=0) ===");
     for r in [4usize, 6, 8, 12, 14, 16] {
         let (p, dl, dr, act) = best_diff_trail(&ddt, r);
-        let work = if p > 0.0 { (1.0 / p).log2() } else { f64::INFINITY };
+        let work = if p > 0.0 {
+            (1.0 / p).log2()
+        } else {
+            f64::INFINITY
+        };
         println!(
             "  rounds={:<2}  p={:.6e}  work≈2^{:.1}  final ΔL={:016x} ΔR={:016x} (active bytes={})",
             r, p, work, dl, dr, act
@@ -298,11 +299,14 @@ fn main() {
         // p is the product of per-byte minority-direction probs; bias = |2p-1| approx
         // (for a product of many bytes the combined bias is smaller; this is the
         //  product, not the exact combined bias, but it's the standard trail weight)
-        let work = if p > 0.0 && p < 0.5 { -2.0 * p.log2() } else { f64::INFINITY };
+        let work = if p > 0.0 && p < 0.5 {
+            -2.0 * p.log2()
+        } else {
+            f64::INFINITY
+        };
         println!(
             "  rounds={:<2}  trail-prod={:.6e}  est.work≈2^{:.1}  final ΓL={:016x} ΓR={:016x}",
             r, p, work, gl, gr
         );
     }
-
 }
