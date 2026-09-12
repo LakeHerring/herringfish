@@ -441,6 +441,24 @@ pub(crate) fn sbox_layer_difference_keyless(x: u64, dx: u64, sbox: &[u8; 256]) -
     apply_sbox_layer(x, 0, sbox) ^ apply_sbox_layer(x ^ dx, 0, sbox)
 }
 
+/// Compute the S-box layer (byte-wise `S[x ^ k]`) without diffusion.
+///
+/// Public so cryptanalysis tools can build exact multi-round trails without
+/// re-implementing the S-box layer.
+#[inline]
+pub fn sbox_layer(x: u64, k: u64, sbox: &[u8; 256]) -> u64 {
+    apply_sbox_layer(x, k, sbox)
+}
+
+/// Exact F-function (S-box layer + diffusion) for a given round key.
+///
+/// Public so cryptanalysis tools can use the exact round function without
+/// re-implementing it.
+#[inline]
+pub fn f_function_exact(x: u64, k: u64, sbox: &[u8; 256]) -> u64 {
+    f_function(x, k, sbox)
+}
+
 // ============================================================
 // Tests
 // ============================================================
