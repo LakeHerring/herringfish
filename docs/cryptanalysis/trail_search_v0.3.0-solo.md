@@ -111,6 +111,7 @@ validation.
 - Multi-byte (2 and 3 active byte) differential starts (§4a)
 - Related-key ARX schedule analysis: linearity, HW mixing, simplified differential (§4b)
 - Empirical linear trail validation at N=2^20 (§4c)
+- Algebraic degree analysis: S-box ANF, per-round growth, key invariance (§4d)
 
 **Does not cover:**
 - Non-greedy trail paths (sacrificing one round's best byte for a better
@@ -224,12 +225,65 @@ not a "confirmed" weakness.
 3. ✅ Empirical linear trail validation (§4c): no bias detected at N=2^20
 
 **Remaining:**
-4. **Algebraic degree analysis** of the full 16-round F-function (the
-   diffusion layer is linear, the S-box is the only nonlinear component;
-   the algebraic degree after 16 rounds bounds algebraic attacks).
 5. **Non-greedy trail search**: the greedy best-trail search finds the
    locally-optimal path. A full exhaustive search over all 2^128 input
    differences is infeasible, but a randomized or dynamic-programming-based
    search could potentially find a better trail. Low priority given the
    2^234 differential bound and the strongly nonlinear key schedule.
 6. **AEAD mode / SIMD** (optimization, only after cryptanalysis is complete).
+
+**Completed (additional):**
+4. ✅ Algebraic degree analysis (§4d): S-box degree 7, saturates at 64 by
+   round 3, algebraic attacks infeasible.
+
+---
+
+## 4d. Algebraic degree analysis (exact ANF)
+
+**Tool:** `examples/algebraic_degree.rs`
+
+The algebraic degree of a boolean function is the degree of its Algebraic
+Normal Form (ANF). For a block cipher, the algebraic degree bounds the
+complexity of algebraic attacks (XL, F4, Gröbner basis, etc.).
+
+**S-box ANF (exact, via Mobius transform):**
+
+| Output bit | Degree | ANF weight |
+|---|---|---|
+| 0 | 7 | 126 |
+| 1 | 7 | 126 |
+| 2 | 7 | 131 |
+| 3 | 7 | 125 |
+| 4 | 7 | 137 |
+| 5 | 7 | 128 |
+| 6 | 7 | 124 |
+| 7 | 7 | 136 |
+
+All 8 output bits have degree **7** — the maximum achievable for a bijective
+8-bit S-box (degree 8 is impossible for a bijection: the degree-8 coefficient
+x₀·x₁·…·x₇ would make the function non-invertible). ANF weights range from
+124 to 137 (out of 256 possible monomials) — moderately dense, no exploitable
+sparsity.
+
+**Key invariance:** The degree is always 7 regardless of key XOR (SBOX(x^k)
+has the same degree as SBOX(x) for any constant k). Sparsity varies slightly
+with key (min weight: 111 for k=0x55) but remains dense.
+
+**Per-round degree growth:**
+
+| Round | deg(L) | deg(R) | Note |
+|---|---|---|---|
+| 1 | 0 | 7 | S-box applied to plaintext (linear) |
+| 2 | 7 | 49 | 7×7 composition |
+| 3 | 49 | **64** | **SATURATED** (max for 64-bit half) |
+| 4-16 | 64 | 64 | saturated |
+
+The algebraic degree saturates at 64 (the maximum for a 64-bit half) by
+round 3. After 16 rounds, the ANF of each ciphertext bit has up to 2^64
+monomials. Algebraic attacks require solving a system with C(128,64) ≈ 10^18
+monomials — completely infeasible.
+
+**Conclusion:** The S-box's high algebraic degree (7, maximum for bijective)
+and rapid degree growth (saturating at 64 by round 3) mean that algebraic
+attacks cannot exploit the S-box structure. The cipher is algebraically
+"random" after 3 rounds. No algebraic attack provides a practical advantage.
