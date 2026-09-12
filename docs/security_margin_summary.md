@@ -1,5 +1,11 @@
 # Herringfish Concrete Security Margin Quantification – Summary
 
+> **Variant note:** on the `solo-arx` branch the key schedule is the
+> self-contained ARX expansion (v0.3.0-solo.0, see
+> `docs/specification/feistel_arx_v0.2.md` §12-S); all other construction
+> parameters are identical to canonical v0.2. Reduced-round measurements
+> below (4/6/8 rounds) are key-schedule-agnostic at the F-function level.
+
 **Date:** 2026-08-15 (differential/linear re-run on solo-arx: 2026-09-08)
 **Construction:** Feistel ARX v0.2.3
 **Parameters:** 128-bit block, 256-bit master key, 16 rounds (parameterisable 4/6/8/16)

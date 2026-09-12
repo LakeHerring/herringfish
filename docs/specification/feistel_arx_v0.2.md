@@ -1,12 +1,21 @@
 # Herringfish Feistel ARX Prototype v0.2
 
-> [!NOTE]
-> **solo-arx branch:** this document is the canonical v0.2 specification, which
-> uses the SHAKE256-based key schedule. The implementation on the `solo-arx`
-> branch differs only in the key schedule, which is the self-contained ARX
-> expansion documented in `docs/solo_arx_key_schedule.md` (implementation in
-> `src/cipher/arx_key_schedule.rs`). All other sections of this specification
-> apply unchanged to the solo-arx branch.
+> [!IMPORTANT]
+> **Branch variants.** This document defines the **v0.2 family** — a single
+> 128-bit balanced Feistel construction whose round function, S-box, diffusion
+> layer, and serialization are identical across all variants. The variants
+> differ **only in the key schedule**:
+>
+> | Tag / branch | Key schedule | Normative key-schedule section |
+> | ------------ | ------------ | ------------------------------ |
+> | `v0.2.6` (`main`) | SHAKE256 XOF, domain `HERRINGFISH-FEISTEL-KEY` | §12, §13 |
+> | `v0.3.0-solo.0` (`solo-arx`) | Self-contained ARX expansion (rot/XOR/mod-add + frozen constants) | §12-S (below); design rationale in `docs/solo_arx_key_schedule.md`, implementation in `src/cipher/arx_key_schedule.rs` |
+>
+> On the `solo-arx` branch the key schedule in §12-S is normative and §12/
+> §13 (SHAKE256) do not apply. All other sections apply unchanged to both
+> variants. Known-answer vectors for the solo variant are in `docs/tables/`
+> (see §27-S) and are verified against the implementation by
+> `examples/kat_verify.rs`.
 
 **Status:** Experimental research prototype
 **Version:** 0.2
@@ -420,6 +429,10 @@ The final accepted S-box must be recorded as part of the v0.2 test and specifica
 
 # 12. Key Schedule
 
+> **Variant note (solo-arx / v0.3.0-solo):** on the `solo-arx` branch this
+> SHAKE256 key schedule is replaced by the self-contained ARX expansion in
+> §12-S below. §12 is normative only for the canonical v0.2.6 (`main`) line.
+
 The master key is 256 bits.
 
 Sixteen 64-bit round keys are required:
@@ -451,7 +464,69 @@ The exact encoding of the domain string and master key must be normative.
 
 ---
 
+## 12-S. Solo-ARX Key Schedule (normative on `solo-arx` / v0.3.0-solo)
+
+This section is **normative only on the `solo-arx` branch** (variant tag
+`v0.3.0-solo.0`). It replaces the SHAKE256 key schedule of §12 and removes all
+SHAKE/SHA-3/Keccak dependencies. The design rationale, constant provenance, and
+measured properties are in `docs/solo_arx_key_schedule.md`; the reference
+implementation is `src/cipher/arx_key_schedule.rs`.
+
+**State.** The 256-bit master key `K` is split into four little-endian
+64-bit words `(w0, w1, w2, w3)`. All arithmetic is modulo `2^64`.
+
+**Constants.** `GOLDEN64 = 0x9E37_79B9_7F4A_7C15 = floor(2^64 / φ)`. The
+frozen constant array is `C[i] = GOLDEN64 · (2i+1) mod 2^64` for
+`i = 0..15` (odd multipliers). The multiplication occurs at compile time only
+(Rust `const` evaluation); the runtime schedule contains no multiplication —
+only rotations, XOR, and modular addition.
+
+**Round-key derivation.** For each round index `i ∈ 0..rounds`, with global
+step counter `g = 2i`:
+
+1. **Two `full_mix` iterations.** In each, every word `wj` is replaced by
+   `wj + (rot(wj-1, r1) ⊕ rot(wj+1, r2) ⊕ rot(wj+2, r3)) + C[(g+o) mod 16]`,
+   where the three rotated neighbours use 12 distinct rotation amounts
+   (r1, r2, r3) per word position, and the constant offsets are
+   `o ∈ {0, 5, 9, 14}` for the four words. (Exact per-word rotation amounts
+   are in the reference implementation; they are frozen.)
+2. **One bijective rotate-right XOR network:**
+
+   ```text
+   m0 = w0 ⊕ rotr(w1, 21) ⊕ rotr(w3, 33)
+   m1 = w1 ⊕ rotr(w2, 25) ⊕ rotr(w0, 37)
+   m2 = w2 ⊕ rotr(w3, 41) ⊕ rotr(w1, 17)
+   m3 = w3 ⊕ rotr(w0, 53) ⊕ rotr(w2, 13)
+   ```
+
+   The rotate-**right** network is bijective over GF(2) (rank 256/256, verified
+   by the `xor_net_is_bijective` test); the rotate-left variant has rank 254
+   and is not used.
+3. `round_key[i] = m0 ⊕ m1 ⊕ m2 ⊕ m3` (64 bits).
+
+Sixteen 64-bit round keys (`16 × 64 = 1024` bits) are derived for the full
+construction; the first `k` of a longer derivation are unchanged when fewer
+rounds are requested (streaming/prefix property, `tests/arx_schedule.rs`).
+
+The full constant array and per-word `full_mix` rotation amounts are normative
+as encoded in `src/cipher/arx_key_schedule.rs`; any change to them is a new
+variant version.
+
+### Solo-ARX KAT set
+
+Known-answer vectors for the solo variant are in `docs/tables/`:
+`kat_vectors_v02.txt` (16 rounds), `kat_reduced_all.txt` (4/6/8 rounds),
+`kat_reduced_rounds_v02.txt` (4/6/8 rounds), and `kat_expanded_v02.txt`
+(16 rounds). They are verified against the implementation by
+`examples/kat_verify.rs` (exit 0 = all match).
+
+---
+
 # 13. Domain Separation
+
+> **Variant note:** this section (SHAKE domain strings) is normative only for
+> the canonical v0.2.6 (`main`) line. The solo-arx key schedule of §12-S has no
+> domain strings.
 
 Herringfish v0.2 uses separate domain strings for logically distinct SHAKE operations.
 
@@ -1002,3 +1077,21 @@ Changes to any normative parameter constitute a new version. The current specifi
 ## Herringfish Feistel ARX v0.2
 
 **Design it. Implement it. Measure it. Attack it. Improve it.**
+
+---
+
+# 27-S. Solo-Arx Freeze Summary (v0.3.0-solo.0)
+
+The `solo-arx` variant is frozen for research evaluation with the following
+normative parameters:
+
+* Block size: 128 bits
+* Master key size: 256 bits
+* Rounds: 16 (reduced-round variants: 4, 6, 8 for analysis)
+* S-box: `HERRINGFISH_SBOX_V02`, affine parameters `a = 0x11`, `b = 0x71`, counter 0 (identical to v0.2)
+* Key schedule: self-contained ARX expansion per §12-S (no SHAKE/SHA-3)
+* Serialization: little-endian 64-bit halves for block and round keys as defined in Section 26 (identical to v0.2)
+* Known-answer test vectors: `docs/tables/kat_vectors_v02.txt`, `kat_reduced_all.txt`, `kat_reduced_rounds_v02.txt`, `kat_expanded_v02.txt`
+* KAT verification: `examples/kat_verify.rs`
+
+Changes to any normative parameter constitute a new variant version. The solo-arx variant is experimental and must not be used for production security.
