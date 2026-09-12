@@ -2,6 +2,7 @@
 
 #![allow(clippy::needless_range_loop)]
 
+pub mod aead;
 pub mod arx_key_schedule;
 pub mod feistel_arx;
 pub mod key_schedule;

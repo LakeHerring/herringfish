@@ -28,7 +28,7 @@
 //
 // Run: cargo run --release --example multi_byte_diff
 
-use herringfish::cipher::feistel_arx::{diffuse, HERRINGFISH_SBOX_V02};
+use herringfish::cipher::feistel_arx::{HERRINGFISH_SBOX_V02, diffuse};
 
 // ---------- DDT ----------
 
@@ -108,10 +108,7 @@ fn propagate_diff(
         }
     }
     let p = 2f64.powf(log_p);
-    let act = byte_arr(&dr)
-        .iter()
-        .filter(|&&b| b != 0)
-        .count() as u32
+    let act = byte_arr(&dr).iter().filter(|&&b| b != 0).count() as u32
         + byte_arr(&dl).iter().filter(|&&b| b != 0).count() as u32;
     (p, dl, dr, act)
 }
@@ -232,19 +229,39 @@ fn main() {
 
         // Verdict
         if best_2b_p > best_single_p * 2.0 {
-            println!("           ** 2-byte starts find a SIGNIFICANTLY BETTER trail than single-byte");
-            println!("              (ratio = {:.1}×). The single-byte bound is NOT the tightest.", best_2b_p / best_single_p);
-            println!("              Updated security margin: work ≈ 2^{:.1}", two_work);
+            println!(
+                "           ** 2-byte starts find a SIGNIFICANTLY BETTER trail than single-byte"
+            );
+            println!(
+                "              (ratio = {:.1}×). The single-byte bound is NOT the tightest.",
+                best_2b_p / best_single_p
+            );
+            println!(
+                "              Updated security margin: work ≈ 2^{:.1}",
+                two_work
+            );
         } else if best_2b_p > best_single_p {
-            println!("           2-byte best is marginally better (ratio = {:.2}×).", best_2b_p / best_single_p);
+            println!(
+                "           2-byte best is marginally better (ratio = {:.2}×).",
+                best_2b_p / best_single_p
+            );
         } else {
-            println!("           Single-byte starts remain the best (2-byte does not improve the bound).");
+            println!(
+                "           Single-byte starts remain the best (2-byte does not improve the bound)."
+            );
         }
         if best_3b_p > best_2b_p * 2.0 {
             println!("           ** 3-byte subset finds a BETTER trail than 2-byte best.");
         }
 
-        let _ = (best_single_dl, best_single_dr, best_2b_dl, best_2b_dr, best_3b_dl, best_3b_dr);
+        let _ = (
+            best_single_dl,
+            best_single_dr,
+            best_2b_dl,
+            best_2b_dr,
+            best_3b_dl,
+            best_3b_dr,
+        );
         println!();
     }
 

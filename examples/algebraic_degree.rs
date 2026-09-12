@@ -125,7 +125,10 @@ fn sbox_degree_analysis(sbox: &[u8; 256]) {
     }
 
     println!("\n  Max degree across all 8 output bits: {}", max_deg);
-    println!("  Max ANF weight: {} (out of 256 possible monomials)", max_weight);
+    println!(
+        "  Max ANF weight: {} (out of 256 possible monomials)",
+        max_weight
+    );
 
     // Security implications
     // Note: a bijective S-box CANNOT have degree 8 (the degree-8 coefficient
@@ -133,15 +136,24 @@ fn sbox_degree_analysis(sbox: &[u8; 256]) {
     // maximum achievable for a bijective 8-bit S-box and is equivalent to
     // "full" for cryptographic purposes.
     if max_deg == 8 || max_deg == 7 {
-        println!("\n  CONCLUSION: S-box has degree {} (maximum for a bijective 8-bit S-box).", max_deg);
+        println!(
+            "\n  CONCLUSION: S-box has degree {} (maximum for a bijective 8-bit S-box).",
+            max_deg
+        );
         println!("  (Degree 8 is impossible for a bijection; 7 is the ceiling.)");
         println!("  The S-box is algebraically 'random' — no low-degree");
         println!("  structure that algebraic attacks can exploit.");
     } else if max_deg >= 6 {
-        println!("\n  CONCLUSION: S-box has HIGH algebraic degree ({}).", max_deg);
+        println!(
+            "\n  CONCLUSION: S-box has HIGH algebraic degree ({}).",
+            max_deg
+        );
         println!("  This provides strong resistance to algebraic attacks.");
     } else {
-        println!("\n  ** WARNING: S-box has LOW algebraic degree ({}).", max_deg);
+        println!(
+            "\n  ** WARNING: S-box has LOW algebraic degree ({}).",
+            max_deg
+        );
         println!("  This is a structural weakness that algebraic attacks");
         println!("  (XL, F4, etc.) can exploit. The cipher is vulnerable.");
     }
@@ -260,14 +272,20 @@ fn degree_growth_analysis(sbox_deg: usize, rounds: usize) {
 
         println!(
             "  {:>5} | {:>8} | {:>8} |  {}",
-            round + 1, new_deg_l, new_deg_r, note
+            round + 1,
+            new_deg_l,
+            new_deg_r,
+            note
         );
 
         deg_l = new_deg_l;
         deg_r = new_deg_r;
     }
 
-    println!("\n  Final degree after {} rounds: L={}, R={}", rounds, deg_l, deg_r);
+    println!(
+        "\n  Final degree after {} rounds: L={}, R={}",
+        rounds, deg_l, deg_r
+    );
 
     let max_final = deg_l.max(deg_r);
     if max_final >= 64 {
@@ -278,12 +296,22 @@ fn degree_growth_analysis(sbox_deg: usize, rounds: usize) {
         println!("  The cipher is algebraically 'random' after 3 rounds.");
         println!("  No algebraic attack can exploit the S-box structure.");
     } else if max_final >= 16 {
-        println!("\n  CONCLUSION: Algebraic degree reaches {} after {} rounds.", max_final, rounds);
+        println!(
+            "\n  CONCLUSION: Algebraic degree reaches {} after {} rounds.",
+            max_final, rounds
+        );
         println!("  This provides strong resistance to algebraic attacks.");
-        println!("  The number of monomials is C(128, {}) ≈ 10^{}, which is", max_final, (128f64 * 0.15).floor() as i32);
+        println!(
+            "  The number of monomials is C(128, {}) ≈ 10^{}, which is",
+            max_final,
+            (128f64 * 0.15).floor() as i32
+        );
         println!("  infeasible for standard algebraic attack methods.");
     } else {
-        println!("\n  ** WARNING: Algebraic degree is only {} after {} rounds.", max_final, rounds);
+        println!(
+            "\n  ** WARNING: Algebraic degree is only {} after {} rounds.",
+            max_final, rounds
+        );
         println!("  This may be vulnerable to algebraic attacks.");
     }
     println!();
@@ -432,7 +460,10 @@ fn main() {
 
     // Final summary
     println!("=== Final summary ===\n");
-    println!("  S-box degree:          {} (max for bijective 8-bit S-box)", max_sbox_deg);
+    println!(
+        "  S-box degree:          {} (max for bijective 8-bit S-box)",
+        max_sbox_deg
+    );
     println!("  Degree saturation:     Round 3 (deg=64, max for 64-bit half)");
     println!("  16-round degree:       64 (saturated)");
     println!("  ANF monomial count:    C(128, 64) ≈ 10^18 (infeasible)");

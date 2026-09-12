@@ -107,10 +107,7 @@ fn byte_lat_prob_fixed(lat: &[[i16; 256]; 256], a: u8, b: u8) -> f64 {
     }
 }
 
-fn best_lin_trail(
-    lat: &[[i16; 256]; 256],
-    rounds: usize,
-) -> (f64, u64, u64, u64, u64) {
+fn best_lin_trail(lat: &[[i16; 256]; 256], rounds: usize) -> (f64, u64, u64, u64, u64) {
     // returns (trail_product, gl_pt, gr_pt, gl_ct, gr_ct)
     // start: (gl_pt, gr_pt) = (single active byte on L, 0)
     // after R rounds: (gl_ct, gr_ct) = ciphertext-side masks
@@ -261,7 +258,9 @@ fn main() {
     // via a simple LCG to avoid a rand dependency.
     let mut state: u64 = 0x1234567890abcdef;
     fn lcg(state: &mut u64) -> u64 {
-        *state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        *state = state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         *state >> 33
     }
 
@@ -343,19 +342,31 @@ fn main() {
         println!("  The observed frequency is consistent with the null hypothesis.");
         println!("  This does NOT refute the trail — the predicted combined bias");
         println!("  (~1e-12) is far below the detection threshold at this sample size.");
-        println!("  Detection threshold at 95% confidence: |ε| > {:.2e}", 1.96 * std_err * 2.0);
+        println!(
+            "  Detection threshold at 95% confidence: |ε| > {:.2e}",
+            1.96 * std_err * 2.0
+        );
         println!();
         println!("  CONCLUSION: The 2^75.7 work figure stands as a THEORETICAL bound.");
         println!("  It would require ~2^75.7 known plaintext/ciphertext pairs to exploit.");
         println!("  Whether this is a practical threat depends on the data-availability");
-        println!("  model. At N = 2^{}, no statistical evidence of bias was found.", total_n.trailing_zeros());
+        println!(
+            "  model. At N = 2^{}, no statistical evidence of bias was found.",
+            total_n.trailing_zeros()
+        );
     }
 
     // Also report the per-round breakdown of the trail weight for context.
     println!("\n=== Trail weight context ===");
     println!("  Per-round LAT product (16 rounds) = {:.6e}", trail_prod);
-    println!("  (The product {:.2e} is the per-round LAT product, not the actual full-cipher bias.)", trail_prod);
-    println!("  Distinguisher work ≈ 2^(−2·log₂(product)) = 2^{:.1}", est_work);
+    println!(
+        "  (The product {:.2e} is the per-round LAT product, not the actual full-cipher bias.)",
+        trail_prod
+    );
+    println!(
+        "  Distinguisher work ≈ 2^(−2·log₂(product)) = 2^{:.1}",
+        est_work
+    );
     println!();
     println!("  NOTE: The trail product is NOT the actual combined bias of the");
     println!("  full-cipher approximation. The actual bias ε of φ(P,C) for the");

@@ -54,7 +54,7 @@
 // Run: cargo run --release --example related_key_arx
 
 use herringfish::cipher::arx_key_schedule::{expand, split_key_words};
-use herringfish::cipher::feistel_arx::{diffuse, HERRINGFISH_SBOX_V02};
+use herringfish::cipher::feistel_arx::{HERRINGFISH_SBOX_V02, diffuse};
 
 const NUM_ROUNDS: usize = 16;
 
@@ -100,7 +100,10 @@ fn linearity_gap() {
 
     // For each pair of single-bit ΔK, check linearity
     let total_pairs = single_bit_dks.len() * (single_bit_dks.len() - 1) / 2;
-    println!("Testing {} pairs of single-bit key differences...", total_pairs);
+    println!(
+        "Testing {} pairs of single-bit key differences...",
+        total_pairs
+    );
 
     let mut linear_count = 0usize;
     let mut total_tested = 0usize;
@@ -159,8 +162,16 @@ fn linearity_gap() {
 
     let linear_frac = linear_count as f64 / total_tested as f64;
     println!("  Pairs tested:      {}", total_tested);
-    println!("  Linear (affine):   {} / {} ({:.4})", linear_count, total_tested, linear_frac);
-    println!("  Nonlinear:         {} / {} ({:.4})", total_tested - linear_count, total_tested, 1.0 - linear_frac);
+    println!(
+        "  Linear (affine):   {} / {} ({:.4})",
+        linear_count, total_tested, linear_frac
+    );
+    println!(
+        "  Nonlinear:         {} / {} ({:.4})",
+        total_tested - linear_count,
+        total_tested,
+        1.0 - linear_frac
+    );
     println!("  Max round index with gap: round {}", max_gap_round);
     println!();
 
@@ -299,8 +310,14 @@ fn round_key_independence() {
         }
         sum / (NUM_ROUNDS - 1) as f64
     };
-    println!("  Round 0 mean HW = {:.2} (one mixer step, expected to be slightly lower)", round0_mean);
-    println!("  Rounds 1-15 mean HW = {:.2} (fully mixed, near-random 32)", other_means);
+    println!(
+        "  Round 0 mean HW = {:.2} (one mixer step, expected to be slightly lower)",
+        round0_mean
+    );
+    println!(
+        "  Rounds 1-15 mean HW = {:.2} (fully mixed, near-random 32)",
+        other_means
+    );
     println!();
 
     if round0_mean < 25.0 && other_means < 28.0 {
@@ -308,7 +325,10 @@ fn round_key_independence() {
         println!("  Related-key differentials may have a practical advantage.");
     } else {
         println!("  CONCLUSION: Round-key mixing is ADEQUATE.");
-        println!("  Round 0 has slightly lower HW ({:.1}) than rounds 1-15 ({:.1}),", round0_mean, other_means);
+        println!(
+            "  Round 0 has slightly lower HW ({:.1}) than rounds 1-15 ({:.1}),",
+            round0_mean, other_means
+        );
         println!("  which is expected from the one-step mixing. No systematic");
         println!("  weakness found for 1-4 bit key differences.");
     }
@@ -319,12 +339,8 @@ fn round_key_independence() {
 
 fn related_key_differential(ddt: &[[u16; 256]; 256]) {
     println!("=== 3. Related-key differential (simplified) ===");
-    println!(
-        "For each related-key pair, compute Δrk and check whether it\n"
-    );
-    println!(
-        "introduces a systematic bias in the S-box layer input difference.\n"
-    );
+    println!("For each related-key pair, compute Δrk and check whether it\n");
+    println!("introduces a systematic bias in the S-box layer input difference.\n");
 
     // In a standard single-key Feistel differential, the S-box input
     // difference is ΔR (the key cancels because both plaintexts use
@@ -372,7 +388,12 @@ fn related_key_differential(ddt: &[[u16; 256]; 256]) {
     println!("  Round |  Δrk HW  |  Δrk value");
     for r in 0..NUM_ROUNDS {
         let delta = related_rk[r] ^ base_rk[r];
-        println!("  {:<5} | {:>6}  |  0x{:016x}", r, delta.count_ones(), delta);
+        println!(
+            "  {:<5} | {:>6}  |  0x{:016x}",
+            r,
+            delta.count_ones(),
+            delta
+        );
     }
 
     // Now: for a specific single-byte differential start (ΔR0 = 0x01 at byte 0),
@@ -383,9 +404,7 @@ fn related_key_differential(ddt: &[[u16; 256]; 256]) {
     // Related-key: DDT[0x01 ^ Δrk_byte][dy] for each active byte
 
     println!("\n  Trail comparison (single-byte start ΔR0=0x01 at byte 0):");
-    println!(
-        "  Round |  Δrk byte0 |  Single-key DDT max  |  Related-key DDT max"
-    );
+    println!("  Round |  Δrk byte0 |  Single-key DDT max  |  Related-key DDT max");
 
     let mut single_key_log_p = 0.0f64;
     let mut related_key_log_p = 0.0f64;
@@ -420,18 +439,32 @@ fn related_key_differential(ddt: &[[u16; 256]; 256]) {
     let single_p = 2f64.powf(single_key_log_p);
     let related_p = 2f64.powf(related_key_log_p);
 
-    println!("\n  Single-key trail prob:  {:.6e}  (work ≈ 2^{:.1})", single_p, (1.0 / single_p).log2());
-    println!("  Related-key trail prob: {:.6e}  (work ≈ 2^{:.1})", related_p, (1.0 / related_p).log2());
+    println!(
+        "\n  Single-key trail prob:  {:.6e}  (work ≈ 2^{:.1})",
+        single_p,
+        (1.0 / single_p).log2()
+    );
+    println!(
+        "  Related-key trail prob: {:.6e}  (work ≈ 2^{:.1})",
+        related_p,
+        (1.0 / related_p).log2()
+    );
 
     if related_p > single_p * 10.0 {
-        println!("\n  Related-key trail is better in this simplified model (ratio = {:.1}×).", related_p / single_p);
+        println!(
+            "\n  Related-key trail is better in this simplified model (ratio = {:.1}×).",
+            related_p / single_p
+        );
         println!("  NOTE: This simplified analysis tracks only byte 0 of the DDT lookup.");
         println!("  A zero Δrk byte (Δinput = 0) gives DDT max = 256/256 = 1.0, which");
         println!("  is a coincidence of the 1-byte model, not a full-cipher property.");
         println!("  In the full 8-byte Feistel state, the trail continues through other");
         println!("  bytes with normal DDT probabilities. This is NOT a practical attack.");
     } else if related_p > single_p {
-        println!("\n  Related-key trail is marginally better (ratio = {:.2}×).", related_p / single_p);
+        println!(
+            "\n  Related-key trail is marginally better (ratio = {:.2}×).",
+            related_p / single_p
+        );
         println!("  Not a practical concern.");
     } else {
         println!("\n  Related-key trail is WORSE than single-key.");
@@ -486,9 +519,7 @@ fn related_key_differential(ddt: &[[u16; 256]; 256]) {
     let best_bit = best_related_dk[best_byte].trailing_zeros();
     println!(
         "  Best 1-bit ΔK: byte {} bit {} (0x{:02x})",
-        best_byte,
-        best_bit,
-        best_related_dk[best_byte]
+        best_byte, best_bit, best_related_dk[best_byte]
     );
     println!();
 
