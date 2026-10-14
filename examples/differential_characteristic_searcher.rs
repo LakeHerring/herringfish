@@ -20,6 +20,9 @@
 //! A hull requires summing the probabilities of multiple characteristics
 //! having the same input/output differential pair.
 
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
+
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 
 use std::cmp::Ordering;
@@ -467,10 +470,10 @@ fn main() {
 
                 // Keep only the best path to an identical
                 // differential state.
-                if let Some(&old_weight) = visited.get(&key) {
-                    if old_weight <= new_weight {
-                        continue;
-                    }
+                if let Some(&old_weight) = visited.get(&key)
+                    && old_weight <= new_weight
+                {
+                    continue;
                 }
 
                 visited.insert(key, new_weight);

@@ -29,6 +29,9 @@
 //! Instead, F transitions are generated in bounded best-first order
 //! and inserted directly into the next beam.
 
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
+
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 
 use std::cmp::Ordering;
@@ -597,10 +600,10 @@ fn main() {
 
                 let key = (new_dl, new_dr);
 
-                if let Some(old_weight) = best_seen.get(&key) {
-                    if *old_weight <= new_weight {
-                        continue;
-                    }
+                if let Some(old_weight) = best_seen.get(&key)
+                    && *old_weight <= new_weight
+                {
+                    continue;
                 }
 
                 best_seen.insert(key, new_weight);

@@ -21,6 +21,9 @@
 // Round counts are explicit in output. Deterministic (no randomness).
 // Run: cargo run --release --example trail_search
 
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
+
 use herringfish::cipher::feistel_arx::{HERRINGFISH_SBOX_V02, diffuse};
 
 // ---------- exact S-box DDT / LAT ----------

@@ -1,3 +1,6 @@
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
+
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use herringfish::cipher::feistel_arx::FeistelArx;
 #[cfg(target_arch = "x86_64")]

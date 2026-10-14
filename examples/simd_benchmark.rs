@@ -1,3 +1,6 @@
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
+
 use herringfish::cipher::feistel_arx::{BLOCK_SIZE, FeistelArx};
 use herringfish::simd::avx2;
 use std::time::Instant;
@@ -31,10 +34,8 @@ fn main() {
     {
         use std::arch::x86_64::*;
         let mut data = [0u8; 32]; // Two blocks
-        for i in 0..16 {
-            data[i] = block[i];
-            data[i + 16] = block[i];
-        }
+        data[..16].copy_from_slice(&block);
+        data[16..].copy_from_slice(&block);
 
         let start_simd = Instant::now();
         for _ in 0..iterations {

@@ -48,12 +48,12 @@
 // ------------------------------------------------------------
 //
 // For exactly two Feistel rounds, let:
-////     input  masks = (a, b)
+//     input  masks = (a, b)
 //     output masks = (A, B)
 //
 // After changing variables from (L0, R0) to (R0, R1), the complete
 // two-round correlation factorizes:
-////     C_2
+//     C_2
 //       = C_F(a XOR A, B)
 //         * C_F(b XOR B, a)
 //
@@ -78,6 +78,9 @@
 //     2. the independent two-round oracle agrees exactly.
 //
 // A disagreement causes a non-zero process exit in sanity-check mode.
+
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
 
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 

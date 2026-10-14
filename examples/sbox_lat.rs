@@ -43,6 +43,9 @@
 //!   - 16-round bound: |c| <= c_max^8  (8 F applications), i.e.
 //!     data complexity >= 2^(-16 log2 c_max)
 
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
+
 use herringfish::cipher::feistel_arx::HERRINGFISH_SBOX_V02;
 
 type Walsh = [[i32; 256]; 256];
@@ -109,17 +112,14 @@ fn dt_is_bijection() -> bool {
     let mut m: [u128; 64] = rows.map(|(lo, hi)| lo as u128 | ((hi as u128) << 64));
     for col in 0..64usize {
         let pivot = m[rank..].iter().position(|row| (row >> col) & 1 == 1);
-        match pivot {
-            Some(p) => {
-                m.swap(rank, rank + p);
-                for i in 0..64 {
-                    if i != rank && ((m[i] >> col) & 1) == 1 {
-                        m[i] ^= m[rank];
-                    }
+        if let Some(p) = pivot {
+            m.swap(rank, rank + p);
+            for i in 0..64 {
+                if i != rank && ((m[i] >> col) & 1) == 1 {
+                    m[i] ^= m[rank];
                 }
-                rank += 1;
             }
-            None => {}
+            rank += 1;
         }
     }
     rank == 64
@@ -163,7 +163,7 @@ fn dt_solve(y: [u8; 8]) -> Option<[u8; 8]> {
     let mut x_bits = [0u8; 8];
     for i in 0..64 {
         // find the set bit in rows[i].0
-        let col = (rows[i].0 & !0u128).trailing_zeros() as usize;
+        let col = rows[i].0.trailing_zeros() as usize;
         if (rows[i].1 >> i) & 1 == 1 {
             x_bits[col / 8] |= 1u8 << (col % 8);
         }

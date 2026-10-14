@@ -53,6 +53,9 @@
 //
 // Run: cargo run --release --example related_key_arx
 
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
+
 use herringfish::cipher::arx_key_schedule::{expand, split_key_words};
 use herringfish::cipher::feistel_arx::{HERRINGFISH_SBOX_V02, diffuse};
 
@@ -410,7 +413,7 @@ fn related_key_differential(ddt: &[[u16; 256]; 256]) {
     let mut related_key_log_p = 0.0f64;
 
     for r in 0..NUM_ROUNDS {
-        let drk_b0 = (base_rk[r] ^ related_rk[r]) as u8 & 0xff; // byte 0 of Δrk
+        let drk_b0 = (base_rk[r] ^ related_rk[r]) as u8; // byte 0 of Δrk
 
         // Single-key: DDT[0x01]
         let single_max = *ddt[0x01].iter().max().unwrap();
@@ -494,7 +497,7 @@ fn related_key_differential(ddt: &[[u16; 256]; 256]) {
 
             let mut log_p = 0.0f64;
             for r in 0..NUM_ROUNDS {
-                let drk_b0 = ((base_rk[r] ^ related_rk[r]) as u8) & 0xff;
+                let drk_b0 = (base_rk[r] ^ related_rk[r]) as u8;
                 let related_input = 0x01u8 ^ drk_b0;
                 let max_c: u16 = if related_input == 0 {
                     256

@@ -49,6 +49,9 @@
 //
 // Run: cargo run --release --example linear_bias_test
 
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
+
 use herringfish::cipher::feistel_arx::{FeistelArx, HERRINGFISH_SBOX_V02};
 
 const ROUNDS: usize = 16;

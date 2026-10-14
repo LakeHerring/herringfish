@@ -42,6 +42,9 @@
 //
 // We compute this exactly for each output bit of the 8-bit S-box.
 
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
+
 fn sbox_anf(sbox: &[u8; 256], out_bit: usize) -> (usize, u32) {
     // Returns (degree, num_nonzero_coefficients)
     //

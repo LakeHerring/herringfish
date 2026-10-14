@@ -36,6 +36,9 @@
 //!     cargo run --release --example differential_round3_optimizer -- 37 \
 //!         --beam 2000000 --f-max 32768 --result-limit 10000
 
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
+
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::env;

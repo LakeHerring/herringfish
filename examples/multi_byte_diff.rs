@@ -28,6 +28,9 @@
 //
 // Run: cargo run --release --example multi_byte_diff
 
+// Index loops mirror the math (masks, byte positions); same allow as src/cipher/mod.rs.
+#![allow(clippy::needless_range_loop)]
+
 use herringfish::cipher::feistel_arx::{HERRINGFISH_SBOX_V02, diffuse};
 
 // ---------- DDT ----------
