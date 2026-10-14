@@ -113,9 +113,12 @@ pub unsafe fn encrypt_blocks_avx2_unchecked(blocks: &mut [[u8; 16]], round_keys:
 
 /// S-box layer on a 256-bit register: each 8-bit lane is looked up
 /// in the S-box table via gather.
+///
+/// # Safety
+/// Caller must ensure the CPU supports AVX2 (see [`avx2_available`]).
 #[cfg(target_arch = "x86_64")]
 #[inline]
-unsafe fn sbox_layer_avx2(input: __m256i) -> __m256i {
+pub unsafe fn sbox_layer_avx2(input: __m256i) -> __m256i {
     // Store to temp, gather byte-by-byte from S-box table
     let mut in_bytes = [0u8; 32];
     unsafe {

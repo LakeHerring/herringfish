@@ -40,7 +40,7 @@ fn main() {
         for _ in 0..iterations {
             unsafe {
                 let block_vec = _mm256_loadu_si256(data.as_ptr() as *const __m256i);
-                let diffused = avx2::diffusion_avx2(block_vec);
+                let diffused = avx2::diffuse_avx2(block_vec);
                 _mm256_storeu_si256(data.as_mut_ptr() as *mut __m256i, diffused);
             }
         }

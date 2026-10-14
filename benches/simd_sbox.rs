@@ -23,8 +23,8 @@ unsafe fn avx2_sbox_gather(data: &[u8], table: &[u8; 256], out: &mut [u8]) {
         let mut i = 0;
         while i + 32 <= data.len() {
             let input_vec = _mm256_loadu_si256(data.as_ptr().add(i) as *const __m256i);
-            // Prototype gather using src/simd/avx2
-            let gathered = herringfish::simd::avx2::sbox_gather_avx2(input_vec, table);
+            // Prototype S-box layer in src/simd/avx2 (uses HERRINGFISH_SBOX_V02)
+            let gathered = herringfish::simd::avx2::sbox_layer_avx2(input_vec);
             _mm256_storeu_si256(out.as_mut_ptr().add(i) as *mut __m256i, gathered);
             i += 32;
         }

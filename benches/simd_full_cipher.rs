@@ -8,7 +8,7 @@ unsafe fn avx2_diffusion_helper(data: &mut [u8]) {
     let mut i = 0;
     while i + 32 <= data.len() {
         let in_vec = unsafe { _mm256_loadu_si256(data.as_ptr().add(i) as *const __m256i) };
-        let out_vec = herringfish::simd::avx2::diffusion_avx2(in_vec);
+        let out_vec = herringfish::simd::avx2::diffuse_avx2(in_vec);
         unsafe {
             _mm256_storeu_si256(data.as_mut_ptr().add(i) as *mut __m256i, out_vec);
         }
