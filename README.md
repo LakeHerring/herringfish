@@ -117,7 +117,7 @@ Freezing parameters for an evaluation version does not imply that the design has
 | Key schedule             | ARX expansion (self-contained, no external primitives) |
 | Reference implementation | Rust                                                |
 | SIMD                     | Planned                                             |
-| AEAD                     | Planned                                             |
+| AEAD                     | Experimental – solo-arx AEAD v0.1 (CTR + GHASH); security not analysed |
 | Security goal            | Investigate a substantial classical security margin |
 
 These are **design parameters and research targets**, not established security guarantees.
@@ -146,7 +146,7 @@ Herringfish is **not** currently:
 * Independently cryptanalyzed.
 * Proven secure.
 * A replacement for AES or ChaCha20.
-* An AEAD scheme.
+* A vetted AEAD scheme (an experimental AEAD mode exists; its security has not been analysed).
 * Guaranteed to provide 256-bit security merely because the key is 256 bits.
 
 Finding a weakness in Herringfish is considered a **successful research result**.
@@ -892,7 +892,7 @@ This metadata block is the minimum recommended for published results. Actual exp
 | SIMD implementation              | Partial – AVX2 diffusion benchmark, example gated for x86_64 |
 | Performance benchmarks           | Preliminary – S-box CT, AVX2 diffusion |
 
-| AEAD construction                | Not implemented                     |
+| AEAD construction                | Implemented (experimental, solo-arx AEAD v0.1) – GHASH tested against independent vectors; security not analysed |
 | Independent cryptanalysis        | Not yet performed                   |
 | Production use                   | **Not recommended**                 |
 
@@ -938,6 +938,7 @@ Completed
  * [x] Formal specification — v0.2 draft (S-box and round function frozen)
  * [x] Normative serialization / endianness finalized — Section 26/27 in docs/specification/feistel_arx_v0.2.md
  * [x] Full-cipher statistical analysis (1M sample avalanche/SAC verified)
+ * [x] Experimental AEAD mode (solo-arx AEAD v0.1, CTR + GHASH) — src/cipher/aead.rs, docs/specification/solo_arx_aead_v0.1.md
 
 In Progress / Active Development
 [~] Full-cipher cryptanalysis (8-round 4+4 hull active, trail search in progress)
@@ -945,7 +946,7 @@ In Progress / Active Development
 [~] Performance benchmarks (Preliminary: S-box CT, AVX2 diffusion; systematic suite pending)
 
 Pending
-* [ ] AEAD construction
+* [ ] AEAD cryptanalysis (confidentiality, integrity, nonce misuse; none performed)
 * [ ] Independent cryptanalysis
 * [ ] Independent implementation
 * [ ] Public security review
