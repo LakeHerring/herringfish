@@ -144,5 +144,9 @@ this branch uses "ARX" consistently in the former sense.
   words from the same expansion; their independence is covered by the
   pairwise-Hamming measurements above, not by a separate analysis.
 * The KAT tables under `docs/tables/` were regenerated for this branch;
-  ciphertexts differ from the canonical SHAKE-based v0.2.6 vectors (e.g.
-  zero key / zero plaintext → `aa354bd490644e772f4ce31005156dc5`).
+  ciphertexts differ from the canonical SHAKE-based v0.2.6 vectors. Example,
+  zero key / zero plaintext: `6a9dc7f139a2599780596d8f2f9ca7bc` on the
+  SHAKE-based `main` line, `dd67189a17bbeabeb8c5a682b203a9a1` on `solo-arx`
+  (the solo-arx value is checked by `cargo test --test kat`,
+  `examples/kat_verify.rs` and `scripts/herringfish_ref.py`). An earlier
+  revision of this note quoted `aa354bd4…`, which matches neither.
