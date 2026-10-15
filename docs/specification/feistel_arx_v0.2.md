@@ -287,6 +287,11 @@ Affine parameters:
 * a = 0x11
 * b = 0x71
 
+`AES_SBOX` is the FIPS-197 S-box and `a * y` is multiplication in GF(2^8)
+modulo the AES polynomial `x^8 + x^4 + x^3 + x + 1` (`0x11B`). With this
+reading, `scripts/herringfish_ref.py` derives the frozen table exactly, with no
+table lookup (observed, 256 of 256 entries).
+
 S-box counter: 0
 
 Domain separation string `HERRINGFISH-FEISTEL-SBOX` is retained for future versions but is not used for v0.2 S-box generation. The frozen permutation is defined in `src/cipher/feistel_arx.rs` as `HERRINGFISH_SBOX_V02` and archived in `docs/tables/`.
@@ -481,16 +486,42 @@ frozen constant array is `C[i] = GOLDEN64 · (2i+1) mod 2^64` for
 (Rust `const` evaluation); the runtime schedule contains no multiplication —
 only rotations, XOR, and modular addition.
 
-**Round-key derivation.** For each round index `i ∈ 0..rounds`, with global
-step counter `g = 2i`:
+**Constant table.** `C[i] = GOLDEN64 · (2i+1) mod 2^64`, i.e.
 
-1. **Two `full_mix` iterations.** In each, every word `wj` is replaced by
-   `wj + (rot(wj-1, r1) ⊕ rot(wj+1, r2) ⊕ rot(wj+2, r3)) + C[(g+o) mod 16]`,
-   where the three rotated neighbours use 12 distinct rotation amounts
-   (r1, r2, r3) per word position, and the constant offsets are
-   `o ∈ {0, 5, 9, 14}` for the four words. (Exact per-word rotation amounts
-   are in the reference implementation; they are frozen.)
-2. **One bijective rotate-right XOR network:**
+```text
+C[ 0] = 0x9e3779b97f4a7c15    C[ 8] = 0x81af155173f23d65
+C[ 1] = 0xdaa66d2c7ddf743f    C[ 9] = 0xbe1e08c47287358f
+C[ 2] = 0x1715609f7c746c69    C[10] = 0xfa8cfc37711c2db9
+C[ 3] = 0x538454127b096493    C[11] = 0x36fbefaa6fb125e3
+C[ 4] = 0x8ff34785799e5cbd    C[12] = 0x736ae31d6e461e0d
+C[ 5] = 0xcc623af8783354e7    C[13] = 0xafd9d6906cdb1637
+C[ 6] = 0x08d12e6b76c84d11    C[14] = 0xec48ca036b700e61
+C[ 7] = 0x454021de755d453b    C[15] = 0x28b7bd766a05068b
+```
+
+**State.** `(w0, w1, w2, w3)` is initialised once from the master key and is
+carried from one round to the next: it is **not** reset between rounds. Round
+key `i` is produced by one *step*, which updates the state in place:
+
+**Step `i ∈ 0..rounds`.**
+
+1. **Two `full_mix` iterations**, `full_mix(g)` with `g = 2i`, then
+   `full_mix(g+1)` on its output. One `full_mix(g)` computes all four new words
+   from the four **old** words simultaneously (every right-hand side uses the
+   values from before the iteration). `rotl` is rotate-left and `⊕` is XOR; the
+   constant is XORed **inside** the parentheses and the result is then added
+   modulo `2^64`:
+
+   ```text
+   n0 = w0 + ( rotl(w1,  7) ⊕ rotl(w2, 15) ⊕ rotl(w3, 23) ⊕ C[ g       mod 16] )
+   n1 = w1 + ( rotl(w0, 19) ⊕ rotl(w2, 29) ⊕ rotl(w3, 41) ⊕ C[(g +  5) mod 16] )
+   n2 = w2 + ( rotl(w0, 33) ⊕ rotl(w1, 47) ⊕ rotl(w3, 11) ⊕ C[(g +  9) mod 16] )
+   n3 = w3 + ( rotl(w0, 51) ⊕ rotl(w1,  9) ⊕ rotl(w2, 37) ⊕ C[(g + 14) mod 16] )
+   ```
+
+   then `(w0, w1, w2, w3) := (n0, n1, n2, n3)`.
+2. **One bijective rotate-right XOR network** on the result, which replaces the
+   state:
 
    ```text
    m0 = w0 ⊕ rotr(w1, 21) ⊕ rotr(w3, 33)
@@ -499,10 +530,16 @@ step counter `g = 2i`:
    m3 = w3 ⊕ rotr(w0, 53) ⊕ rotr(w2, 13)
    ```
 
-   The rotate-**right** network is bijective over GF(2) (rank 256/256, verified
-   by the `xor_net_is_bijective` test); the rotate-left variant has rank 254
-   and is not used.
+   then `(w0, w1, w2, w3) := (m0, m1, m2, m3)`. The rotate-**right** network is
+   bijective over GF(2) (rank 256/256, verified by the `xor_net_is_bijective`
+   test); the rotate-left variant has rank 254 and is not used.
 3. `round_key[i] = m0 ⊕ m1 ⊕ m2 ⊕ m3` (64 bits).
+
+*Clarification history:* an earlier text of this section wrote the constant as
+a separate `+ C` term and delegated the rotation amounts to the source. Both
+disagreed with, or did not define, the reference implementation, which has
+always XORed the constant inside the sum. This revision changes the text only;
+no ciphertext changes and the KAT files remain valid.
 
 Sixteen 64-bit round keys (`16 × 64 = 1024` bits) are derived for the full
 construction; the first `k` of a longer derivation are unchanged when fewer
@@ -517,8 +554,14 @@ variant version.
 Known-answer vectors for the solo variant are in `docs/tables/`:
 `kat_vectors_v02.txt` (16 rounds), `kat_reduced_all.txt` (4/6/8 rounds),
 `kat_reduced_rounds_v02.txt` (4/6/8 rounds), and `kat_expanded_v02.txt`
-(16 rounds). They are verified against the implementation by
-`examples/kat_verify.rs` (exit 0 = all match).
+(16 rounds). They are verified against the Rust implementation by
+`examples/kat_verify.rs` (exit 0 = all match) and, from this specification text
+alone, by the independent Python reference `scripts/herringfish_ref.py`
+(`python -I scripts/herringfish_ref.py`; observed: all 145 vectors match, and
+deliberately wrong readings of this section, such as `+ C` instead of `⊕ C` or
+resetting the state every round, make it fail). The Python reference was
+written by an author who also read the Rust source, so it is independent in
+language and in S-box derivation, not in authorship.
 
 ---
 
