@@ -6,7 +6,15 @@
 > parameters are identical to canonical v0.2. Reduced-round measurements
 > below (4/6/8 rounds) are key-schedule-agnostic at the F-function level.
 
-**Date:** 2026-08-15 (differential/linear re-run on solo-arx: 2026-09-08)
+> **Correction 2026-10-15.** The linear trail result (2^75.7 "candidate
+> weakness") in `docs/cryptanalysis/trail_search_v0.3.0-solo.md` was an
+> artifact of a propagation bug and is retracted; corrected single-trail
+> results and rigorous lower bounds are in that document (§2.1, §3). The
+> "Security margin statement" and the linear-sampling interpretation below
+> were revised accordingly: the earlier "≥8 rounds beyond tested range"
+> margin claim was not supported and is withdrawn.
+
+**Date:** 2026-08-15 (differential/linear re-run on solo-arx: 2026-09-08; margin statement and trail references corrected 2026-10-15)
 **Construction:** Feistel ARX v0.2.3
 **Parameters:** 128-bit block, 256-bit master key, 16 rounds (parameterisable 4/6/8/16)
 **F-function:** `S[x⊕k]` with 8-bit S-box + intra-round diffusion `out[i]=in[i]⊕in[i+1]⊕in[i+3]`
@@ -39,6 +47,8 @@ Interpretation: experimental observation consistent with uniform output differen
 
 Maximum observed absolute bias for randomly sampled masks, N = 100 000.
 Preliminary runs show bias decreasing with rounds, staying within sampling noise ~1.6e-3 for 8 rounds. Full mask enumeration not yet performed.
+
+Resolution caveat (2026-10-15): sampling a random or systematic mask with N = 10^5 resolves |bias| of roughly 10^-2 and above. The corrected trail search (trail doc §3.4) finds 2-round and 3-round linear approximations with |bias| 2^-4 and 2^-7 (verified on the real cipher), but its best trails at 4 rounds and more have |bias| ≤ 1.5 × 10^-5, far below this resolution. "Within sampling noise" at 4-8 rounds is therefore an observation about this method, not evidence about the existence of such trails.
 
 ## S-box formalisation
 
@@ -87,11 +97,13 @@ Related-key Hamming distance tests show ~32 bits average Hamming distance per 64
 ## Security margin statement
 
 * Final construction: 16 rounds
-* Currently tested reduced-round range: 4,6,8 rounds
-* Empirical margin: ≥8 rounds beyond tested range
-* This is an experimental margin relative to the tested attack model, not a formal security bound.
+* Sampling-based observations: 4, 6, 8 (and 12, differential) rounds, nothing above noise; resolution limits as stated above. Trail searches cover 2-16 rounds (single trails only).
+* Withdrawn 2026-10-15: "Empirical margin: ≥8 rounds beyond tested range". It was derived from sampling that cannot resolve the best trails at ≥4 rounds, so no margin in rounds is claimed.
+* Reduced-round linear approximations exist at 2 rounds (|bias| 2^-4, 1 active S-box) and 3 rounds (|bias| 2^-7, 2 active S-boxes), verified on the real cipher (N = 2^24, 3 keys; trail doc §4c).
+* Single-trail bounds (relaxed model, active S-box DP; trail doc §2.1, §3): over 16 rounds at least 31 active S-boxes for any differential characteristic (p ≤ 2^-186) and at least 16 for any linear trail (|corr| ≤ 2^-48). Best trails found: differential 2^-234 (greedy), linear 2^-99 (beam, heuristic upper bound on the optimum). The differential bound drops below 2^-128 from 12 rounds on; the linear bound alone (data ≥ 2^96) does not establish linear resistance at 16 rounds, the optimum lies between 2^-48 and 2^-99.
+* Not covered: differentials / linear hulls, related-key, integral, algebraic, MITM. This is an experimental observation set relative to the tested attack models, not a formal security bound.
 
-No weakness identified under the tested differential/linear sampling methodology for 4-8 rounds.
+No weakness was identified by the sampling methodology for 4-8 rounds; given its resolution this does not imply resistance. The trail results above are single-trail observations and bounds, not a proof of security.
 
 ## Updated Results 2026-08-14
 
@@ -133,7 +145,7 @@ Bias at or below the preliminary-run level, within sampling noise.
 ### Re-run notes (2026-09-08, solo-arx)
 * 100k-sample differential run reproduced exactly (all maxima at the 1e-5 floor); no doc change needed.
 * `examples/differential_characteristic_exact_v2.rs` was misreporting: pruning empties the state set after round 1 (diffusion spreads to >2 active bytes), so it printed a vacuous 0.0. Fixed to track the max over all surviving states across rounds; the pruned 1-bit-Δ_in bound is 4/256 = 1.562e-2 (the single-active-byte S-box bound) for 4 and 6 rounds. Its "DDT max = 256" was the vacuous zero-difference entry; the nonzero max is 4, as documented.
-* `examples/linear_trail_search_exact.rs` used `(x & a) != 0` (nonzero test, nonlinear) instead of the GF(2) dot product, inflating the apparent S-box correlation to 0.9844. Fixed to the parity formulation; the S-box LAT max is 32 (correlation 0.125), consistent with this document, and the heuristic 4-round trail bias drops to ≈ 1.26e-29.
+* `examples/linear_trail_search_exact.rs` used `(x & a) != 0` (nonzero test, nonlinear) instead of the GF(2) dot product, inflating the apparent S-box correlation to 0.9844. Fixed to the parity formulation; the S-box LAT max is 32 (correlation 0.125), consistent with this document, and the heuristic 4-round trail bias drops to ≈ 1.26e-29. (Correction 2026-10-15: that 4-round figure is not a bound. The corrected search finds a 4-round linear trail with |bias| 2^-16 ≈ 1.5e-5, trail doc §3.4, so this tool's heuristic is far from optimal and it has not been audited against the corrected mask rule.)
 
 ### Key schedule independence
 (re-run 2026-09-08 on the ARX schedule)

@@ -1010,9 +1010,9 @@ The key schedule exhibits strong apparent diffusion and independence under the t
 ## 25.5 Security Margin Statement
 
 * Final construction: 16 rounds
-* Tested reduced range: 4,6,8 rounds
-* Empirical margin: ≥8 rounds beyond tested range under current differential/linear sampling
-* This is an experimental margin relative to the tested attack model, not a formal security bound.
+* Tested reduced range (sampling): 4,6,8 rounds
+* Withdrawn 2026-10-15: "Empirical margin: ≥8 rounds beyond tested range". The sampling in §25.1-25.2 cannot resolve the best differential/linear trails at 4 or more rounds, so no margin in rounds is claimed. Single-trail results and bounds: `docs/cryptanalysis/trail_search_v0.3.0-solo.md` (§2.1, §3); reduced-round linear approximations exist at 2 rounds (|bias| 2^-4) and 3 rounds (|bias| 2^-7).
+* This is an experimental observation set relative to the tested attack models, not a formal security bound.
 
 ## 25.6 Frozen S-box v0.2
 
